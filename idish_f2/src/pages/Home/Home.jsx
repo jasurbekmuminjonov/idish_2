@@ -49,9 +49,9 @@ const { Header, Sider, Content } = Layout;
 
 export default function Home() {
   const [collapsed, setCollapsed] = useState(false);
-  const [selectedPage, setSelectedPage] = useState("home");
   const success = JSON.parse(localStorage.getItem('acsess') || "{}");
   const role = localStorage.getItem('role');
+  const [selectedPage, setSelectedPage] = useState(role === 'admin' ? "home" : 'product');
 
   const toggle = () => {
     setCollapsed(!collapsed);
@@ -108,7 +108,7 @@ export default function Home() {
         <Menu
           theme="dark"
           mode="inline"
-          defaultSelectedKeys={["home"]}
+          defaultSelectedKeys={role === "admin" ? ["home"] : ['product']}
           selectedKeys={[selectedPage]}
           onClick={(e) => setSelectedPage(e.key)}
         >
@@ -148,13 +148,6 @@ export default function Home() {
           <Menu.Item key="product" icon={<ShoppingOutlined />}>
             Mahsulotlar
           </Menu.Item>
-          {
-            role === 'warehouse' && (
-              <Menu.Item key="transport" icon={<BiTransferAlt />}>
-                Tovar jo'natish
-              </Menu.Item>
-            )
-          }
           {
             role === 'admin' && (
               <Menu.Item key="partner" icon={<UserSwitchOutlined />}>

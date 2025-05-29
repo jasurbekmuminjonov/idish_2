@@ -8,7 +8,7 @@ import {
 } from "../../context/service/transportion.service";
 import { useGetProductsQuery } from "../../context/service/product.service";
 import { useGetWarehousesQuery } from "../../context/service/ombor.service";
-import { CheckOutlined, CloseOutlined } from "@ant-design/icons"; // yu
+import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
 import "./transportion.css";
 
 const { TabPane } = Tabs;
@@ -19,44 +19,65 @@ const Transportion = () => {
   const { data: sentTransportions = [] } = useGetSentTransportionsQuery();
   const [createTransportion] = useCreateTransportionMutation();
   const { data: warehouses = [] } = useGetWarehousesQuery();
-
+  const role = localStorage.getItem('role')
   const [acceptTransportion] = useAcceptTransportionMutation();
   const [cencelTransportion] = useCencelTransportionMutation();
-
   const [basket, setBasket] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [toWarehouse, setToWarehouse] = useState(null);
-  const [fromWarehouse, setFromWarehouse] = useState(null);
+  const id = localStorage.getItem('_id')
+  const [fromWarehouse, setFromWarehouse] = useState(role === "admin" ? null : id);
 
-  // Add product to basket
   const handleAddToBasket = (product) => {
     if (!basket.find((item) => item._id === product._id)) {
-      setBasket([...basket, { ...product, quantity: 1 }]);
+      setBasket([...basket, { ...product, quantity: 1, unit: 'quantity' }]);
     } else {
       message.warning("Bu mahsulot allaqachon qo‘shilgan");
     }
   };
 
-  // Update quantity
   const updateQuantity = (productId, value) => {
+    console.log(value);
+
     setBasket((prev) =>
-      prev.map((item) =>
-        item._id === productId
-          ? {
-              ...item,
-              quantity:
-                value < 1 ? 1 : value > item.quantity ? item.quantity : value,
-            }
-          : item
-      )
+      prev.map((item) => {
+        if (item._id !== productId) return item;
+        return {
+          ...item,
+          quantity: value,
+        };
+      })
     );
   };
 
-  // Create transportion
+
   const handleCreateTransportion = async () => {
+    for (let item of basket) {
+      const product = products.find((p) => p._id === item._id);
+      if (!product) {
+        return message.error(`Mahsulot topilmadi: ${item.name}`);
+      }
+
+      let available = 0;
+      if (item.unit === "quantity") {
+        available = product.quantity;
+      } else if (item.unit === "package_quantity") {
+        available = product.package_quantity;
+      } else if (item.unit === "box_quantity") {
+        available = product.box_quantity;
+      }
+
+      if (item.quantity > available) {
+        return message.error(
+          `${item.name} mahsuloti uchun ombordagi miqdor yetarli emas (${item.quantity.toFixed(2)} > ${available.toFixed(2)})`
+        );
+      }
+    }
+
     if (!toWarehouse) {
       return message.error("Ombor tanlanmagan");
     }
+
     if (basket.length === 0) {
       return message.error("Savatchada mahsulot yo‘q");
     }
@@ -82,7 +103,10 @@ const Transportion = () => {
 
   const productColumns = [
     { title: "Nomi", dataIndex: "name" },
-    { title: "Soni", dataIndex: "quantity" },
+    { title: "Dona soni", dataIndex: "quantity" },
+    { title: "Pachka soni", dataIndex: "package_quantity", render: (text) => text.toFixed(2) },
+    { title: "Karobka soni", dataIndex: "box_quantity", render: (text) => text.toFixed(2) },
+    { title: "Umumiy vazni", dataIndex: "total_kg", render: (text) => text.toFixed(2) },
     {
       title: "Amal",
       render: (_, record) => (
@@ -103,16 +127,19 @@ const Transportion = () => {
   const basketColumns = [
     { title: "Nomi", dataIndex: "name" },
     {
-      title: "Soni",
+      title: "Miqdor",
       dataIndex: "quantity",
-      render: (_, record) => (
-        <InputNumber
-          min={1}
-          max={record.quantity}
-          value={record.quantity}
-          onChange={(val) => updateQuantity(record._id, val)}
-        />
-      ),
+      render: (_, record) => {
+
+        return (
+          <InputNumber
+            value={record.quantity}
+            type="number"
+            min={1}
+            onChange={(val) => updateQuantity(record._id, val)}
+          />
+        )
+      },
     },
     {
       title: "Birlik",
@@ -120,11 +147,14 @@ const Transportion = () => {
         <Select
           value={item.unit}
           onChange={(val) => updateUnit(item._id, val)}
-          style={{ width: "100px" }}
+          style={{ width: "200px" }}
+          defaultValue={'quantity'}
+
+
         >
+          <Option value="quantity">Dona</Option>
           {item.isPackage && <Option value="package_quantity">Pachka</Option>}
           <Option value="box_quantity">Karobka</Option>
-          <Option value="quantity">Dona</Option>
         </Select>
       ),
     },
@@ -178,10 +208,10 @@ const Transportion = () => {
         val === "in_process"
           ? "Jarayonda"
           : val === "delivered"
-          ? "Yetkazib berildi"
-          : val === "cancelled"
-          ? "Bekor qilindi"
-          : val,
+            ? "Yetkazib berildi"
+            : val === "cancelled"
+              ? "Bekor qilindi"
+              : val,
     },
     {
       title: "Amal",
@@ -206,88 +236,95 @@ const Transportion = () => {
     <>
       <Tabs defaultActiveKey="1">
         <TabPane tab="Jo‘natma yaratish" key="1">
-          <div className="transportion">
-            <div>
-              <h3>Qaysi ombordan</h3>
+          <div className="transportion" style={{ display: "flex", flexDirection: "column" }}>
+            <h3>Qaysi ombordan</h3>
+            <Select
+              placeholder="Omborni tanlang"
+              style={{ width: "20%" }}
+              value={fromWarehouse}
+              disabled={role === 'warehouse'}
+              onChange={(val) => setFromWarehouse(val)}
+            >
+              {warehouses.map((wh) => (
+                <Option key={wh._id} value={wh._id}>
+                  {wh.name}
+                </Option>
+              ))}
+            </Select>
+            <div style={{ display: "flex", width: "100%" }}>
+
+              <div style={{ display: "flex", flexDirection: "column", width: "50%" }}>
+
+                <h3>Mavjud mahsulotlar</h3>
+                <Table
+                  rowKey="_id"
+                  columns={productColumns}
+                  dataSource={products.filter(
+                    (p) => p.warehouse._id === fromWarehouse
+                  )}
+                  pagination={false}
+                />
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", width: "50%" }}>
+                <h3 className="mt-4">Savatcha</h3>
+                <Table
+                  rowKey="_id"
+                  columns={basketColumns}
+                  dataSource={basket}
+                  pagination={false}
+                />
+
+                <Button
+                  type="primary"
+                  className="mt-3"
+                  style={{ width: "200px", marginTop: "15px" }}
+                  onClick={() => {
+                    if (!fromWarehouse) {
+                      return message.error("Ombor tanlanmagan");
+                    }
+                    setModalOpen(true);
+                  }}
+                  disabled={basket.length === 0}
+                >
+                  Jo'natma yaratish
+                </Button>
+              </div>
+            </div>
+
+            <Modal
+              title="Qaysi omborga"
+              open={modalOpen}
+              onCancel={() => setModalOpen(false)}
+              onOk={handleCreateTransportion}
+            >
               <Select
                 placeholder="Omborni tanlang"
                 style={{ width: "100%" }}
-                value={fromWarehouse} // <-- Qo‘shildi
-                onChange={(val) => setFromWarehouse(val)}
+                onChange={(val) => setToWarehouse(val)}
               >
-                {warehouses.map((wh) => (
-                  <Option key={wh._id} value={wh._id}>
-                    {wh.name}
-                  </Option>
-                ))}
+                {warehouses
+                  .filter((wh) => wh._id !== fromWarehouse)
+                  .map((wh) => (
+                    <Option key={wh._id} value={wh._id}>
+                      {wh.name}
+                    </Option>
+                  ))}
               </Select>
-
-              <h3>Mavjud mahsulotlar</h3>
-              <Table
-                rowKey="_id"
-                columns={productColumns}
-                dataSource={products.filter(
-                  (p) => p.warehouse._id === fromWarehouse
-                )}
-                pagination={false}
-              />
-            </div>
-
-            <div>
-              <h3 className="mt-4">Savatcha</h3>
-              <Table
-                rowKey="_id"
-                columns={basketColumns}
-                dataSource={basket}
-                pagination={false}
-              />
-
-              <Button
-                type="primary"
-                className="mt-3"
-                onClick={() => {
-                  if (!fromWarehouse) {
-                    return message.error("Ombor tanlanmagan");
-                  }
-                  setModalOpen(true);
-                }}
-                disabled={basket.length === 0}
-              >
-                Jo‘natma yaratish
-              </Button>
-            </div>
+            </Modal>
           </div>
-
-          <Modal
-            title="Qaysi omborga"
-            open={modalOpen}
-            onCancel={() => setModalOpen(false)}
-            onOk={handleCreateTransportion}
-          >
-            <Select
-              placeholder="Omborni tanlang"
-              style={{ width: "100%" }}
-              onChange={(val) => setToWarehouse(val)}
-            >
-              {warehouses
-                .filter((wh) => wh._id !== fromWarehouse)
-                .map((wh) => (
-                  <Option key={wh._id} value={wh._id}>
-                    {wh.name}
-                  </Option>
-                ))}
-            </Select>
-          </Modal>
         </TabPane>
+        {role === 'admin' && (
 
-        <TabPane tab="Yuborilganlar" key="2">
-          <Table
-            rowKey="_id"
-            columns={transportionColumns}
-            dataSource={sentTransportions}
-          />
-        </TabPane>
-      </Tabs>
+          <TabPane tab="Yuborilganlar" key="2">
+            <Table
+              rowKey="_id"
+              columns={transportionColumns}
+              dataSource={sentTransportions}
+            />
+          </TabPane>
+        )}
+      </Tabs >
     </>
   );
 };

@@ -47,7 +47,7 @@ exports.loginUser = async (req, res) => {
     if (!user) {
       user = await Warehouse.findOne({ login })
       role = 'warehouse'
-      success = { qarzdorlar: true, xarajatlar: true, skaladorlar: true }
+      success = { skaladorlar: true }
     }
     if (!user) {
       user = await Store.findOne({ login })
