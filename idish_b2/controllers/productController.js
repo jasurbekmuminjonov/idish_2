@@ -13,16 +13,8 @@ exports.createProduct = async (req, res) => {
 
 // Get all products
 exports.getProducts = async (req, res) => {
-  console.log(req.user);
-  const { id, role } = req.user
-
   try {
-    let products;
-    if (role === 'warehouse' || role === 'store') {
-      products = await Product.find({ warehouse: new mongoose.Types.ObjectId(id) }).populate("warehouse");
-    } else {
-      products = await Product.find().populate("warehouse");
-    }
+    const products = await Product.find().populate("warehouse");
     res.status(200).json(products);
   } catch (error) {
     res.status(500).json({ error: error.message });

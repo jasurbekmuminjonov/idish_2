@@ -21,17 +21,16 @@ const warehouseSchema = new mongoose.Schema(
     products: {
       type: [
         {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Product",
+          product_id: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Product",
+          },
         }
-
       ],
       default: []
-    },
+    }
   },
-  {
-    timestamps: true,
-  }
+{ timestamps: true }
 );
 
 const Warehouse = mongoose.model("Warehouse", warehouseSchema);

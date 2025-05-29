@@ -8,8 +8,8 @@ const saleSchema = new mongoose.Schema(
       required: false,
     },
     partnerId: {
-      type: String, // Изменяем на String вместо ObjectId
-      required: false, // Оставляем опциональным
+      type: String,
+      required: false,
     },
     productId: {
       type: mongoose.Schema.Types.ObjectId,

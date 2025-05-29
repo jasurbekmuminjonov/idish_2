@@ -41,9 +41,6 @@ exports.loginUser = async (req, res) => {
     let success
     user = await User.findOne({ login });
     const allUsers = await User.find()
-    console.log(allUsers);
-
-    console.log(user);
 
     role = user?.role
     success = user?.success
