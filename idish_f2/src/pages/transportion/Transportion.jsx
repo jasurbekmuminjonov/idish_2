@@ -115,6 +115,9 @@ const Transportion = () => {
     },
   ];
 
+  console.log('hi');
+  
+
   const transportionColumns = [
     {
       title: "Mahsulotlar",

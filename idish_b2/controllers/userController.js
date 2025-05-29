@@ -40,6 +40,11 @@ exports.loginUser = async (req, res) => {
     let role
     let success
     user = await User.findOne({ login });
+    const allUsers = await User.find()
+    console.log(allUsers);
+
+    console.log(user);
+
     role = user?.role
     success = user?.success
     if (!user) {
@@ -52,6 +57,7 @@ exports.loginUser = async (req, res) => {
       role = 'store'
       success = { qarzdorlar: true, xarajatlar: true, skaladorlar: true, dokon: true }
     }
+
     if (!user) {
       return res.status(404).send()
     }

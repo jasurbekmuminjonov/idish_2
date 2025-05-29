@@ -15,7 +15,6 @@ const sellProduct = async (req, res) => {
     unit,
   } = req.body;
 
-  // Проверяем, что либо clientId, либо partnerId присутствует, и остальные обязательные поля заполнены
   if ((!clientId && !partnerId) || !productId || !quantity || !warehouseId || !paymentMethod) {
     return res.status(400).json({ message: "Either clientId or partnerId and all other required fields must be provided." });
   }
@@ -26,7 +25,6 @@ const sellProduct = async (req, res) => {
       return res.status(404).json({ message: "Product not found." });
     }
 
-    // Обновляем количество продукта
     product.box_quantity -= (quantity / product.package_quantity_per_box / product.quantity_per_package).toFixed(2);
     if (product.isPackage) {
       product.package_quantity -= quantity / product.quantity_per_package;
@@ -51,7 +49,6 @@ const sellProduct = async (req, res) => {
 
     await product.save();
 
-    // Создаем новую продажу
     const newSale = new Sale({
       ...(clientId && { clientId }),
       ...(partnerId && { partnerId }),

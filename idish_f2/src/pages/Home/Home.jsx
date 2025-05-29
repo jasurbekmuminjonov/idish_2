@@ -220,6 +220,9 @@ export default function Home() {
               </Menu.Item>
             )
           }
+          <Menu.Item key="transportions" icon={<DollarOutlined />}>
+           Tovar o'tkazish
+          </Menu.Item>
         </Menu>
 
       </Sider>
