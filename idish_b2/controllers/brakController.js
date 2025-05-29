@@ -48,7 +48,6 @@ const addBrak = async (req, res) => {
 const getBrakHistory = async (req, res) => {
   try {
     const braks = await Brak.find().populate("productId", ["name", "size", "unit", "package_quantity_per_box", "quantity_per_package"]);
-    console.log(braks);
 
     res.status(200).json(braks);
   } catch (error) {

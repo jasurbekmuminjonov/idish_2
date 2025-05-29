@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Tabs, Table, Button, InputNumber, Modal, Select, message } from "antd";
 import {
   useCreateTransportionMutation,
@@ -146,13 +146,18 @@ const Transportion = () => {
       message.error("Xatolik yuz berdi");
     }
   };
+  const statusTexts = {
+    quantity: "dona",
+    box_quantity: "quti",
+    package_quantity: "pachka",
+  };
   const transportionColumns = [
     {
       title: "Mahsulotlar",
       render: (_, record) =>
         record.products.map((p) => (
           <div key={p.product_id._id}>
-            {p.product_id.name} - {p.quantity} dona
+            {p.product_id.name} - {p.quantity} {statusTexts[p.unit]}
           </div>
         )),
     },
@@ -221,7 +226,9 @@ const Transportion = () => {
               <Table
                 rowKey="_id"
                 columns={productColumns}
-                dataSource={products}
+                dataSource={products.filter(
+                  (p) => p.warehouse._id === fromWarehouse
+                )}
                 pagination={false}
               />
             </div>

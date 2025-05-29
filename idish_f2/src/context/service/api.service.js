@@ -41,6 +41,7 @@ export const apiSlice = createApi({
     "ProductPartner",
     "Report",
     "ActPartner",
+    "Transportion",
   ], // Теги для управления кэшем
   endpoints: (builder) => ({}), // Пустые эндпоинты, так как они добавляются через injectEndpoints
 });

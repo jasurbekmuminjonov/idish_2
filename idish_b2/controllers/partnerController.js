@@ -3,10 +3,8 @@ const Partner = require("../models/Partner");
 // Create a new product
 exports.createProductPartner = async (req, res) => {
      try {
-          console.log("Request body in createProductPartner:", req.body);
           const product = new Partner(req.body);
           await product.save();
-          console.log("Saved product:", product);
           res.status(201).json(product);
      } catch (error) {
           console.error("Error in createProductPartner:", error);
@@ -17,7 +15,6 @@ exports.createProductPartner = async (req, res) => {
 // Update a product by ID
 exports.updateProductPartner = async (req, res) => {
      try {
-          console.log("Request body in updateProductPartner:", req.body);
           const product = await Partner.findByIdAndUpdate(req.params.id, req.body, {
                new: true,
                runValidators: true,
@@ -25,7 +22,6 @@ exports.updateProductPartner = async (req, res) => {
           if (!product) {
                return res.status(404).json({ error: "Product not found" });
           }
-          console.log("Updated product:", product);
           res.status(200).json(product);
      } catch (error) {
           console.error("Error in updateProductPartner:", error);

@@ -1,4 +1,3 @@
-import { update } from "../../../../idish_b2/models/Transportion";
 import { apiSlice } from "./api.service";
 
 export const transportionApi = apiSlice.injectEndpoints({
@@ -9,7 +8,7 @@ export const transportionApi = apiSlice.injectEndpoints({
         method: "POST",
         body: productData,
       }),
-      invalidatesTags: ["Transportion"],
+      invalidatesTags: ["Transportion", "Product"],
     }),
     getSentTransportions: builder.query({
       query: () => ({
@@ -25,23 +24,21 @@ export const transportionApi = apiSlice.injectEndpoints({
       }),
       providesTags: ["Transportion"],
     }),
-
-    // update
     acceptTransportion: builder.mutation({
       query: (id) => ({
-        url: "/transportion/accept/:" + id,
+        url: `/transportion/accept/${id}`,
         method: "PUT",
         body: "",
       }),
-      invalidatesTags: ["Transportion"],
+      invalidatesTags: ["Transportion", "Product"],
     }),
     cencelTransportion: builder.mutation({
       query: (id) => ({
-        url: "/transportion/reject/:" + id,
+        url: `/transportion/reject/${id}`,
         method: "PUT",
         body: "",
       }),
-      invalidatesTags: ["Transportion"],
+      invalidatesTags: ["Transportion", "Product"],
     }),
   }),
   overrideExisting: false,

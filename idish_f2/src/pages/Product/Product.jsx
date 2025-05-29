@@ -131,7 +131,6 @@ const Product = () => {
       partner_number: product.partner_number || "",
     })),
   ];
-  console.log(allProducts);
 
 
   const barchaMahsulotlar = [

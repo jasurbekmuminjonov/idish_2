@@ -28,6 +28,7 @@ const Login = memo(() => {
       localStorage.setItem("acsess", JSON.stringify(success)); // Права доступа
       localStorage.setItem("role", role);
       localStorage.setItem("user_login", userLogin);
+      localStorage.setItem("_id", res.data._id);
 
       window.location.reload();
       navigate("/");

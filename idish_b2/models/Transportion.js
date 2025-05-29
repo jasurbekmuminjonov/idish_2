@@ -12,9 +12,9 @@ const TransportionSchema = new mongoose.Schema({
                     type: Number,
                     required: true
                 },
-                transport_fee_per_quantity: {
-                    type: Number,
-                    required: true
+                unit: {
+                    type: String,
+                    enum: ['box_quantity', 'package_quantity', 'quantity']
                 }
             }
         ]
@@ -32,7 +32,6 @@ const TransportionSchema = new mongoose.Schema({
         enum: ['in_process', 'delivered', 'cancelled'],
         default: 'in_process'
     }
-
 });
 
 module.exports = mongoose.model('Transportion', TransportionSchema);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useGetProductsQuery } from "../../context/service/product.service";
 import { useGetProductsPartnerQuery } from "../../context/service/partner.service";
 import {
@@ -24,6 +24,7 @@ import html2pdf from "html2pdf.js";
 import yodgor_abdullaev from "../../assets/yodgor_abdullaev.svg";
 import zolotayaroza77 from "../../assets/zolotayaroza77.svg";
 import { useGetActPartnersQuery } from "../../context/service/act-partner.service";
+import { useGetWarehousesQuery } from "../../context/service/ombor.service";
 
 const { Option } = Select;
 
@@ -35,6 +36,7 @@ const Kassa = () => {
   const { data: usdRate = {} } = useGetUsdRateQuery();
   const { data: clients = [] } = useGetClientsQuery();
   const { data: expenses = [] } = useGetExpensesQuery();
+  const { data: warehouses = [] } = useGetWarehousesQuery()
   const [createClient] = useCreateClientMutation();
   const [createDebt] = useCreateDebtMutation();
   const [addExpense] = useAddExpenseMutation();
@@ -46,8 +48,8 @@ const Kassa = () => {
   const [isCategoryModalVisible, setIsCategoryModalVisible] = useState(false);
   const [xarajatModal, setXarajatModal] = useState(false);
   const navigate = useNavigate();
-  const [selectedBuyer, setSelectedBuyer] = useState(""); // Заменили selectedClient на selectedBuyer
-  const [buyerType, setBuyerType] = useState(null); // "client" или "partner"
+  const [selectedBuyer, setSelectedBuyer] = useState("");
+  const [buyerType, setBuyerType] = useState(null);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [codeSearchText, setCodeSearchText] = useState("");
@@ -58,6 +60,8 @@ const Kassa = () => {
   const [dueDate, setDueDate] = useState(null);
   const [currency, setCurrency] = useState("SUM");
   const [selectedUnit, setSelectedUnit] = useState("quantity");
+  const id = localStorage.getItem('_id')
+  const role = localStorage.getItem('role')
   const userLogin =
     localStorage.getItem("user_login") || "Noma'lum foydalanuvchi";
 
@@ -204,7 +208,7 @@ const Kassa = () => {
     } else if (buyerType === "partner" && selectedBuyer) {
       const partner = uniquePartners.find((p) => p.id === selectedBuyer);
       buyerName = partner?.name || "Noma'lum";
-      buyerAddress = "Hamkor manzili yo'q"; // Можно добавить поле для адреса партнера, если оно есть
+      buyerAddress = "Hamkor manzili yo'q";
     } else {
       buyerName = formValues.clientName || "Noma'lum";
       buyerAddress = formValues.clientAddress || "Noma'lum";

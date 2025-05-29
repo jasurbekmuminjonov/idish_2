@@ -15,7 +15,6 @@ const auth = async (req, res, next) => {
 
       // req.user = await User.findById(decoded.id).select("-password");
       req.user = decoded
-      console.log(req.user);
 
 
       next();

@@ -221,7 +221,7 @@ export default function Home() {
             )
           }
           <Menu.Item key="transportions" icon={<DollarOutlined />}>
-           Tovar o'tkazish
+            Tovar o'tkazish
           </Menu.Item>
         </Menu>
 

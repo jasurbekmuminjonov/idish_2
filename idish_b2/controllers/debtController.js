@@ -87,8 +87,6 @@ const payDebt = async (req, res) => {
     const rate = rateObj.rate; // Endi `rate` son bo‘ladi
 
     debt.paymentHistory.push({ amount, currency });
-    console.log(debt.currency);
-    console.log(currency);
 
     if (debt.currency === currency) {
       debt.remainingAmount -= amount;
