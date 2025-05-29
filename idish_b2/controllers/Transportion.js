@@ -286,3 +286,13 @@ exports.rejectTransportion = async (req, res) => {
         return res.status(500).json({ message: "Serverda xatolik" });
     }
 };
+
+exports.getAllTransportions = async (req, res) => {
+    try {
+        const transportions = await Transportion.find()
+        return res.json(transportions)
+    } catch (err) {
+        console.log(err.message)
+        return res.status(500).json({ message: "Serverda xatolik" });
+    }
+}

@@ -86,7 +86,7 @@ const {
   deleteSalaryPayment,
 } = require("../controllers/salaryPaymentController");
 const { createStore, getStores } = require("../controllers/storeController");
-const { getSentTransportions, getGotTransportions, createTransportion, acceptController, rejectTransportion } = require("../controllers/Transportion");
+const { getSentTransportions, getGotTransportions, createTransportion, acceptController, rejectTransportion, getAllTransportions } = require("../controllers/Transportion");
 
 const router = express.Router();
 
@@ -190,4 +190,5 @@ router.get('/transportion/sent', auth, getSentTransportions)
 router.get('/transportion/got', auth, getGotTransportions)
 router.put('/transportion/accept/:transportion_id', auth, acceptController)
 router.put('/transportion/reject/:transportion_id', auth, rejectTransportion)
+router.get('/transportion/all', auth, getAllTransportions)
 module.exports = router;
