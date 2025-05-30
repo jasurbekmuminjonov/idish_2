@@ -1,5 +1,6 @@
 const Sale = require("../models/Sale");
 const Product = require("../models/Product");
+const Store = require("../models/Store");
 
 const sellProduct = async (req, res) => {
   const {
@@ -13,19 +14,35 @@ const sellProduct = async (req, res) => {
     discount,
     paymentMethod,
     unit,
+    selectedWarehouse,
+    senderId,
   } = req.body;
 
-  if ((!clientId && !partnerId) || !productId || !quantity || !warehouseId || !paymentMethod) {
-    return res.status(400).json({ message: "Either clientId or partnerId and all other required fields must be provided." });
+  if (
+    ((!clientId && !partnerId) ||
+      !productId ||
+      !quantity ||
+      !warehouseId ||
+      !paymentMethod,
+    !selectedWarehouse || !senderId)
+  ) {
+    return res.status(400).json({
+      message: "Sotuv uchun kerkali ma'lumotlar to'liq emas",
+    });
   }
 
   try {
+    let io = req.app.get("socket");
     const product = await Product.findById(productId);
     if (!product) {
       return res.status(404).json({ message: "Product not found." });
     }
 
-    product.box_quantity -= (quantity / product.package_quantity_per_box / product.quantity_per_package).toFixed(2);
+    product.box_quantity -= (
+      quantity /
+      product.package_quantity_per_box /
+      product.quantity_per_package
+    ).toFixed(2);
     if (product.isPackage) {
       product.package_quantity -= quantity / product.quantity_per_package;
     }
@@ -33,17 +50,23 @@ const sellProduct = async (req, res) => {
     product.total_kg -= parseFloat(
       (
         (unit === "box_quantity"
-          ? quantity / product.package_quantity_per_box / (product.isPackage ? product.quantity_per_package : 1)
+          ? quantity /
+            product.package_quantity_per_box /
+            (product.isPackage ? product.quantity_per_package : 1)
           : unit === "package_quantity"
-            ? (product.isPackage ? quantity / product.quantity_per_package : 0)
-            : unit === "quantity"
-              ? quantity
-              : 0) *
+          ? product.isPackage
+            ? quantity / product.quantity_per_package
+            : 0
+          : unit === "quantity"
+          ? quantity
+          : 0) *
         (unit === "quantity"
           ? product.kg_per_quantity
           : unit === "package_quantity"
-            ? (product.isPackage ? product.kg_per_package : 0)
-            : product.kg_per_box)
+          ? product.isPackage
+            ? product.kg_per_package
+            : 0
+          : product.kg_per_box)
       ).toFixed(2)
     );
 
@@ -55,7 +78,10 @@ const sellProduct = async (req, res) => {
       productId,
       quantity,
       sellingPrice,
-      payment: currency === "USD" ? { usd: sellingPrice * quantity, sum: 0 } : { usd: 0, sum: sellingPrice * quantity },
+      payment:
+        currency === "USD"
+          ? { usd: sellingPrice * quantity, sum: 0 }
+          : { usd: 0, sum: sellingPrice * quantity },
       warehouseId,
       unit,
       paymentMethod,
@@ -63,6 +89,11 @@ const sellProduct = async (req, res) => {
     });
 
     await newSale.save();
+
+    let result = await Sale.findById(newSale._id).populate("productId");
+
+    let sender = await Store.findById(senderId);
+    io.emit("newSale", { newSale: result, selectedWarehouse, sender });
     res.status(201).json(newSale);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -73,7 +104,10 @@ const getSalesHistory = async (req, res) => {
   try {
     const sales = await Sale.find()
       .populate("clientId", "name")
-      .populate("productId", "name purchasePrice.value sellingPrice.value code size currency")
+      .populate(
+        "productId",
+        "name purchasePrice.value sellingPrice.value code size currency"
+      )
       .populate("warehouseId", "name")
       .sort({ createdAt: -1 });
     // Поле partnerId теперь строка, популяция не требуется

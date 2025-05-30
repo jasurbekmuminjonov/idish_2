@@ -31,12 +31,13 @@ const { Option } = Select;
 const Kassa = () => {
   const { data: products = [] } = useGetProductsQuery();
   const { data: partnerProducts = [] } = useGetProductsPartnerQuery();
-  const { data: partnersFromApi = [], isLoading: partnersLoading } = useGetActPartnersQuery();
+  const { data: partnersFromApi = [], isLoading: partnersLoading } =
+    useGetActPartnersQuery();
   const { data: promos = [] } = useGetPromosQuery();
   const { data: usdRate = {} } = useGetUsdRateQuery();
   const { data: clients = [] } = useGetClientsQuery();
   const { data: expenses = [] } = useGetExpensesQuery();
-  const { data: warehouses = [] } = useGetWarehousesQuery()
+  const { data: warehouses = [] } = useGetWarehousesQuery();
   const [createClient] = useCreateClientMutation();
   const [createDebt] = useCreateDebtMutation();
   const [addExpense] = useAddExpenseMutation();
@@ -60,8 +61,8 @@ const Kassa = () => {
   const [dueDate, setDueDate] = useState(null);
   const [currency, setCurrency] = useState("SUM");
   const [selectedUnit, setSelectedUnit] = useState("quantity");
-  const id = localStorage.getItem('_id')
-  const role = localStorage.getItem('role')
+  const id = localStorage.getItem("_id");
+  const role = localStorage.getItem("role");
   const userLogin =
     localStorage.getItem("user_login") || "Noma'lum foydalanuvchi";
 
@@ -100,9 +101,8 @@ const Kassa = () => {
   ];
 
   const uniquePartners = Array.from(
-    new Map(combinedPartners.map(p => [p.id, p])).values()
+    new Map(combinedPartners.map((p) => [p.id, p])).values()
   );
-
 
   useEffect(() => {
     const uniqueCategories = [
@@ -174,12 +174,12 @@ const Kassa = () => {
           (selectedUnit === "quantity"
             ? item.quantity
             : selectedUnit === "package_quantity"
-              ? item.quantity * item.quantity_per_package
-              : selectedUnit === "box_quantity"
-                ? item.quantity *
-                item.quantity_per_package *
-                item.package_quantity_per_box
-                : null);
+            ? item.quantity * item.quantity_per_package
+            : selectedUnit === "box_quantity"
+            ? item.quantity *
+              item.quantity_per_package *
+              item.package_quantity_per_box
+            : null);
         const discountedPrice = promo
           ? promo.type === "percent"
             ? totalPrice - (totalPrice / 100) * promo.percent
@@ -222,12 +222,12 @@ const Kassa = () => {
           (selectedUnit === "quantity"
             ? item.quantity
             : selectedUnit === "package_quantity"
-              ? item.quantity * item.quantity_per_package
-              : selectedUnit === "box_quantity"
-                ? item.quantity *
-                item.quantity_per_package *
-                item.package_quantity_per_box
-                : null);
+            ? item.quantity * item.quantity_per_package
+            : selectedUnit === "box_quantity"
+            ? item.quantity *
+              item.quantity_per_package *
+              item.package_quantity_per_box
+            : null);
         const discountedPrice = promo
           ? promo.type === "percent"
             ? totalPrice - (totalPrice / 100) * promo.percent
@@ -240,24 +240,27 @@ const Kassa = () => {
           <td style="padding: 8px;">${item.name || "Noma'lum mahsulot"}</td>
           <td style="padding: 8px;">${item.size || "-"}</td>
           <td style="padding: 8px;">${item.code || "-"}</td>
-          <td style="padding: 8px;">${selectedUnit === "quantity"
-            ? item.quantity
-            : selectedUnit === "package_quantity"
+          <td style="padding: 8px;">${
+            selectedUnit === "quantity"
+              ? item.quantity
+              : selectedUnit === "package_quantity"
               ? item.quantity * item.quantity_per_package
               : selectedUnit === "box_quantity"
-                ? item.quantity *
+              ? item.quantity *
                 item.quantity_per_package *
                 item.package_quantity_per_box
-                : null
+              : null
           }</td>
           <td style="padding: 8px;">${formatNumber(
             item.sellingPrice.value
           )}</td>
-          <td style="padding: 8px;">${item.currency === "USD" ? "Доллар" : "Сум"
+          <td style="padding: 8px;">${
+            item.currency === "USD" ? "Доллар" : "Сум"
           }</td>
-          <td style="padding: 8px;">${promo
-            ? `${promo.percent} ${promo.type === "percent" ? "%" : "сум"}`
-            : "—"
+          <td style="padding: 8px;">${
+            promo
+              ? `${promo.percent} ${promo.type === "percent" ? "%" : "сум"}`
+              : "—"
           }</td>
           <td style="padding: 8px;">${formatNumber(discountedPrice)}</td>
         </tr>
@@ -270,8 +273,8 @@ const Kassa = () => {
         <div style="border: 2px solid #1a73e8; border-radius: 12px; padding: 20px; background-color: #ffffff; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
           <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e0e0e0; padding-bottom: 10px; margin-bottom: 20px;">
             <h2 style="margin: 0; font-size: 18px; color: #1a73e8;">${moment().format(
-      "DD.MM.YYYY, HH:mm:ss"
-    )} даги Хисобварак-фактура</h2>
+              "DD.MM.YYYY, HH:mm:ss"
+            )} даги Хисобварак-фактура</h2>
             <span style="font-size: 16px; color: #555;">Хисобварак-фактура</span>
           </div>
           <div style="display: flex; width: 100%; margin-bottom: 20px;">
@@ -312,11 +315,11 @@ const Kassa = () => {
           </table>
           <div style="margin-bottom: 20px;">
             <b style="color: #333;">Жами тўловнинг доллар билан тўланадиган қисми: ${formatNumber(
-      totalUSD
-    )} доллар</b><br/>
+              totalUSD
+            )} доллар</b><br/>
             <b style="color: #333;">Жами тўловнинг сyм билан тўланадиган қисми: ${formatNumber(
-      totalSUM
-    )} сyм</b>
+              totalSUM
+            )} сyм</b>
           </div>
           <div style="display: flex; justify-content: space-around; margin-top: 20px; border-top: 1px solid #e0e0e0; padding-top: 20px;">
             <div style="text-align: center;">
@@ -408,7 +411,7 @@ const Kassa = () => {
       title: "Umumiy vazni(kg)",
       dataIndex: "total_kg",
       key: "total_kg",
-      render: (text) => formatNumber(text),
+      render: (text) => formatNumber(text || 0),
     },
     { title: "Dona soni", dataIndex: "quantity", key: "quantity" },
     {
@@ -434,8 +437,9 @@ const Kassa = () => {
           currency,
           usdRate?.rate
         );
-        return `${formatNumber(convertedPrice)} ${currency === "SUM" ? "сум" : "$"
-          }`;
+        return `${formatNumber(convertedPrice)} ${
+          currency === "SUM" ? "сум" : "$"
+        }`;
       },
     },
     {
@@ -480,6 +484,11 @@ const Kassa = () => {
       ),
     },
   ];
+
+  const findWarehouse = (item) =>
+    allProducts.filter((p) =>
+      [item].some((b) => b.code === p.code && b.quantity <= p.quantity)
+    );
 
   const basketColumn = [
     {
@@ -675,6 +684,32 @@ const Kassa = () => {
         </Button>
       ),
     },
+    {
+      title: "ombor",
+      render: (_, p) => (
+        <Select
+          showSearch
+          placeholder="Omborni tanlang"
+          optionFilterProp="children"
+          onChange={(val) => {
+            setBasket((prev) =>
+              prev.map((item) =>
+                item._id === p._id ? { ...item, selectedWarehouse: val } : item
+              )
+            );
+          }}
+          filterOption={(input, option) =>
+            option.children.toLowerCase().includes(input.toLowerCase())
+          }
+        >
+          {findWarehouse(p)?.map((item) => (
+            <Select.Option key={item.warehouse._id} value={item.warehouse._id}>
+              {item.warehouse.name}
+            </Select.Option>
+          ))}
+        </Select>
+      ),
+    },
   ];
 
   const handleSell = async () => {
@@ -720,12 +755,12 @@ const Kassa = () => {
               selectedUnit === "quantity"
                 ? item.quantity
                 : selectedUnit === "package_quantity"
-                  ? item.quantity * item.quantity_per_package
-                  : selectedUnit === "box_quantity"
-                    ? item.quantity *
-                    item.quantity_per_package *
-                    item.package_quantity_per_box
-                    : 0;
+                ? item.quantity * item.quantity_per_package
+                : selectedUnit === "box_quantity"
+                ? item.quantity *
+                  item.quantity_per_package *
+                  item.package_quantity_per_box
+                : 0;
 
             const unitPrice = getDiscountedPrice(
               item.sellingPrice.value,
@@ -740,11 +775,15 @@ const Kassa = () => {
               productId: item._id,
               quantity,
               paymentHistory: [
-                ...(initialPayment > 0 ? [{
-                  date: moment().format("YYYY-MM-DD"),
-                  amount: initialPayment,
-                  currency: item.currency,
-                }] : []), // Agar initialPayment mavjud va 0 dan katta bo'lsa, qo'shish
+                ...(initialPayment > 0
+                  ? [
+                      {
+                        date: moment().format("YYYY-MM-DD"),
+                        amount: initialPayment,
+                        currency: item.currency,
+                      },
+                    ]
+                  : []), // Agar initialPayment mavjud va 0 dan katta bo'lsa, qo'shish
               ],
               unit: selectedUnit,
               remainingAmount: totalAmount - initialPayment, // umumiy qarz summasi (oldindan to‘lov ayirilgan)
@@ -756,8 +795,9 @@ const Kassa = () => {
               warehouseId: item.warehouse?._id,
               discount: paymentDiscount ? promo?.percent || 0 : 0,
               dueDate,
+              selectedWarehouse: item.selectedWarehouse,
+              senderId: localStorage.getItem("_id"),
             }).unwrap();
-
           })
         );
       } else {
@@ -767,12 +807,12 @@ const Kassa = () => {
               selectedUnit === "quantity"
                 ? item.quantity
                 : selectedUnit === "package_quantity"
-                  ? item.quantity * item.quantity_per_package
-                  : selectedUnit === "box_quantity"
-                    ? item.quantity *
-                    item.quantity_per_package *
-                    item.package_quantity_per_box
-                    : 0;
+                ? item.quantity * item.quantity_per_package
+                : selectedUnit === "box_quantity"
+                ? item.quantity *
+                  item.quantity_per_package *
+                  item.package_quantity_per_box
+                : 0;
 
             const unitPrice = getDiscountedPrice(
               item.sellingPrice.value,
@@ -790,6 +830,8 @@ const Kassa = () => {
               sellingPrice: unitPrice,
               warehouseId: item.warehouse?._id,
               paymentMethod,
+              selectedWarehouse: item.selectedWarehouse,
+              senderId: localStorage.getItem("_id"),
             }).unwrap();
           })
         );
@@ -810,7 +852,6 @@ const Kassa = () => {
       console.error("Sell error:", error);
     }
   };
-
 
   return (
     <div className="page" style={{ marginTop: "8px", paddingInline: "4px" }}>
@@ -898,12 +939,12 @@ const Kassa = () => {
                   (selectedUnit === "quantity"
                     ? item.quantity
                     : selectedUnit === "package_quantity"
-                      ? item.quantity * item.quantity_per_package
-                      : selectedUnit === "box_quantity"
-                        ? item.quantity *
-                        item.quantity_per_package *
-                        item.package_quantity_per_box
-                        : null);
+                    ? item.quantity * item.quantity_per_package
+                    : selectedUnit === "box_quantity"
+                    ? item.quantity *
+                      item.quantity_per_package *
+                      item.package_quantity_per_box
+                    : null);
                 const promo = promos.find((p) => p._id === paymentDiscount);
                 const discountedPrice = promo
                   ? promo.type === "percent"
@@ -915,11 +956,11 @@ const Kassa = () => {
                   (item.currency === "SUM"
                     ? discountedPrice
                     : convertPrice(
-                      discountedPrice,
-                      "USD",
-                      "SUM",
-                      usdRate?.rate
-                    ))
+                        discountedPrice,
+                        "USD",
+                        "SUM",
+                        usdRate?.rate
+                      ))
                 );
               }, 0)
             )}{" "}
@@ -934,12 +975,12 @@ const Kassa = () => {
                   (selectedUnit === "quantity"
                     ? item.quantity
                     : selectedUnit === "package_quantity"
-                      ? item.quantity * item.quantity_per_package
-                      : selectedUnit === "box_quantity"
-                        ? item.quantity *
-                        item.quantity_per_package *
-                        item.package_quantity_per_box
-                        : null);
+                    ? item.quantity * item.quantity_per_package
+                    : selectedUnit === "box_quantity"
+                    ? item.quantity *
+                      item.quantity_per_package *
+                      item.package_quantity_per_box
+                    : null);
                 const promo = promos.find((p) => p._id === paymentDiscount);
                 const discountedPrice = promo
                   ? promo.type === "percent"
@@ -951,11 +992,11 @@ const Kassa = () => {
                   (item.currency === "USD"
                     ? discountedPrice
                     : convertPrice(
-                      discountedPrice,
-                      "SUM",
-                      "USD",
-                      usdRate?.rate
-                    ))
+                        discountedPrice,
+                        "SUM",
+                        "USD",
+                        usdRate?.rate
+                      ))
                 );
               }, 0)
             )}{" "}

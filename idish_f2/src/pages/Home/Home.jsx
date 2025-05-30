@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Layout, Menu, Button } from "antd";
+import { Layout, Menu, Button, Modal, Card, Table, Badge } from "antd";
 import {
   MenuUnfoldOutlined,
   MenuFoldOutlined,
@@ -16,6 +16,7 @@ import {
   ScheduleOutlined,
   UserSwitchOutlined,
   UserAddOutlined,
+  CloseOutlined,
 } from "@ant-design/icons";
 import { FaChartLine } from "react-icons/fa6";
 import { BiTransferAlt } from "react-icons/bi";
@@ -44,14 +45,18 @@ import Hodimlar from "../hodimlar/Hodimlar";
 import OylikXisobot from "../Oylik/Oylik";
 import Stores from "../Stores/Stores";
 import Transportion from "../transportion/Transportion";
-
+import { IoIosNotifications } from "react-icons/io";
 const { Header, Sider, Content } = Layout;
 
 export default function Home() {
   const [collapsed, setCollapsed] = useState(false);
-  const success = JSON.parse(localStorage.getItem('acsess') || "{}");
-  const role = localStorage.getItem('role');
-  const [selectedPage, setSelectedPage] = useState(role === 'admin' ? "home" : 'product');
+  const [openModal, setOpenModal] = useState(false);
+  let sendedData = JSON.parse(localStorage.getItem("newSales")) || [];
+  const success = JSON.parse(localStorage.getItem("acsess") || "{}");
+  const role = localStorage.getItem("role");
+  const [selectedPage, setSelectedPage] = useState(
+    role === "admin" ? "home" : "product"
+  );
 
   const toggle = () => {
     setCollapsed(!collapsed);
@@ -108,17 +113,15 @@ export default function Home() {
         <Menu
           theme="dark"
           mode="inline"
-          defaultSelectedKeys={role === "admin" ? ["home"] : ['product']}
+          defaultSelectedKeys={role === "admin" ? ["home"] : ["product"]}
           selectedKeys={[selectedPage]}
           onClick={(e) => setSelectedPage(e.key)}
         >
-          {
-            role === 'admin' && (
-              <Menu.Item key="home" icon={<HomeOutlined />}>
-                Bosh sahifa
-              </Menu.Item>
-            )
-          }
+          {role === "admin" && (
+            <Menu.Item key="home" icon={<HomeOutlined />}>
+              Bosh sahifa
+            </Menu.Item>
+          )}
           {success?.SalesStatistics && (
             <Menu.Item key="statistika" icon={<FaChartLine />}>
               Statistika
@@ -129,7 +132,7 @@ export default function Home() {
               Adminlar
             </Menu.Item>
           )}
-          {role === 'admin' && (
+          {role === "admin" && (
             <Menu.Item key="ombor" icon={<AppstoreOutlined />}>
               Omborlar
             </Menu.Item>
@@ -148,13 +151,11 @@ export default function Home() {
           <Menu.Item key="product" icon={<ShoppingOutlined />}>
             Mahsulotlar
           </Menu.Item>
-          {
-            role === 'admin' && (
-              <Menu.Item key="partner" icon={<UserSwitchOutlined />}>
-                Yetkazib beruvchilar
-              </Menu.Item>
-            )
-          }
+          {role === "admin" && (
+            <Menu.Item key="partner" icon={<UserSwitchOutlined />}>
+              Yetkazib beruvchilar
+            </Menu.Item>
+          )}
           {success?.dokon && (
             <Menu.Item key="client" icon={<TeamOutlined />}>
               Xaridorlar
@@ -165,12 +166,11 @@ export default function Home() {
               Qarzdorlar
             </Menu.Item>
           )}
-          {
-            role === 'admin' && (
-              <Menu.Item key="promo" icon={<LuTicketPercent />}>
-                Promokodlar
-              </Menu.Item>
-            )}
+          {role === "admin" && (
+            <Menu.Item key="promo" icon={<LuTicketPercent />}>
+              Promokodlar
+            </Menu.Item>
+          )}
           {success?.sotuv_tarixi && (
             <Menu.Item key="sales" icon={<BarChartOutlined />}>
               Sotilgan Mahsulotlar
@@ -191,39 +191,125 @@ export default function Home() {
               Dalolatnoma
             </Menu.Item>
           )}
-          {
-            role === 'admin' && (
-              <Menu.Item key="report-add" icon={<UserAddOutlined />}>
-                Qoldiq qo'shish
-              </Menu.Item>
-            )
-          }
+          {role === "admin" && (
+            <Menu.Item key="report-add" icon={<UserAddOutlined />}>
+              Qoldiq qo'shish
+            </Menu.Item>
+          )}
 
-          {
-            role === 'admin' && (
-              <Menu.Item key="hodimlar" icon={<TeamOutlined />}>
-                Hodimlar
-              </Menu.Item>
-            )
-          }
-          {
-            role === 'admin' && (
-              <Menu.Item key="oylik" icon={<DollarOutlined />}>
-                Oylik hisobot
-              </Menu.Item>
-            )
-          }
+          {role === "admin" && (
+            <Menu.Item key="hodimlar" icon={<TeamOutlined />}>
+              Hodimlar
+            </Menu.Item>
+          )}
+          {role === "admin" && (
+            <Menu.Item key="oylik" icon={<DollarOutlined />}>
+              Oylik hisobot
+            </Menu.Item>
+          )}
           <Menu.Item key="transportions" icon={<DollarOutlined />}>
             Tovar o'tkazish
           </Menu.Item>
         </Menu>
-
       </Sider>
       <Layout className="site-layout">
-        <Header className="site-layout-background" style={{ padding: 0 }}>
-          <Button type="primary" onClick={toggle} style={{ marginBottom: 16 }}>
+        <Header
+          className="site-layout-background"
+          style={{
+            padding: "0 15px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <Button type="primary" onClick={toggle}>
             {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           </Button>
+          {/* notification btn */}
+          {/* <Button
+            onClick={() => setOpenModal(true)}
+            type="link"
+            icon={<IoIosNotifications size={30} />}
+          /> */}
+
+          <Button
+            onClick={() => setOpenModal(true)}
+            type="link"
+            style={{ padding: 0 }}
+          >
+            <Badge
+              count={sendedData.length}
+              style={{
+                backgroundColor: "red",
+                color: "white",
+                fontWeight: "bold",
+                boxShadow: "0 0 0 2px #fff",
+              }}
+              offset={[-5, 5]}
+              showZero={false}
+            >
+              <IoIosNotifications color="white" size={30} />
+            </Badge>
+          </Button>
+
+          <Modal
+            footer={null}
+            open={openModal}
+            onCancel={() => setOpenModal(false)}
+            title="Yuborilgan buyurtmalar"
+          >
+            {sendedData?.map((item, index) => (
+              <Card
+                key={index}
+                title={
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <span>{item.sender.name}</span>
+                    <Button
+                      type="text"
+                      icon={<CloseOutlined />}
+                      onClick={() => {
+                        const newArr = sendedData.filter(
+                          (el) => el.sender._id !== item.sender._id
+                        );
+                        localStorage.setItem(
+                          "newSales",
+                          JSON.stringify(newArr)
+                        );
+                        // Modalni yangilash uchun sahifani refresh qilmasdan state update qiling:
+                        setOpenModal(false);
+                        setTimeout(() => setOpenModal(true), 0);
+                      }}
+                    />
+                  </div>
+                }
+              >
+                <Table
+                  size="small"
+                  columns={[
+                    {
+                      title: "Mahsulot nomi",
+                      dataIndex: ["productId", "name"],
+                    },
+                    {
+                      title: "Birlik",
+                      dataIndex: "unit",
+                    },
+                    {
+                      title: "Soni",
+                      dataIndex: "quantity",
+                    },
+                  ]}
+                  dataSource={item.products}
+                />
+              </Card>
+            ))}
+          </Modal>
         </Header>
         <Content
           className="site-layout-background"
