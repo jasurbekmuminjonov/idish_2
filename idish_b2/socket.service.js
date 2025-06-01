@@ -1,5 +1,5 @@
 const io = require("socket.io-client");
-const socket = io("https://mebelx.vercel.app/", {
+const socket = io("http://localhost:8080/", {
   transports: ["websocket"],
 });
 

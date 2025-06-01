@@ -44,6 +44,15 @@ const saleSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    storeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Store",
+      required: true,
+    },
+    date: {
+      type: Date,
+      default: Date.now,
+    },
     paymentMethod: {
       type: String,
       enum: ["cash", "card", "credit"],

@@ -56,12 +56,15 @@ exports.createTransportion = async (req, res) => {
     }
 
     const newTransportion = new Transportion(req.body);
+    const socketData = await Transportion.findById(newTransportion._id).populate(
+      "products.product_id"
+    );
 
     await newTransportion.save();
     io.emit("newTransportion", newTransportion);
     res.status(201).json({
       message: "Jo'natma muvaffaqiyatli yaratildi",
-      data: newTransportion,
+      data: socketData,
     });
   } catch (err) {
     console.error("Xatolik:", err.message);

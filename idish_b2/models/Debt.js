@@ -70,6 +70,11 @@ const debtSchema = new mongoose.Schema({
         type: String,
         required: true,
         enum: ["USD", "SUM"]
+      },
+      storeId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Store",
+        required: true,
       }
     }],
     default: [],

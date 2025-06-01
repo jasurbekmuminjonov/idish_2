@@ -2,10 +2,15 @@ const Debt = require("../models/Debt");
 const Rate = require("../models/usdModel");
 const Sale = require("../models/Sale");
 const Product = require("../models/Product");
+const moment = require("moment");
 
-const createDebt = async (req, res) => {
-  const { clientId, productId, quantity, currency, totalAmount, paymentMethod, unit, sellingPrice, warehouseId, discount, dueDate } =
+exports.createDebt = async (req, res) => {
+  const { clientId, productId, quantity, currency, totalAmount, paymentMethod, unit, sellingPrice, warehouseId, discount, dueDate, paymentHistory } =
     req.body;
+
+  if (!clientId) {
+    req.body.clientId = req.body.partnerId;
+  }
 
   if (!clientId || !productId || !quantity || !totalAmount || !warehouseId) {
     return res.status(400).json({ message: "All fields are required." });
@@ -46,6 +51,7 @@ const createDebt = async (req, res) => {
       discount,
       paymentMethod,
       dueDate,
+      paymentHistory: paymentHistory || [],
       remainingAmount: totalAmount,
     });
     await newDebt.save();
@@ -55,7 +61,7 @@ const createDebt = async (req, res) => {
   }
 };
 
-const getDebtsByClient = async (req, res) => {
+exports.getDebtsByClient = async (req, res) => {
   const { clientId } = req.params;
 
   try {
@@ -66,9 +72,11 @@ const getDebtsByClient = async (req, res) => {
   }
 };
 
-const payDebt = async (req, res) => {
+exports.payDebt = async (req, res) => {
   const { id } = req.params;
+  const storeId = req.user.id;
   let { amount, currency } = req.body;
+
 
   try {
     const debt = await Debt.findById(id);
@@ -86,7 +94,7 @@ const payDebt = async (req, res) => {
 
     const rate = rateObj.rate; // Endi `rate` son bo‘ladi
 
-    debt.paymentHistory.push({ amount, currency });
+    debt.paymentHistory.push({ amount, currency, storeId });
 
     if (debt.currency === currency) {
       debt.remainingAmount -= amount;
@@ -128,9 +136,7 @@ const payDebt = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
-
-const getAllDebtors = async (req, res) => {
+exports.getAllDebtors = async (req, res) => {
   try {
     const debtors = await Debt.find({ status: "pending" })
       .populate("clientId")
@@ -141,9 +147,46 @@ const getAllDebtors = async (req, res) => {
   }
 };
 
-module.exports = {
-  createDebt,
-  getDebtsByClient,
-  payDebt,
-  getAllDebtors,
+exports.getDailyPaymentsByStoreId = async (req, res) => {
+  try {
+    const { date, storeId } = req.query;
+
+    if (!date || !storeId) {
+      return res.status(400).json({ message: "Sana va do'kon talab qilinadi" });
+    }
+
+    const targetDate = moment(date, "DD-MM-YYYY");
+
+    const allDebts = await Debt.find({ "paymentHistory.storeId": storeId }).populate('productId').populate('clientId');
+
+    const matchedPayments = [];
+
+    allDebts.forEach((debt) => {
+      if (Array.isArray(debt.paymentHistory)) {
+        debt.paymentHistory.forEach((payment) => {
+          const paymentDate = moment(payment.date).utcOffset(5 * 60);
+
+          if (
+            paymentDate.format("DD-MM-YYYY") === targetDate.format("DD-MM-YYYY") &&
+            payment.storeId.toString() === storeId
+          ) {
+            matchedPayments.push({
+              debtorId: debt._id,
+              client: debt.clientId,
+              amount: payment.amount,
+              currency: payment.currency,
+              date: paymentDate.format("YYYY-MM-DD HH:mm"),
+              product: debt.productId?.name || null,
+            });
+          }
+        });
+      }
+    });
+
+    return res.status(200).json(matchedPayments);
+  } catch (error) {
+    console.error("getDailyPaymentsByStoreId error:", error);
+    return res.status(500).json({ message: "Ichki server xatosi" });
+  }
 };
+
