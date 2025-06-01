@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useGetProductsQuery } from '../../context/service/product.service';
 import { useGetProductsPartnerQuery } from '../../context/service/partner.service';
-import { Card, Col, Row, Modal, Table, Typography, Space, Input } from 'antd';
+import { Card, Col, Row, Modal, Table, Typography, Space, Input, Select } from 'antd';
 import { MdScale } from 'react-icons/md';
 import './partner.css';
 
@@ -14,6 +14,7 @@ const Partner = () => {
      const [modalKoʻrinadi, setModalKoʻrinadi] = useState(false);
      const [searchName, setSearchName] = useState("");
      const [searchNumber, setSearchNumber] = useState("");
+     const [selectedAddress, setSelectedAddress] = useState("");
 
      const barchaMahsulotlar = [
           ...mahsulotlar.map((mahsulot) => ({
@@ -21,12 +22,15 @@ const Partner = () => {
                manba: 'mahsulot',
                hamkor_nomi: mahsulot.name_partner || '',
                hamkor_raqami: mahsulot.partner_number || '',
+               hamkor_manzili: mahsulot.partner_address || '',
           })),
           ...hamkorMahsulotlari.map((mahsulot) => ({
                ...mahsulot,
                manba: 'hamkor',
                hamkor_nomi: mahsulot.name_partner || '',
                hamkor_raqami: mahsulot.partner_number || '',
+               hamkor_manzili: mahsulot.partner_address || '',
+
           })),
      ];
 
@@ -34,14 +38,20 @@ const Partner = () => {
           new Map(
                barchaMahsulotlar
                     .filter((p) => p.hamkor_nomi && p.hamkor_raqami)
-                    .map((p) => [p.hamkor_nomi, { nom: p.hamkor_nomi, raqam: p.hamkor_raqami }])
+                    .map((p) => [p.hamkor_nomi, { nom: p.hamkor_nomi, raqam: p.hamkor_raqami, manzil: p.hamkor_manzili }])
           ).values()
      ).filter((hamkor) => {
           const matchesName = hamkor.nom.toLowerCase().includes(searchName.toLowerCase());
           const matchesNumber = hamkor.raqam.toLowerCase().includes(searchNumber.toLowerCase());
           return matchesName && matchesNumber;
      });
-     
+
+     const unikalManzillar = Array.from(
+          new Set(barchaMahsulotlar.map(p => p.hamkor_manzili).filter(Boolean))
+     );
+     console.log(unikalManzillar);
+
+
 
      const filtrlanganMahsulotlar = tanlanganHamkor
           ? barchaMahsulotlar.filter((p) => p.hamkor_nomi === tanlanganHamkor.nom)
@@ -117,6 +127,7 @@ const Partner = () => {
           setModalKoʻrinadi(false);
           setTanlanganHamkor(null);
      };
+     console.log(unikalHamkorlar);
 
      return (
           <div style={{ padding: '24px', background: '#f0f2f5' }}>
@@ -136,9 +147,19 @@ const Partner = () => {
                          value={searchNumber}
                          onChange={(e) => setSearchNumber(e.target.value)}
                     />
+                    <Select value={selectedAddress} onChange={(value) => setSelectedAddress(value)} placeholder={'Manzil bo\'yicha saralash'} style={{ width: "300px" }}>
+                         <Select.Option value="">Barchasi</Select.Option>
+                         {
+                              unikalManzillar.map((manzil, indeks) => (
+                                   <Select.Option key={indeks} value={manzil}>
+                                        {manzil}
+                                   </Select.Option>
+                              ))
+                         }
+                    </Select>
                </Space>
                <Row gutter={[16, 16]}>
-                    {unikalHamkorlar.map((hamkor, indeks) => (
+                    {unikalHamkorlar?.filter((h) => selectedAddress ? h.manzil === selectedAddress : true).map((hamkor, indeks) => (
                          <Col xs={24} sm={12} md={8} lg={6} key={indeks}>
                               <Card
                                    hoverable

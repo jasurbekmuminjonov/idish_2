@@ -77,19 +77,23 @@ const Debtors = () => {
       title: "Amallar",
       render: (_, record) => (
         <div className="table_actions">
-          {record.status === "pending" && (
-            <Button
-              type="primary"
-              onClick={() => {
-                setSelectedDebtor(record);
-                setIsModalVisible(true);
-              }}
-            >
-              To'lash
-            </Button>
-          )}
           {
-            role !== "seller" && (
+            role === "store" && record.status === "pending"(
+
+
+              <Button
+                type="primary"
+                onClick={() => {
+                  setSelectedDebtor(record);
+                  setIsModalVisible(true);
+                }}
+              >
+                To'lash
+              </Button>
+            )
+          }
+          {
+            role !== "store" && (
 
               <Button
                 type="default"
@@ -112,7 +116,7 @@ const Debtors = () => {
     <div className="page">
       <div className="page_header" style={{ display: "flex", alignItems: "center", gap: "12px", color: "#fff", height: "40px", marginTop: "10px" }}>
 
-        <h1 style={{ color:"#001529"}} >Qarzdorlar</h1>
+        <h1 style={{ color: "#001529" }} >Qarzdorlar</h1>
         {
           role !== "admin" && (
             <Button onClick={() => navigate("/")} type="primary">
@@ -171,7 +175,12 @@ const Debtors = () => {
               key: "date",
               render: (date) => new Date(date).toLocaleString(),
             },
-          ]}
+            {
+              title: "Do'kon",
+              dataIndex: "storeId",
+              render: (store) => store.name,
+            }
+          ]}  
           dataSource={selectedDebtor ? selectedDebtor.paymentHistory : []}
           rowKey={(record) => record.date}
         />

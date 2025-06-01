@@ -28,6 +28,13 @@ export const debtApi = apiSlice.injectEndpoints({
         method: "GET",
       }),
     }),
+    getDailyPaymentsByStoreId: builder.query({
+      query: ({ date, storeId }) => ({
+        url: `/daily/debt`,
+        method: "GET",
+        params: { date, storeId },
+      }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -37,4 +44,5 @@ export const {
   useGetDebtsByClientQuery,
   usePayDebtMutation,
   useGetAllDebtorsQuery,
+  useLazyGetDailyPaymentsByStoreIdQuery
 } = debtApi;

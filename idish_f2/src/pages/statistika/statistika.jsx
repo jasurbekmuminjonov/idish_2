@@ -7,6 +7,7 @@ import moment from 'moment';
 import { useGetExpensesQuery } from '../../context/service/expense.service';
 import SalesBarChart from './salesBarChart';
 import SalesLineChart from './salesLineChart';
+import SalesByAddressChart from './salesByAddressChart';
 const { RangePicker } = DatePicker;
 
 const Statistika = () => {
@@ -109,6 +110,8 @@ const Statistika = () => {
             <SalesBarChart sales={filteredSales} debtors={filteredDebtors} products={filteredProducts} />
             <h1>Sotuvlar</h1>
             <SalesLineChart sales={filteredSales} />
+            <h1>Manzillar bo'yicha sotuvlar</h1>
+            <SalesByAddressChart sales={filteredSales} />
         </div>
     );
 };

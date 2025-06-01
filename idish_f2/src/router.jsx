@@ -94,7 +94,7 @@ export const Routera = memo(() => {
   useEffect(() => {
     const enableAudio = () => {
       if (audioRef.current) {
-        audioRef.current.play().catch(() => {});
+        audioRef.current.play().catch(() => { });
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
       }
@@ -106,6 +106,7 @@ export const Routera = memo(() => {
 
   useEffect(() => {
     const handleUpdateOrder = (data) => {
+      if (localStorage.getItem("role") !== "admin") return;
       notification.open({
         message: "Yangi o'tkazma",
         description: "o'tkazma qabul qiling yoki bekor qiling",
@@ -113,7 +114,7 @@ export const Routera = memo(() => {
         placement: "topRight",
         style: { background: "green", color: "white" },
       });
-      if (audioRef.current) audioRef.current.play().catch(() => {});
+      if (audioRef.current) audioRef.current.play().catch(() => { });
     };
 
     const newSale = (data) => {
@@ -150,7 +151,7 @@ export const Routera = memo(() => {
         placement: "topRight",
         style: { background: "green", color: "white" },
       });
-      if (audioRef.current) audioRef.current.play().catch(() => {});
+      if (audioRef.current) audioRef.current.play().catch(() => { });
     };
 
     socket.on("newTransportion", handleUpdateOrder);

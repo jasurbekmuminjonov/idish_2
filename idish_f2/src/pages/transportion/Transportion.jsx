@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Tabs, Table, Button, InputNumber, Modal, Select, message } from "antd";
+import { Tabs, Table, Button, InputNumber, Modal, Select, message, Popover } from "antd";
 import {
   useCreateTransportionMutation,
   useGetSentTransportionsQuery,
@@ -160,6 +160,13 @@ const Transportion = () => {
     },
   ];
 
+  const stm = {
+    kg_quantity: 'kg',
+    quantity: 'dona',
+    box_quantity: 'karobka',
+    package_quantity: 'pachka',
+  }
+
   const acceptData = async (id) => {
     try {
       await acceptTransportion(id).unwrap();
@@ -182,15 +189,6 @@ const Transportion = () => {
     package_quantity: "pachka",
   };
   const transportionColumns = [
-    {
-      title: "Mahsulotlar",
-      render: (_, record) =>
-        record.products.map((p) => (
-          <div key={p.product_id._id}>
-            {p.product_id.name} - {p.quantity} {statusTexts[p.unit]}
-          </div>
-        )),
-    },
     {
       title: "Jo‘natuvchi",
       dataIndex: "from_warehouse",
@@ -227,6 +225,18 @@ const Transportion = () => {
             icon={<CloseOutlined />}
             danger
           />
+          <Popover placement="bottom" trigger='click' content={
+            <Table dataSource={item.products} columns={
+              [
+                { title: "Tovar nomi", render: (_, record) => record.product_id.name },
+                { title: "Miqdor", render: (_, record) => record.quantity },
+                { title: "Birlik", dataIndex: "unit", render: (text) => stm[text] || text },
+              ]
+            } />
+          }>
+
+            <Button type="link">Mahsulotlar</Button>
+          </Popover>
         </div>
       ),
     },

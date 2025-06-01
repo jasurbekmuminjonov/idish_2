@@ -18,7 +18,7 @@ import {
   UserAddOutlined,
   CloseOutlined,
 } from "@ant-design/icons";
-import { FaChartLine } from "react-icons/fa6";
+import { FaChartLine, FaList } from "react-icons/fa6";
 import { BiTransferAlt } from "react-icons/bi";
 
 import { LuTicketPercent } from "react-icons/lu";
@@ -46,6 +46,7 @@ import OylikXisobot from "../Oylik/Oylik";
 import Stores from "../Stores/Stores";
 import Transportion from "../transportion/Transportion";
 import { IoIosNotifications } from "react-icons/io";
+import Daily from "../Daily/Daily";
 const { Header, Sider, Content } = Layout;
 
 export default function Home() {
@@ -61,11 +62,18 @@ export default function Home() {
   const toggle = () => {
     setCollapsed(!collapsed);
   };
-
+  const stm = {
+    kg_quantity: 'kg',
+    quantity: 'dona',
+    box_quantity: 'karobka',
+    package_quantity: 'pachka',
+  }
   const renderContent = () => {
     switch (selectedPage) {
       case "admin":
         return <Admin />;
+      case "daily":
+        return <Daily />;
       case "statistika":
         return <Statistika />;
       case "ombor":
@@ -122,6 +130,11 @@ export default function Home() {
               Bosh sahifa
             </Menu.Item>
           )}
+          {role === "admin" && (
+            <Menu.Item key="daily" icon={<FaList />}>
+              Kunlik hisobot
+            </Menu.Item>
+          )}
           {success?.SalesStatistics && (
             <Menu.Item key="statistika" icon={<FaChartLine />}>
               Statistika
@@ -143,11 +156,11 @@ export default function Home() {
             </Menu.Item>
           )}
 
-          {success?.dokon && (
+          {/* {success?.dokon && (
             <Menu.Item key="kassa" icon={<DollarOutlined />}>
               Kassa
             </Menu.Item>
-          )}
+          )} */}
           <Menu.Item key="product" icon={<ShoppingOutlined />}>
             Mahsulotlar
           </Menu.Item>
@@ -299,6 +312,7 @@ export default function Home() {
                     {
                       title: "Birlik",
                       dataIndex: "unit",
+                      render: (text) => stm[text] || text,
                     },
                     {
                       title: "Soni",

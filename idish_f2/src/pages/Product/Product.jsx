@@ -29,7 +29,7 @@ import {
 import { useGetWarehousesQuery } from "../../context/service/ombor.service";
 import { MdEdit, MdDeleteForever, MdPrint } from "react-icons/md";
 import axios from "axios";
-import { FaArrowRight, FaUpload } from "react-icons/fa";
+import { FaUpload } from "react-icons/fa";
 import "./product.css";
 import { useGetActPartnersQuery } from "../../context/service/act-partner.service";
 
@@ -102,6 +102,7 @@ const Product = () => {
     const selected = unikalHamkorlar.find(h => h.nom === value);
     if (selected) {
       form.setFieldValue('partner_number', selected.raqam); // Set number when name is selected
+      form.setFieldValue('partner_address', selected.manzil);
     }
   };
 
@@ -110,6 +111,7 @@ const Product = () => {
     const selected = unikalHamkorlar.find(h => h.raqam === value);
     if (selected) {
       form.setFieldValue('name_partner', selected.nom); // Set name when number is selected
+      form.setFieldValue('partner_address', selected.manzil);
     }
   };
 
@@ -139,17 +141,20 @@ const Product = () => {
       manba: 'mahsulot',
       hamkor_nomi: mahsulot.name_partner || '',
       hamkor_raqami: mahsulot.partner_number || '',
+      hamkor_manzili: mahsulot.partner_address || '',
     })),
     ...partnerProducts.map((mahsulot) => ({
       ...mahsulot,
       manba: 'hamkor',
       hamkor_nomi: mahsulot.name_partner || '',
       hamkor_raqami: mahsulot.partner_number || '',
+      hamkor_manzili: mahsulot.partner_address || '',
     })),
     ...partnersFromApi.map((partner) => ({
       manba: 'api',
       hamkor_nomi: partner.partner_name || '',
       hamkor_raqami: partner.partner_number || '',
+      hamkor_manzili: partner.partner_address || '',
     })),
   ];
 
@@ -157,9 +162,13 @@ const Product = () => {
     new Map(
       barchaMahsulotlar
         .filter((p) => p.hamkor_nomi && p.hamkor_raqami)
-        .map((p) => [p.hamkor_nomi, { nom: p.hamkor_nomi, raqam: p.hamkor_raqami }])
+        .map((p) => [p.hamkor_nomi, { nom: p.hamkor_nomi, raqam: p.hamkor_raqami, manzil: p.hamkor_manzili }])
     ).values()
   )
+
+  const unikalManzillar = Array.from(
+    new Set(barchaMahsulotlar.map(p => p.hamkor_manzili).filter(Boolean))
+  );
 
 
   const handleUpload = async (file) => {
@@ -205,6 +214,9 @@ const Product = () => {
 
   const onFinish = async (values) => {
     try {
+      if (localStorage.getItem('role') === 'warehouse') {
+        values.warehouse = localStorage.getItem('_id');
+      }
       if (!editingProduct) {
         const newBarcode = generateBarcode();
         setCurrentBarcode(newBarcode);
@@ -514,12 +526,17 @@ const Product = () => {
       <Table
         className="product-table"
         columns={columns}
-        dataSource={filteredProducts}
+        dataSource={localStorage.getItem('role') === 'warehouse' ? filteredProducts.filter((p) => p.warehouse._id === localStorage.getItem('_id')).sort((a, b) => (a.quantity || 0) - (b.quantity || 0)) : filteredProducts.sort((a, b) => (a.quantity || 0) - (b.quantity || 0))}
         loading={productsLoading || partnerProductsLoading}
         rowKey="_id"
         size="small"
         pagination={false}
         scroll={{ x: "max-content" }}
+        rowClassName={(record) => {
+          if (record.quantity < 30) return "row-danger";
+          if (record.quantity >= 30 && record.quantity <= 50) return "row-warning";
+          return "";
+        }}
         bordered
       />
 
@@ -566,7 +583,6 @@ const Product = () => {
               <Input />
             </AutoComplete>
           </Form.Item>
-
           <Form.Item name="partner_number" label="Xamkor raqami">
             <AutoComplete
               options={numberOptions}
@@ -575,6 +591,20 @@ const Product = () => {
               value={form.getFieldValue('partner_number')}
               placeholder="Xamkor raqami"
               filterOption={false}
+            >
+              <Input />
+            </AutoComplete>
+          </Form.Item>
+          <Form.Item name="partner_address" label="Hamkor manzili">
+            <AutoComplete
+              allowClear
+              options={unikalManzillar.map((address) => ({
+                value: address,
+              }))}
+              placeholder="Hamkor manzilini tanlang yoki yozing"
+              filterOption={(inputValue, option) =>
+                option?.value?.toLowerCase().includes(inputValue.toLowerCase())
+              }
             >
               <Input />
             </AutoComplete>
@@ -641,9 +671,8 @@ const Product = () => {
           <Form.Item
             label="Ombor"
             name="warehouse"
-          // Removed required rule to make this field optional
           >
-            <Select placeholder="Ombor tanlash" loading={warehousesLoading}>
+            <Select disabled={localStorage.getItem('role') === 'warehouse'} defaultValue={localStorage.getItem('role') === 'warehouse' ? localStorage.getItem('_id') : null} placeholder="Ombor tanlash" loading={warehousesLoading}>
               {warehouses.map((warehouse) => (
                 <Option key={warehouse._id} value={warehouse._id}>
                   {warehouse?.name}
@@ -654,7 +683,6 @@ const Product = () => {
           <Form.Item
             label="Kategoriya"
             name="category"
-          // Removed required rule to make this field optional
           >
             <Input placeholder="Kategoriya" />
           </Form.Item>
