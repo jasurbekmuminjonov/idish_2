@@ -271,23 +271,23 @@ const Kassa = () => {
           <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e0e0e0; padding-bottom: 10px; margin-bottom: 20px;">
             <h2 style="margin: 0; font-size: 18px; color: #1a73e8;">${moment().format(
       "DD.MM.YYYY, HH:mm:ss"
-    )} даги Хисобварак-фактура</h2>
-            <span style="font-size: 16px; color: #555;">Хисобварак-фактура</span>
+    )} счет-фактура</h2>
+            <span style="font-size: 16px; color: #555;">Счет-фактура</span>
           </div>
           <div style="display: flex; width: 100%; margin-bottom: 20px;">
             <div style="display: flex; flex-direction: column; gap: 10px; width: 50%;">
               <div style="display: flex; flex-direction: column;">
-                <b style="color: #333;">Етказиб берувчи:</b>
+                <b style="color: #333;">Поставщик:</b>
                 <p style="margin: 5px 0; color: #555;">${userLogin}</p>
               </div>
             </div>
             <div style="display: flex; flex-direction: column; gap: 10px; width: 50%;">
               <div style="display: flex; flex-direction: column;">
-                <b style="color: #333;">Сотиб олувчи:</b>
+                <b style="color: #333;">Покупатель:</b>
                 <p style="margin: 5px 0; color: #555;">${buyerName}</p>
               </div>
               <div style="display: flex; flex-direction: column;">
-                <b style="color: #333;">Манзил:</b>
+                <b style="color: #333;">Адрес:</b>
                 <p style="margin: 5px 0; color: #555;">${buyerAddress}</p>
               </div>
             </div>
@@ -295,15 +295,15 @@ const Kassa = () => {
           <table style="border-collapse: collapse; width: 100%; margin-bottom: 20px; border: 1px solid #e0e0e0;">
             <thead>
               <tr style="background-color: #f1f3f4; text-align: center;">
-                <th style="padding: 10px; border: 1px solid #e0e0e0;">No</th>
-                <th style="padding: 10px; border: 1px solid #e0e0e0;">Махсулот номи</th>
-                <th style="padding: 10px; border: 1px solid #e0e0e0;">Улчам</th>
+                <th style="padding: 10px; border: 1px solid #e0e0e0;">№</th>
+                <th style="padding: 10px; border: 1px solid #e0e0e0;">Название продукта</th>
+                <th style="padding: 10px; border: 1px solid #e0e0e0;">Размер</th>
                 <th style="padding: 10px; border: 1px solid #e0e0e0;">Код</th>
-                <th style="padding: 10px; border: 1px solid #e0e0e0;">Миқдор</th>
-                <th style="padding: 10px; border: 1px solid #e0e0e0;">Нарх</th>
+                <th style="padding: 10px; border: 1px solid #e0e0e0;">Количество</th>
+                <th style="padding: 10px; border: 1px solid #e0e0e0;">Цена</th>
                 <th style="padding: 10px; border: 1px solid #e0e0e0;">Валюта</th>
-                <th style="padding: 10px; border: 1px solid #e0e0e0;">Чегирма</th>
-                <th style="padding: 10px; border: 1px solid #e0e0e0;">Умумий сумма</th>
+                <th style="padding: 10px; border: 1px solid #e0e0e0;">Скидка</th>
+                <th style="padding: 10px; border: 1px solid #e0e0e0;">Общая сумма</th>
               </tr>
             </thead>
             <tbody>
@@ -311,10 +311,10 @@ const Kassa = () => {
             </tbody>
           </table>
           <div style="margin-bottom: 20px;">
-            <b style="color: #333;">Жами тўловнинг доллар билан тўланадиган қисми: ${formatNumber(
+            <b style="color: #333;">Долларовая часть общей суммы платежа составляет: ${formatNumber(
       totalUSD
     )} доллар</b><br/>
-            <b style="color: #333;">Жами тўловнинг сyм билан тўланадиган қисми: ${formatNumber(
+            <b style="color: #333;">Сумовая часть общей суммы платежа составляет: ${formatNumber(
       totalSUM
     )} сyм</b>
           </div>

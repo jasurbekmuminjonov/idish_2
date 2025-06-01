@@ -127,101 +127,95 @@ export default function Home() {
         >
           {role === "admin" && (
             <Menu.Item key="home" icon={<HomeOutlined />}>
-              Bosh sahifa
+              Домашняя страница
             </Menu.Item>
           )}
           {role === "admin" && (
             <Menu.Item key="daily" icon={<FaList />}>
-              Kunlik hisobot
+              Ежедневный отчет
             </Menu.Item>
           )}
           {success?.SalesStatistics && (
             <Menu.Item key="statistika" icon={<FaChartLine />}>
-              Statistika
+              Статистика
             </Menu.Item>
           )}
           {success?.adminlar && (
             <Menu.Item key="admin" icon={<UserOutlined />}>
-              Adminlar
+              Админы
             </Menu.Item>
           )}
           {role === "admin" && (
             <Menu.Item key="ombor" icon={<AppstoreOutlined />}>
-              Omborlar
+              Склады
             </Menu.Item>
           )}
           {success?.dokon && (
             <Menu.Item key="stores" icon={<AppstoreOutlined />}>
-              Do'konlar
+              Магазины
             </Menu.Item>
           )}
-
-          {/* {success?.dokon && (
-            <Menu.Item key="kassa" icon={<DollarOutlined />}>
-              Kassa
-            </Menu.Item>
-          )} */}
           <Menu.Item key="product" icon={<ShoppingOutlined />}>
-            Mahsulotlar
+            Продукт
           </Menu.Item>
           {role === "admin" && (
             <Menu.Item key="partner" icon={<UserSwitchOutlined />}>
-              Yetkazib beruvchilar
+              Поставщики
             </Menu.Item>
           )}
           {success?.dokon && (
             <Menu.Item key="client" icon={<TeamOutlined />}>
-              Xaridorlar
+              Покупатели
             </Menu.Item>
           )}
           {success?.qarzdorlar && (
             <Menu.Item key="debtors" icon={<CreditCardOutlined />}>
-              Qarzdorlar
+              Должники
             </Menu.Item>
           )}
           {role === "admin" && (
             <Menu.Item key="promo" icon={<LuTicketPercent />}>
-              Promokodlar
+              Промокоды
             </Menu.Item>
           )}
           {success?.sotuv_tarixi && (
             <Menu.Item key="sales" icon={<BarChartOutlined />}>
-              Sotilgan Mahsulotlar
+              Проданные продукты
             </Menu.Item>
           )}
           {success?.vazvratlar && (
             <Menu.Item key="brak" icon={<ExclamationCircleOutlined />}>
-              Brak Mahsulotlar
+              Возврат продукты
             </Menu.Item>
           )}
           {success?.xarajatlar && (
             <Menu.Item key="expense" icon={<MoneyCollectOutlined />}>
-              Rasxodlar
+              Расходы
             </Menu.Item>
           )}
           {success?.xisobot && (
             <Menu.Item key="report" icon={<ScheduleOutlined />}>
-              Dalolatnoma
+              Сертификат
             </Menu.Item>
           )}
           {role === "admin" && (
             <Menu.Item key="report-add" icon={<UserAddOutlined />}>
-              Qoldiq qo'shish
+              Добавить остаток
             </Menu.Item>
           )}
 
           {role === "admin" && (
             <Menu.Item key="hodimlar" icon={<TeamOutlined />}>
-              Hodimlar
+              Сотрудники
             </Menu.Item>
           )}
           {role === "admin" && (
             <Menu.Item key="oylik" icon={<DollarOutlined />}>
-              Oylik hisobot
+              Ежемесячный отчет
             </Menu.Item>
           )}
           <Menu.Item key="transportions" icon={<DollarOutlined />}>
-            Tovar o'tkazish
+            Передача товара
           </Menu.Item>
         </Menu>
       </Sider>
@@ -238,13 +232,6 @@ export default function Home() {
           <Button type="primary" onClick={toggle}>
             {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           </Button>
-          {/* notification btn */}
-          {/* <Button
-            onClick={() => setOpenModal(true)}
-            type="link"
-            icon={<IoIosNotifications size={30} />}
-          /> */}
-
           <Button
             onClick={() => setOpenModal(true)}
             type="link"
