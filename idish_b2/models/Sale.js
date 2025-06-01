@@ -11,6 +11,10 @@ const saleSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
+    clientAddress: {
+      type: String,
+      required: true,
+    },
     productId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Product",

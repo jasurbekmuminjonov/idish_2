@@ -65,7 +65,7 @@ exports.getDebtsByClient = async (req, res) => {
   const { clientId } = req.params;
 
   try {
-    const debts = await Debt.find({ clientId }).populate("productId");
+    const debts = await Debt.find({ clientId }).populate("productId").populate("paymentHistory.storeId");
     res.status(200).json(debts);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -140,7 +140,8 @@ exports.getAllDebtors = async (req, res) => {
   try {
     const debtors = await Debt.find({ status: "pending" })
       .populate("clientId")
-      .populate("productId");
+      .populate("productId")
+      .populate("paymentHistory.storeId");
     res.status(200).json(debtors);
   } catch (error) {
     res.status(500).json({ message: error.message });

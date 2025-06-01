@@ -1,6 +1,7 @@
 const Sale = require("../models/Sale");
 const Product = require("../models/Product");
 const Store = require("../models/Store");
+const Client = require("../models/Client");
 
 const sellProduct = async (req, res) => {
   const {
@@ -14,11 +15,19 @@ const sellProduct = async (req, res) => {
     discount,
     paymentMethod,
     unit,
-    selectedWarehouse,
     senderId,
   } = req.body;
 
   const { id } = req.user;
+  let clientAddress = "";
+
+  if (clientId) {
+    const client = await Client.findById(clientId);
+    clientAddress = client ? client.address : "";
+  } else if (partnerId) {
+    const product = await Product.findOne({ partner_number: partnerId });
+    clientAddress = product ? product.partner_address : "";
+  }
 
   if (
     ((!clientId && !partnerId) ||
@@ -79,6 +88,7 @@ const sellProduct = async (req, res) => {
       productId,
       quantity,
       sellingPrice,
+      clientAddress,
       payment:
         currency === "USD"
           ? { usd: sellingPrice * quantity, sum: 0 }
@@ -95,7 +105,7 @@ const sellProduct = async (req, res) => {
     let result = await Sale.findById(newSale._id).populate("productId");
 
     let sender = await Store.findById(senderId);
-    io.emit("newSale", { newSale: result, selectedWarehouse:warehouseId, sender });
+    io.emit("newSale", { newSale: result, selectedWarehouse: warehouseId, sender });
     res.status(201).json(newSale);
   } catch (error) {
     res.status(500).json({ message: error.message });

@@ -14,6 +14,10 @@ const productSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    partner_address: {
+      type: String,
+      default: "",
+    },
     currency: {
       type: String,
       enum: ["USD", "SUM", ""],
