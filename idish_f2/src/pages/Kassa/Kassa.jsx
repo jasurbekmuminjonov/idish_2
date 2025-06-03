@@ -730,6 +730,38 @@ const Kassa = () => {
 
   const handleSell = async () => {
     try {
+      for (let item of basket) {
+        const unit = selectedUnit;
+        const warehouseQty = item.quantity;
+        let requiredQty = 0;
+
+
+        if (unit === "quantity") {
+          requiredQty = item.quantity;
+        } else if (unit === "package_quantity") {
+          requiredQty = item.quantity * item.quantity_per_package;
+        } else if (unit === "box_quantity") {
+          requiredQty = item.quantity * item.quantity_per_package * item.package_quantity_per_box;
+        }
+        console.log(requiredQty);
+
+
+        const availableProduct = allProducts.find(
+          (p) =>
+            p._id === item._id &&
+            p.warehouse?._id === item.warehouse?._id
+        );
+        console.log(availableProduct);
+
+
+        if (!availableProduct || requiredQty > availableProduct.quantity) {
+          message.error(
+            `${item.name} mahsulotidan omborda yetarli miqdor mavjud emas. Maks: ${availableProduct?.quantity || 0}`
+          );
+          return;
+        }
+      }
+
       await sellForm.validateFields();
 
       const formValues = sellForm.getFieldsValue();
