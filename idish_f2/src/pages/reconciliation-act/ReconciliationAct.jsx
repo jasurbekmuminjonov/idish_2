@@ -218,7 +218,7 @@ export default function ReconciliationAct() {
                 const reportDate = item.reportDate
                     ? moment(item.reportDate).format("DD.MM.YYYY")
                     : "-";
-                const typeText = item.type === "debt" ? "Qarz" : item.type === "payment" ? "To'lov" : item.type === "other" ? "Boshqa" : "Mahsulot";
+                const typeText = item.type === "debt" ? "Долг" : item.type === "payment" ? "Оплата" : item.type === "other" ? "Другой" : "Продукт";
                 return `
           <tr>
             <td>${index + 1}</td>
@@ -252,45 +252,43 @@ export default function ReconciliationAct() {
         const content = `
       <div style="width:210mm; height:297mm; padding:20px; font-family:Arial, sans-serif; color:#001529;">
         <h2 style="text-align:center; margin-bottom:20px;">
-          ${moment().format("DD.MM.YYYY")} даги Солиштирма далолатномаси
+          ${moment().format("DD.MM.YYYY")} сравнительный отчет
         </h2>
         <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
           <div>
-            <b>Етказиб берувчи:</b><br/>
+            <b>Поставщик:</b><br/>
             <p>${supplierName}</p>
           </div>
           <div>
-            <b>Сотиб олувчи:</b><br/>
-            <p>${partner?.partner_name || "Noma'lum"}</p>
+            <b>Покупатель:</b><br/>
+            <p>${partner?.partner_name || "Неизвестный"}</p>
           </div>
         </div>
         <table border="1" style="border-collapse:collapse; width:100%; text-align:center;">
           <thead style="background:#001529; color:white;">
             <tr>
               <th>No</th>
-              <th>Махсулот номи</th>
-              <th>Миқдор</th>
-              <th>Нарх</th>
+              <th>Название продукта</th>
+              <th>Количество</th>
               <th>Валюта</th>
-              <th>Умумий сумма</th>
+              <th>Общая сумма</th>
               <th>Тип</th>
-              <th>Сана</th>
+              <th>Дата</th>
             </tr>
           </thead>
           <tbody>${tableRows}</tbody>
         </table>
         ${selectedPartner ? `
-            <p>Сотилган товарлар</p>
+            <p>Проданные товары</p>
             <table border="1" style="border-collapse:collapse; width:100%; text-align:center;">
                 <thead style="background:#001529; color:white;">
                     <tr>
                         <th>No</th>
-                        <th>Махсулот номи</th>
-                        <th>Миқдор</th>
-                        <th>Нарх</th>
+                        <th>Название продукта</th>
+                        <th>Количество</th>
                         <th>Валюта</th>
-                        <th>Умумий сумма</th>
-                        <th>Сана</th>
+                        <th>Общая сумма</th>
+                        <th>Дата</th>
                     </tr>
                 </thead>
                 <tbody>${saleTableRows}</tbody>
@@ -302,7 +300,7 @@ export default function ReconciliationAct() {
 
         printWindow.document.write(`
       <html>
-        <head><title>Хисобварак-фактура</title></head>
+        <head><title>Счет-фактура</title></head>
         <body>${content}</body>
       </html>
     `);
@@ -327,7 +325,7 @@ export default function ReconciliationAct() {
 
         const tableRows = clientReports
             .map((item, index) => {
-                const typeText = item.type === "debt" ? "Qarz" : item.type === "payment" ? "To'lov" : "Boshqa";
+                const typeText = item.type === "debt" ? "Долг" : item.type === "payment" ? "Оплата" : "Другой";
                 return `
           <tr style="border-bottom: 1px solid #e8e8e8;">
             <td style="padding: 8px; text-align: center;">${index + 1}</td>
@@ -343,20 +341,20 @@ export default function ReconciliationAct() {
         const content = `
       <div style="width: 210mm; height: 297mm; padding: 20mm; font-family: 'Times New Roman', serif; color: #333;">
         <div style="text-align: center; margin-bottom: 20px;">
-          <h2 style="font-size: 18px; font-weight: normal; margin: 0; color: #555;">Хисобварак-фактура</h2>
+          <h2 style="font-size: 18px; font-weight: normal; margin: 0; color: #555;">Счет-фактура</h2>
           <p style="font-size: 12px; color: #777; margin: 5px 0 0 0;">
-            Яратилган сана: ${moment().format("DD.MM.YYYY HH:mm")}
+            Дата создания: ${moment().format("DD.MM.YYYY HH:mm")}
           </p>
         </div>
         <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
           <div>
             <p style="font-size: 14px; margin: 0;">
-              <strong>Етказиб берувчи:</strong> ${supplierName}
+              <strong>Доставщик:</strong> ${supplierName}
             </p>
           </div>
           <div>
             <p style="font-size: 14px; margin: 0;">
-              <strong>Харидор:</strong> ${client.name || "Не указано"} (${client.phone || "Не указано"})
+              <strong>Покупатель:</strong> ${client.name || "Не указано"} (${client.phone || "Не указано"})
             </p>
           </div>
         </div>
@@ -364,10 +362,10 @@ export default function ReconciliationAct() {
           <thead>
             <tr style="background: #f5f5f5; border-bottom: 2px solid #ddd;">
               <th style="padding: 10px; text-align: center; font-weight: normal;">No</th>
-              <th style="padding: 10px; text-align: center; font-weight: normal;">Сана</th>
+              <th style="padding: 10px; text-align: center; font-weight: normal;">Дата</th>
               <th style="padding: 10px; text-align: center; font-weight: normal;">Тип</th>
               <th style="padding: 10px; text-align: center; font-weight: normal;">Сумма</th>
-              <th style="padding: 10px; text-align: center; font-weight: normal;">Изох</th>
+              <th style="padding: 10px; text-align: center; font-weight: normal;">Описание</th>
             </tr>
           </thead>
           <tbody>
@@ -376,11 +374,10 @@ export default function ReconciliationAct() {
         </table>
       </div>
     `;
-
         printWindow.document.write(`
       <html>
         <head>
-          <title>Хисобварак-фактура</title>
+          <title>Счет-фактура</title>
           <style>
             @media print {
               @page { size: A4; margin: 0; }
