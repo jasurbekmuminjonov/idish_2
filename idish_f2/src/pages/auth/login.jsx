@@ -13,19 +13,19 @@ const Login = memo(() => {
     try {
       const res = await axios.post(
         // "https://idish-b2.vercel.app/api/users/login",
-        "https://idish-2.vercel.app/api/users/login",
+        "https://idish.richman.uz/api/users/login",
 
         value
       );
 
       const token = res.data.token;
-      const success = res.data.success; // Права доступа
+      const success = res.data.success;
       const role = res.data.role;
       const userLogin = res.data.login || value.login;
 
       // Сохраняем данные в localStorage
       localStorage.setItem("access_token", token);
-      localStorage.setItem("acsess", JSON.stringify(success)); // Права доступа
+      localStorage.setItem("acsess", JSON.stringify(success));
       localStorage.setItem("role", role);
       localStorage.setItem("user_login", userLogin);
       localStorage.setItem("_id", res.data._id);
