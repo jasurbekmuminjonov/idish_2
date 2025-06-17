@@ -71,25 +71,25 @@ export default function Oylik() {
     }
   };
 
-const enrichedEmployees = useMemo(() => {
-  return employees.map((emp) => {
-    const empPayments = allPayments.filter((p) => {
-      const paymentEmployeeId =
-        typeof p.employee === "string" ? p.employee : p.employee?._id;
+  const enrichedEmployees = useMemo(() => {
+    return employees.map((emp) => {
+      const empPayments = allPayments.filter((p) => {
+        const paymentEmployeeId =
+          typeof p.employee === "string" ? p.employee : p.employee?._id;
 
-      return paymentEmployeeId === emp._id;
+        return paymentEmployeeId === emp._id;
+      });
+
+      const totalPaid = empPayments.reduce((sum, p) => sum + p.amount, 0);
+      const remaining = (emp.salary_amount || 0) - totalPaid;
+
+      return {
+        ...emp,
+        totalPaid,
+        remaining,
+      };
     });
-
-    const totalPaid = empPayments.reduce((sum, p) => sum + p.amount, 0);
-    const remaining = (emp.salary_amount || 0) - totalPaid;
-
-    return {
-      ...emp,
-      totalPaid,
-      remaining,
-    };
-  });
-}, [employees, allPayments]);
+  }, [employees, allPayments]);
 
 
   const filteredEmployees = enrichedEmployees.filter((e) =>
@@ -180,6 +180,7 @@ const enrichedEmployees = useMemo(() => {
           marginBottom: 16,
           display: "flex",
           justifyContent: "space-between",
+          overflowX: "auto"
         }}
       >
         <h2>Hodimlarga oylik berish</h2>
@@ -197,6 +198,7 @@ const enrichedEmployees = useMemo(() => {
         rowKey="_id"
         bordered
         pagination={{ pageSize: 8 }}
+        scroll={{ x: "max-content" }}
       />
 
       <Modal

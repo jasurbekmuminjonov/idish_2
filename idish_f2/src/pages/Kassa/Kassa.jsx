@@ -162,7 +162,7 @@ const Kassa = () => {
   };
 
   const formatNumber = (num) => {
-    return Number(num.toFixed(2)).toLocaleString();
+    return Number(num?.toFixed(2)).toLocaleString();
   };
 
   const generatePDF = () => {
@@ -402,27 +402,27 @@ const Kassa = () => {
     },
     { title: "O'lcham", dataIndex: "size", key: "size" },
     { title: "Ombor", render: (_, record) => record.warehouse?.name || "-" },
-    { title: "Shtrix kod", dataIndex: "barcode", key: "barcode" },
+    // { title: "Shtrix kod", dataIndex: "barcode", key: "barcode" },
     { title: "Kod", dataIndex: "code", key: "code" },
-    {
-      title: "Umumiy vazni(kg)",
-      dataIndex: "total_kg",
-      key: "total_kg",
-      render: (text) => formatNumber(text || 0),
-    },
-    { title: "Dona soni", dataIndex: "quantity", key: "quantity" },
+    // {
+    //   title: "Umumiy vazni(kg)",
+    //   dataIndex: "total_kg",
+    //   key: "total_kg",
+    //   render: (text) => formatNumber(text || 0),
+    // },
+    // { title: "Dona soni", dataIndex: "quantity", key: "quantity" },
     {
       title: "Karobka soni",
       dataIndex: "box_quantity",
       key: "box_quantity",
-      render: (text) => Math.floor(text),
+      render: (text) => text.toFixed(1),
     },
-    {
-      title: "Pachka soni",
-      key: "package_quantity",
-      render: (_, record) =>
-        record?.isPackage ? Math.floor(record?.package_quantity) : "-",
-    },
+    // {
+    //   title: "Pachka soni",
+    //   key: "package_quantity",
+    //   render: (_, record) =>
+    //     record?.isPackage ? Math.floor(record?.package_quantity) : "-",
+    // },
     {
       title: "Sotish narxi",
       render: (_, record) => {
@@ -448,7 +448,7 @@ const Kassa = () => {
               const price = record.sellingPrice?.value || 0;
               const productCurrency = record.currency || "SUM";
               setBasket([
-                ...basket,
+
                 {
                   ...record,
                   quantity: 1,
@@ -467,6 +467,7 @@ const Kassa = () => {
                     currency: currency,
                   },
                 },
+                ...basket,
               ]);
             } else {
               existProduct.quantity += 1;
@@ -483,7 +484,7 @@ const Kassa = () => {
 
   const findWarehouse = (item) =>
     allProducts.filter((p) =>
-      [item].some((b) => b.code === p.code && b.quantity <= p.quantity)
+      [item].some((b) => b.code === p.code && b.name === p.name && b.quantity <= p.quantity)
     );
 
   const basketColumn = [
@@ -524,7 +525,7 @@ const Kassa = () => {
       ),
     },
     { title: "Ombor", render: (_, record) => record.warehouse?.name || "-" },
-    { title: "Shtrix kod", dataIndex: "barcode" },
+    // { title: "Shtrix kod", dataIndex: "barcode" },
     {
       title: "Soni",
       render: (_, record) => (
@@ -609,45 +610,51 @@ const Kassa = () => {
         </Select>
       ),
     },
+    // {
+    //   title: "Sotish narxi",
+    //   render: (_, record) => (
+    //     <div>
+    //       <Input
+    //         style={{ width: "100px" }}
+    //         type="number"
+    //         onChange={(e) => {
+    //           const newPrice = parseFloat(e.target.value) || 0;
+    //           const newBasket = basket.map((item) => {
+    //             if (item._id === record._id) {
+    //               return {
+    //                 ...item,
+    //                 sellingPrice: {
+    //                   ...item.sellingPrice,
+    //                   value: newPrice,
+    //                 },
+    //                 originalPrice: {
+    //                   value: convertPrice(
+    //                     newPrice,
+    //                     item.currency,
+    //                     item.originalPrice.currency,
+    //                     usdRate?.rate
+    //                   ),
+    //                   currency: item.originalPrice.currency,
+    //                 },
+    //               };
+    //             }
+    //             return item;
+    //           });
+    //           setBasket(newBasket);
+    //         }}
+    //         value={record?.sellingPrice?.value}
+    //       />
+    //       <span style={{ marginLeft: "5px" }}>
+    //         {record.currency === "SUM" ? "сум" : "$"}
+    //       </span>
+    //     </div>
+    //   ),
+    // },
     {
       title: "Sotish narxi",
       render: (_, record) => (
-        <div>
-          <Input
-            style={{ width: "100px" }}
-            type="number"
-            onChange={(e) => {
-              const newPrice = parseFloat(e.target.value) || 0;
-              const newBasket = basket.map((item) => {
-                if (item._id === record._id) {
-                  return {
-                    ...item,
-                    sellingPrice: {
-                      ...item.sellingPrice,
-                      value: newPrice,
-                    },
-                    originalPrice: {
-                      value: convertPrice(
-                        newPrice,
-                        item.currency,
-                        item.originalPrice.currency,
-                        usdRate?.rate
-                      ),
-                      currency: item.originalPrice.currency,
-                    },
-                  };
-                }
-                return item;
-              });
-              setBasket(newBasket);
-            }}
-            value={record?.sellingPrice?.value}
-          />
-          <span style={{ marginLeft: "5px" }}>
-            {record.currency === "SUM" ? "сум" : "$"}
-          </span>
-        </div>
-      ),
+        <p>{formatNumber(record?.sellingPrice?.value)}</p>
+      )
     },
     {
       title: "O'lchov birlik",
@@ -687,11 +694,16 @@ const Kassa = () => {
           showSearch
           style={{ width: "150px" }}
           placeholder="Omborni tanlang"
+          value={p.warehouse.name}
           optionFilterProp="children"
           onChange={(val) => {
             const updatedProduct = allProducts.find(
-              (p) => p.code === p.code && p.warehouse?._id === val
+              (product) =>
+                product.code === p.code &&
+                product.name === p.name &&
+                product.warehouse?._id === val
             );
+
 
             if (!updatedProduct) {
               message.error("Tanlangan omborda mahsulot topilmadi");
@@ -969,6 +981,9 @@ const Kassa = () => {
           rowKey="_id"
         />
       </div>
+      <Button style={{ maxWidth: "170px", display: "flex", justifySelf: "end", alignSelf: "end", marginRight: "15px" }} type="primary" onClick={() => setIsModalVisible(true)}>
+        Sotish
+      </Button>
       {basket.length > 0 && (
         <div className="basket">
           <Table
@@ -979,7 +994,7 @@ const Kassa = () => {
             dataSource={basket}
             rowKey="_id"
           />
-          <p>
+          <p style={{ color: "white" }}>
             Umumiy to'lov SUM:{" "}
             {formatNumber(
               basket.reduce((acc, item) => {
@@ -1015,7 +1030,7 @@ const Kassa = () => {
             )}{" "}
             so'm
           </p>
-          <p>
+          <p style={{ color: "white" }}>
             Umumiy to'lov USD:{" "}
             {formatNumber(
               basket.reduce((acc, item) => {
@@ -1051,9 +1066,7 @@ const Kassa = () => {
             )}{" "}
             $
           </p>
-          <Button type="primary" onClick={() => setIsModalVisible(true)}>
-            Sotish
-          </Button>
+
         </div>
       )}
       <Modal

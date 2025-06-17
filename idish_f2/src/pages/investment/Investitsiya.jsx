@@ -90,13 +90,13 @@ const WarehouseCard = ({ ombor, usdRate, sales, index }) => {
                          <div className="invest-stat-item">
                               <p><strong><DollarOutlined /> Xarajat:</strong></p>
                               <p><span className="invest-purchase">{stats.purchaseUZS.toLocaleString("uz-UZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} UZS</span></p>
-                              <p><span className="invest-purchase">{stats.purchaseUSD.toFixed(2)} $</span></p>
+                              <p><span className="invest-purchase">{stats.purchaseUSD?.toFixed(2)} $</span></p>
                          </div>
                          <Divider style={{ margin: "10px 0", borderColor: "#e8e8e8" }} />
                          <div className="invest-stat-item">
                               <p><strong><RiseOutlined /> Foyda:</strong></p>
                               <p><span className="invest-profit">{stats.profitUZS.toLocaleString("uz-UZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} UZS</span></p>
-                              <p><span className="invest-profit">{stats.profitUSD.toFixed(2)} $</span></p>
+                              <p><span className="invest-profit">{stats.profitUSD?.toFixed(2)} $</span></p>
                          </div>
                          <Divider style={{ margin: "10px 0", borderColor: "#e8e8e8" }} />
                          <div className="invest-stat-item">
@@ -147,25 +147,25 @@ const SummaryCard = ({ expenses, debtors, products, sales, usdRate }) => {
                     <div className="invest-stat-item">
                          <p><strong><DollarOutlined /> Umumiy xarajat:</strong></p>
                          <p><span className="invest-purchase">{totalExpensesUZS.toLocaleString("uz-UZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} so'm</span></p>
-                         <p><span className="invest-purchase">{totalExpensesUSD.toFixed(2)} $</span></p>
+                         <p><span className="invest-purchase">{totalExpensesUSD?.toFixed(2)} $</span></p>
                     </div>
                     <Divider style={{ margin: "10px 0", borderColor: "rgba(255, 255, 255, 0.2)" }} />
                     <div className="invest-stat-item">
                          <p><strong><CreditCardOutlined /> Umumiy nasiya:</strong></p>
                          <p><span className="invest-debt">{totalDebtUZS.toLocaleString("uz-UZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} so'm</span></p>
-                         <p><span className="invest-debt">{totalDebtUSD.toFixed(2)} $</span></p>
+                         <p><span className="invest-debt">{totalDebtUSD?.toFixed(2)} $</span></p>
                     </div>
                     <Divider style={{ margin: "10px 0", borderColor: "rgba(255, 255, 255, 0.2)" }} />
                     <div className="invest-stat-item">
                          <p><strong><ShoppingCartOutlined /> Umumiy mahsulotlar tan narxi:</strong></p>
                          <p><span className="invest-purchase">{totalPurchaseUZS.toLocaleString("uz-UZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} so'm</span></p>
-                         <p><span className="invest-purchase">{totalPurchaseUSD.toFixed(2)} $</span></p>
+                         <p><span className="invest-purchase">{totalPurchaseUSD?.toFixed(2)} $</span></p>
                     </div>
                     <Divider style={{ margin: "10px 0", borderColor: "rgba(255, 255, 255, 0.2)" }} />
                     <div className="invest-stat-item">
                          <p><strong><RiseOutlined /> Sotuvning sof daromadi:</strong></p>
                          <p><span className="invest-profit">{totalSalesProfitUZS.toLocaleString("uz-UZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} so'm</span></p>
-                         <p><span className="invest-profit">{totalSalesProfitUSD.toFixed(2)} $</span></p>
+                         <p><span className="invest-profit">{totalSalesProfitUSD?.toFixed(2)} $</span></p>
                     </div>
                </div>
           </Card>

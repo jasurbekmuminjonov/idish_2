@@ -451,7 +451,7 @@ export default function ReconciliationAct() {
         { title: "No", key: "index", render: (_, __, index) => index + 1 },
         { title: "Tovar nomi", dataIndex: ["productId", "name"], key: "productId.name" },
         { title: "Soni", dataIndex: "quantity", key: "quantity", align: "center" },
-        { title: "Sotish narxi", dataIndex: "sellingPrice", key: "sellingPrice", align: "center" },
+        { title: "Sotish narxi", dataIndex: "sellingPrice", key: "sellingPrice", align: "center", render: (text) => text?.toFixed(2) },
         { title: "Valyuta", dataIndex: "currency", key: "currency" },
         { title: "Chegirma(%)", dataIndex: "discount", key: "discount", align: "center" },
         {
@@ -695,7 +695,7 @@ export default function ReconciliationAct() {
             )}
 
             {selectedPartner && (
-                <div>
+                <div style={{ overflowX: "auto" }}>
                     <Space style={{ marginBottom: "16px" }}>
                         <Title level={4} style={{ color: "#001529" }}>
                             {selectedPartner?.partner_name} ({selectedPartner.partner_number})
@@ -714,13 +714,14 @@ export default function ReconciliationAct() {
                         dataSource={filteredPartnerProducts}
                         rowKey={(record, index) => index}
                         pagination={false}
+                        scroll={{ x: "max-content" }}
                         bordered
                     />
                 </div>
             )}
 
             {selectedClient && (
-                <div>
+                <div style={{ overflowX: "auto" }}>
                     <Space style={{ marginBottom: "16px" }}>
                         <Title level={4} style={{ color: "#001529" }}>
                             {selectedClient?.name} ({selectedClient.phone})
@@ -736,6 +737,7 @@ export default function ReconciliationAct() {
                     <Table
                         className="client-table"
                         columns={clientColumns}
+                        scroll={{ x: "max-content" }}
                         dataSource={filteredClientData}
                         rowKey="_id"
                         pagination={false}

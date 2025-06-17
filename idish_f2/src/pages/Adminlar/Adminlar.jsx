@@ -45,10 +45,11 @@ export default function Adminlar() {
     // Устанавливаем значения по умолчанию для permissions, если success не передается
     const permissions = {
       home: false,
+      daily: false,
       statistika: false,
       admin: false,
       ombor: false,
-      kassa: false,
+      stores: false,
       product: false,
       partner: false,
       client: false,
@@ -59,6 +60,9 @@ export default function Adminlar() {
       expense: false,
       report: false,
       "report-add": false,
+      hodimlar: false,
+      oylik: false,
+      transportions: false,
     };
 
     const payload = { name, login, password, role, success: permissions };
@@ -144,10 +148,17 @@ export default function Adminlar() {
     { title: "Ism", dataIndex: "name", key: "name" },
     { title: "Login", dataIndex: "login", key: "login" },
     { title: "Role", dataIndex: "role", key: "role" },
+
     {
       title: "Bosh sahifa",
       dataIndex: ["success", "home"],
       key: "home",
+      render: (text) => (text ? "Ha" : "Yo'q"),
+    },
+    {
+      title: "Kunlik hisobot",
+      dataIndex: ["success", "daily"],
+      key: "daily",
       render: (text) => (text ? "Ha" : "Yo'q"),
     },
     {
@@ -169,9 +180,9 @@ export default function Adminlar() {
       render: (text) => (text ? "Ha" : "Yo'q"),
     },
     {
-      title: "Kassa",
-      dataIndex: ["success", "kassa"],
-      key: "kassa",
+      title: "Do‘konlar",
+      dataIndex: ["success", "stores"],
+      key: "stores",
       render: (text) => (text ? "Ha" : "Yo'q"),
     },
     {
@@ -181,13 +192,13 @@ export default function Adminlar() {
       render: (text) => (text ? "Ha" : "Yo'q"),
     },
     {
-      title: "Yetqazib beruvchilar",
+      title: "Yetkazib beruvchilar",
       dataIndex: ["success", "partner"],
       key: "partner",
       render: (text) => (text ? "Ha" : "Yo'q"),
     },
     {
-      title: "Xaridorlar",
+      title: "Mijozlar",
       dataIndex: ["success", "client"],
       key: "client",
       render: (text) => (text ? "Ha" : "Yo'q"),
@@ -205,33 +216,51 @@ export default function Adminlar() {
       render: (text) => (text ? "Ha" : "Yo'q"),
     },
     {
-      title: "Sotilgan Mahsulotlar",
+      title: "Sotuvlar tarixi",
       dataIndex: ["success", "sales"],
       key: "sales",
       render: (text) => (text ? "Ha" : "Yo'q"),
     },
     {
-      title: "Brak Mahsulotlar",
+      title: "Brak mahsulotlar",
       dataIndex: ["success", "brak"],
       key: "brak",
       render: (text) => (text ? "Ha" : "Yo'q"),
     },
     {
-      title: "Rasxodlar",
+      title: "Xarajatlar",
       dataIndex: ["success", "expense"],
       key: "expense",
       render: (text) => (text ? "Ha" : "Yo'q"),
     },
     {
       title: "Dalolatnoma",
-      dataumers: ["success", "report"],
+      dataIndex: ["success", "report"],
       key: "report",
       render: (text) => (text ? "Ha" : "Yo'q"),
     },
     {
-      title: "Qoldiq qo'shish",
+      title: "Qoldiq qo‘shish",
       dataIndex: ["success", "report-add"],
       key: "report-add",
+      render: (text) => (text ? "Ha" : "Yo'q"),
+    },
+    {
+      title: "Hodimlar",
+      dataIndex: ["success", "hodimlar"],
+      key: "hodimlar",
+      render: (text) => (text ? "Ha" : "Yo'q"),
+    },
+    {
+      title: "Oylik hisobot",
+      dataIndex: ["success", "oylik"],
+      key: "oylik",
+      render: (text) => (text ? "Ha" : "Yo'q"),
+    },
+    {
+      title: "Tovar jo‘natma",
+      dataIndex: ["success", "transportions"],
+      key: "transportions",
       render: (text) => (text ? "Ha" : "Yo'q"),
     },
     {
@@ -269,7 +298,7 @@ export default function Adminlar() {
   ];
 
   return (
-    <div>
+    <div style={{ overflowX: 'auto' }}>
       <Button
         type="primary"
         icon={<UserAddOutlined />}
@@ -286,7 +315,7 @@ export default function Adminlar() {
         footer={null}
         style={{ marginTop: "50px" }}
       >
-        <Form layout="vertical" onFinish={handleFinish} form={form}>
+        <Form layout="vertical" initialValues={{ role: "admin" }} onFinish={handleFinish} form={form}>
           <Form.Item
             label="Ism"
             name="name"
@@ -311,9 +340,10 @@ export default function Adminlar() {
           <Form.Item
             label="Role"
             name="role"
+
             rules={[{ required: true, message: "Roleni kiriting!" }]}
           >
-            <Input placeholder="Role" />
+            <Input disabled placeholder="Role" />
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit" block>
@@ -362,22 +392,27 @@ export default function Adminlar() {
           <Form.Item label="Ruxsatlar" name="success">
             <Checkbox.Group>
               <Checkbox value="home">Bosh sahifa</Checkbox>
+              <Checkbox value="daily">Kunlik hisobot</Checkbox>
               <Checkbox value="statistika">Statistika</Checkbox>
               <Checkbox value="admin">Adminlar</Checkbox>
               <Checkbox value="ombor">Omborlar</Checkbox>
-              <Checkbox value="kassa">Kassa</Checkbox>
+              <Checkbox value="stores">Do‘konlar</Checkbox>
               <Checkbox value="product">Mahsulotlar</Checkbox>
-              <Checkbox value="partner">Yetqazib beruvchilar</Checkbox>
+              <Checkbox value="partner">Yetkazib beruvchilar</Checkbox>
               <Checkbox value="client">Xaridorlar</Checkbox>
               <Checkbox value="debtors">Qarzdorlar</Checkbox>
               <Checkbox value="promo">Promokodlar</Checkbox>
-              <Checkbox value="sales">Sotilgan Mahsulotlar</Checkbox>
-              <Checkbox value="brak">Brak Mahsulotlar</Checkbox>
-              <Checkbox value="expense">Rasxodlar</Checkbox>
+              <Checkbox value="sales">Sotilgan mahsulotlar</Checkbox>
+              <Checkbox value="brak">Brak mahsulotlar</Checkbox>
+              <Checkbox value="expense">Xarajatlar</Checkbox>
               <Checkbox value="report">Dalolatnoma</Checkbox>
-              <Checkbox value="report-add">Qoldiq qo'shish</Checkbox>
+              <Checkbox value="report-add">Qoldiq qo‘shish</Checkbox>
+              <Checkbox value="hodimlar">Hodimlar</Checkbox>
+              <Checkbox value="oylik">Oylik hisobot</Checkbox>
+              <Checkbox value="transportions">Tovar jo‘natma</Checkbox>
             </Checkbox.Group>
           </Form.Item>
+
           <Form.Item>
             <Button type="primary" htmlType="submit" block>
               Saqlash
@@ -392,6 +427,7 @@ export default function Adminlar() {
         loading={isLoading}
         rowKey="_id"
         pagination={{ pageSize: 10 }}
+        scroll={{ x: "max-content" }}
       />
     </div>
   );

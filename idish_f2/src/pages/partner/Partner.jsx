@@ -81,14 +81,14 @@ const Partner = () => {
                title: 'Umumiy vazn (kg)',
                dataIndex: 'total_kg',
                key: 'total_kg',
-               render: (matn) => (matn ? matn.toFixed(2) : '-'),
+               render: (matn) => (matn ? matn?.toFixed(2) : '-'),
           },
           { title: 'Dona soni', dataIndex: 'quantity', key: 'quantity' },
           {
                title: 'Quti soni',
                dataIndex: 'box_quantity',
                key: 'box_quantity',
-               render: (matn) => (matn ? matn.toFixed(2) : '-'),
+               render: (matn) => (matn ? matn?.toFixed(2) : '-'),
           },
           {
                title: 'Paket soni',
@@ -106,7 +106,7 @@ const Partner = () => {
                title: 'Sotish narxi',
                dataIndex: 'sellingPrice',
                key: 'sellingPrice',
-               render: (matn, yozuv) => `${yozuv.sellingPrice?.value || '-'}`,
+               render: (matn, yozuv) => `${(yozuv.sellingPrice?.value)?.toFixed(2) || '-'}`,
           },
           {
                title: 'Ombor',
@@ -130,7 +130,7 @@ const Partner = () => {
      console.log(unikalHamkorlar);
 
      return (
-          <div style={{ padding: '24px', background: '#f0f2f5' }}>
+          <div style={{ padding: '24px', background: '#f0f2f5', overflowX: "auto" }}>
                <Title level={2} style={{ color: '#001529', marginBottom: '24px' }}>
                     Yetkazib beruvchilar
                </Title>

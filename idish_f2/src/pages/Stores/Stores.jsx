@@ -218,7 +218,7 @@ export default function Stores() {
             dataIndex: "sellingPrice",
             key: "sellingPrice",
             render: (text, record) =>
-                `${record.sellingPrice.value} ${record.currency}`,
+                `${record.sellingPrice.value?.toFixed(2)} ${record.currency}`,
         },
         {
             title: "Kategoriya",
@@ -247,7 +247,7 @@ export default function Stores() {
     });
 
     return (
-        <div>
+        <div style={{ overflowX: "auto" }}>
             <Button
                 type="primary"
                 icon={<PlusOutlined />}
@@ -256,7 +256,7 @@ export default function Stores() {
             >
                 Yangi do'kon Qo'shish
             </Button>
-            <Table columns={columns} dataSource={omborlar} rowKey="_id" />
+            <Table scroll={{ x: "max-content" }} columns={columns} dataSource={omborlar} rowKey="_id" />
             <Modal
                 title="Yangi do'kon Qo'shish"
                 visible={isAddModalVisible}
@@ -402,8 +402,9 @@ export default function Stores() {
                     columns={productColumns}
                     dataSource={filteredProducts}
                     rowKey="_id"
+
                 />
             </Modal>
-        </div>
+        </div >
     );
 }

@@ -48,7 +48,7 @@ const Sales = () => {
           .includes(filters.productCode?.toLowerCase());
         const matchesClient = filters.selectedClient
           ? sale.clientId?._id === filters.selectedClient ||
-            sale.partnerId === filters.selectedClient
+          sale.partnerId === filters.selectedClient
           : true;
         const matchesPaymentMethod =
           !filters.paymentMethod ||
@@ -96,8 +96,8 @@ const Sales = () => {
       sale.paymentMethod === "cash"
         ? "Naqd"
         : sale.paymentMethod === "card"
-        ? "Karta"
-        : "Noma'lum";
+          ? "Karta"
+          : "Noma'lum";
     const buyerName = getBuyerName(sale);
 
     const tableRow = `
@@ -183,21 +183,20 @@ const Sales = () => {
       title: "Sotib olish narxi",
       key: "purchasePrice",
       render: (_, record) =>
-        `${record.productId?.purchasePrice?.value || 0} ${
-          record.productId?.currency || "N/A"
+        `${record.productId?.purchasePrice?.value || 0} ${record.productId?.currency || "N/A"
         }`,
     },
     {
       title: "Sotish narxi",
       dataIndex: "sellingPrice",
-      render: (value) => (value ? `${value.toFixed(2)}` : "0.00"),
+      render: (value) => (value ? `${value?.toFixed(2)}` : "0.00"),
     },
     {
       title: "To'lov(so'm)",
       render: (_, record) => {
         const sum = record.payment?.sum;
         return sum !== undefined && sum !== null
-          ? `${sum.toFixed(2)} so'm`
+          ? `${sum?.toFixed(2)} so'm`
           : "0.00 so'm";
       },
     },
@@ -206,7 +205,7 @@ const Sales = () => {
       render: (_, record) => {
         const usd = record.payment?.usd;
         return usd !== undefined && usd !== null
-          ? `${usd.toFixed(2)}$`
+          ? `${usd?.toFixed(2)}$`
           : "0.00$";
       },
     },
@@ -236,7 +235,7 @@ const Sales = () => {
   }
 
   return (
-    <div className="sales-page">
+    <div style={{ overflowX: 'auto' }} className="sales-page">
       <div className="page_header">
         <h1>Sotilgan Mahsulotlar</h1>
         <div className="header_actions">
@@ -302,7 +301,7 @@ const Sales = () => {
           </Space>
         </div>
       </div>
-      <Table columns={columns} dataSource={filteredSales} rowKey="_id" />
+      <Table scroll={{ x: "max-content" }} columns={columns} dataSource={filteredSales} rowKey="_id" />
     </div>
   );
 };

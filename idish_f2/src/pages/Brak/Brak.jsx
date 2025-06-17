@@ -108,6 +108,7 @@ const Brak = () => {
         dataSource={braks}
         rowKey="_id"
         loading={isLoadingBraks}
+        style={{ overflowX: "auto" }}
       />
     </div>
   );

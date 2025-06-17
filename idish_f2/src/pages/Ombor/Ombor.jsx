@@ -207,7 +207,7 @@ export default function Ombor() {
       dataIndex: "sellingPrice",
       key: "sellingPrice",
       render: (text, record) =>
-        `${record.sellingPrice.value} ${record.currency}`,
+        `${record.sellingPrice.value?.toFixed(2)} ${record.currency}`,
     },
     {
       title: "Kategoriya",

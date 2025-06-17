@@ -69,7 +69,7 @@ const Transportion = () => {
 
       if (item.quantity > available) {
         return message.error(
-          `${item.name} mahsuloti uchun ombordagi miqdor yetarli emas (${item.quantity.toFixed(2)} > ${available.toFixed(2)})`
+          `${item.name} mahsuloti uchun ombordagi miqdor yetarli emas (${item.quantity?.toFixed(2)} > ${available?.toFixed(2)})`
         );
       }
     }
@@ -104,9 +104,9 @@ const Transportion = () => {
   const productColumns = [
     { title: "Nomi", dataIndex: "name" },
     { title: "Dona soni", dataIndex: "quantity" },
-    { title: "Pachka soni", dataIndex: "package_quantity", render: (text) => text.toFixed(2) },
-    { title: "Karobka soni", dataIndex: "box_quantity", render: (text) => text.toFixed(2) },
-    { title: "Umumiy vazni", dataIndex: "total_kg", render: (text) => text.toFixed(2) },
+    { title: "Pachka soni", dataIndex: "package_quantity", render: (text) => text?.toFixed(2) },
+    { title: "Karobka soni", dataIndex: "box_quantity", render: (text) => text?.toFixed(2) },
+    { title: "Umumiy vazni", dataIndex: "total_kg", render: (text) => text?.toFixed(2) },
     {
       title: "Amal",
       render: (_, record) => (
@@ -244,8 +244,8 @@ const Transportion = () => {
 
   return (
     <>
-      <Tabs defaultActiveKey="1">
-        <TabPane tab="Jo‘natma yaratish" key="1">
+      <Tabs defaultActiveKey="1" style={{ overflowX: "auto" }}>
+        <TabPane defaultActiveKey="1" style={{ overflowX: "auto" }} tab="Jo‘natma yaratish" key="1">
           <div className="transportion" style={{ display: "flex", flexDirection: "column" }}>
             <h3>Qaysi ombordan</h3>
             <Select
@@ -261,9 +261,9 @@ const Transportion = () => {
                 </Option>
               ))}
             </Select>
-            <div style={{ display: "flex", width: "100%" }}>
+            <div style={{ display: "flex", width: "100%", flexDirection: "column" }}>
 
-              <div style={{ display: "flex", flexDirection: "column", width: "50%" }}>
+              <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
 
                 <h3>Mavjud mahsulotlar</h3>
                 <Table
@@ -276,7 +276,7 @@ const Transportion = () => {
                 />
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", width: "50%" }}>
+              <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
                 <h3 className="mt-4">Savatcha</h3>
                 <Table
                   rowKey="_id"

@@ -125,99 +125,104 @@ export default function Home() {
           selectedKeys={[selectedPage]}
           onClick={(e) => setSelectedPage(e.key)}
         >
-          {role === "admin" && (
+          {success?.home && (
             <Menu.Item key="home" icon={<HomeOutlined />}>
               Домашняя страница
             </Menu.Item>
           )}
-          {role === "admin" && (
+          {success?.daily && (
             <Menu.Item key="daily" icon={<FaList />}>
               Ежедневный отчет
             </Menu.Item>
           )}
-          {success?.SalesStatistics && (
+          {success?.statistika && (
             <Menu.Item key="statistika" icon={<FaChartLine />}>
               Статистика
             </Menu.Item>
           )}
-          {success?.adminlar && (
+          {success?.admin && (
             <Menu.Item key="admin" icon={<UserOutlined />}>
               Админы
             </Menu.Item>
           )}
-          {role === "admin" && (
+          {success?.ombor && (
             <Menu.Item key="ombor" icon={<AppstoreOutlined />}>
               Склады
             </Menu.Item>
           )}
-          {success?.dokon && (
+          {success?.stores && (
             <Menu.Item key="stores" icon={<AppstoreOutlined />}>
               Магазины
             </Menu.Item>
           )}
-          <Menu.Item key="product" icon={<ShoppingOutlined />}>
-            Продукт
-          </Menu.Item>
-          {role === "admin" && (
+          {(success?.product || role === "warehouse") && (
+            <Menu.Item key="product" icon={<ShoppingOutlined />}>
+              Продукты
+            </Menu.Item>
+          )}
+          {success?.partner && (
             <Menu.Item key="partner" icon={<UserSwitchOutlined />}>
               Поставщики
             </Menu.Item>
           )}
-          {success?.dokon && (
+          {success?.client && (
             <Menu.Item key="client" icon={<TeamOutlined />}>
               Покупатели
             </Menu.Item>
           )}
-          {success?.qarzdorlar && (
+          {success?.debtors && (
             <Menu.Item key="debtors" icon={<CreditCardOutlined />}>
               Должники
             </Menu.Item>
           )}
-          {role === "admin" && (
+          {success?.promo && (
             <Menu.Item key="promo" icon={<LuTicketPercent />}>
               Промокоды
             </Menu.Item>
           )}
-          {success?.sotuv_tarixi && (
+          {success?.sales && (
             <Menu.Item key="sales" icon={<BarChartOutlined />}>
-              Проданные продукты
+              Проданные товары
             </Menu.Item>
           )}
-          {success?.vazvratlar && (
+          {success?.brak && (
             <Menu.Item key="brak" icon={<ExclamationCircleOutlined />}>
-              Возврат продукты
+              Возвраты
             </Menu.Item>
           )}
-          {success?.xarajatlar && (
+          {success?.expense && (
             <Menu.Item key="expense" icon={<MoneyCollectOutlined />}>
               Расходы
             </Menu.Item>
           )}
-          {success?.xisobot && (
+          {success?.report && (
             <Menu.Item key="report" icon={<ScheduleOutlined />}>
               Сертификат
             </Menu.Item>
           )}
-          {role === "admin" && (
+          {success?.["report-add"] && (
             <Menu.Item key="report-add" icon={<UserAddOutlined />}>
               Добавить остаток
             </Menu.Item>
           )}
-
-          {role === "admin" && (
+          {success?.hodimlar && (
             <Menu.Item key="hodimlar" icon={<TeamOutlined />}>
               Сотрудники
             </Menu.Item>
           )}
-          {role === "admin" && (
+          {success?.oylik && (
             <Menu.Item key="oylik" icon={<DollarOutlined />}>
               Ежемесячный отчет
             </Menu.Item>
           )}
-          <Menu.Item key="transportions" icon={<DollarOutlined />}>
-            Передача товара
-          </Menu.Item>
+
+          {(success?.transportions || role === "warehouse") && (
+            <Menu.Item key="transportions" icon={<ShoppingOutlined />}>
+              Передача товара
+            </Menu.Item>
+          )}
         </Menu>
+
       </Sider>
       <Layout className="site-layout">
         <Header

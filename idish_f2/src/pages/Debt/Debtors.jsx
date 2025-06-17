@@ -30,6 +30,7 @@ const Debtors = () => {
       message.error("Qarz to'lashda xatolik yuz berdi");
     }
   };
+
   const debtorsColumn = [
     {
       title: "Mijoz ismi",
@@ -54,7 +55,9 @@ const Debtors = () => {
       },
 
       {
-        title: "Sotish narxi", dataIndex: "sellingPrice", key: "sellingPrice"
+        title: "Sotish narxi", dataIndex: "sellingPrice", key: "sellingPrice",
+        render: (value) => (value ? `${value?.toFixed(2)}` : "0.00"),
+
       },
       {
         title: "Valyuta", dataIndex: "currency", key: "currency"
@@ -65,6 +68,7 @@ const Debtors = () => {
       title: "Qoldiq summa",
       dataIndex: "remainingAmount",
       key: "remainingAmount",
+      render: (text) => text?.toFixed(2)
     },
     { title: "Qarz muddati", dataIndex: "dueDate", render: (text) => moment(text).format("DD.MM.YYYY"), key: "dueDate" },
     {
@@ -78,7 +82,7 @@ const Debtors = () => {
       render: (_, record) => (
         <div className="table_actions">
           {
-            role === "store" && record.status === "pending"(
+            role === "store" && record?.status === "pending" && (
 
 
               <Button
@@ -113,7 +117,7 @@ const Debtors = () => {
   ];
 
   return (
-    <div className="page">
+    <div className="page" style={{ overflowX: "auto" }}>
       <div className="page_header" style={{ display: "flex", alignItems: "center", gap: "12px", color: "#fff", height: "40px", marginTop: "10px" }}>
 
         <h1 style={{ color: "#001529" }} >Qarzdorlar</h1>
@@ -125,7 +129,7 @@ const Debtors = () => {
           )
         }
       </div>
-      <Table columns={debtorsColumn} dataSource={debtors} rowKey="_id" />
+      <Table columns={debtorsColumn} scroll={{ x: "max-content" }} dataSource={debtors} rowKey="_id" />
       <Modal
         title="Qarz to'lash"
         visible={isModalVisible}
@@ -180,7 +184,7 @@ const Debtors = () => {
               dataIndex: "storeId",
               render: (store) => store.name,
             }
-          ]}  
+          ]}
           dataSource={selectedDebtor ? selectedDebtor.paymentHistory : []}
           rowKey={(record) => record.date}
         />

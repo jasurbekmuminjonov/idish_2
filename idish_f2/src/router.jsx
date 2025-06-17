@@ -83,7 +83,7 @@ import Kassa from "./pages/Kassa/Kassa";
 import Debtors from "./pages/Debt/Debtors";
 import socket from "./socket";
 import smsAudio from "./assets/sms.mp3";
-import { notification } from "antd";  
+import { notification } from "antd";
 
 export const Routera = memo(() => {
   const role = localStorage.getItem("role");
@@ -112,7 +112,7 @@ export const Routera = memo(() => {
         description: "o'tkazma qabul qiling yoki bekor qiling",
         duration: 0,
         placement: "topRight",
-        style: { background: "green", color: "white" },
+        style: { background: "white", color: "white" },
       });
       if (audioRef.current) audioRef.current.play().catch(() => { });
     };
@@ -149,7 +149,7 @@ export const Routera = memo(() => {
         description: "mahsulotni tayyorlang",
         duration: 0,
         placement: "topRight",
-        style: { background: "green", color: "white" },
+        style: { background: "white", color: "white" },
       });
       if (audioRef.current) audioRef.current.play().catch(() => { });
     };
