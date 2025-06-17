@@ -40,7 +40,7 @@ exports.updateWarehouse = async (req, res) => {
     }
 
     await Warehouse.findByIdAndUpdate(id, req.body)
-    res.json(updatedWarehouse);
+    res.json({});
   } catch (error) {
     console.error("Error updating warehouse: ", error);
     res.status(500).json({ message: "Server error" });

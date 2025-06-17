@@ -62,6 +62,8 @@ exports.createTransportion = async (req, res) => {
 
     await newTransportion.save();
     io.emit("newTransportion", newTransportion);
+    console.log('socket ishladi');
+
     res.status(201).json({
       message: "Jo'natma muvaffaqiyatli yaratildi",
       data: socketData,
@@ -121,6 +123,7 @@ exports.acceptController = async (req, res) => {
       let product = await Product.findOne({ warehouse: to_warehouse, barcode });
 
       if (product) {
+
         // Mavjud mahsulotga qo‘shish
         if (unit === "box_quantity") {
           product.box_quantity += quantity;
@@ -247,8 +250,8 @@ exports.rejectTransportion = async (req, res) => {
           .status(404)
           .json({ message: `Mahsulot topilmadi: ${product_id._id}` });
       }
+      console.log(product);
 
-      // ❗️Kamaytirilgandek — endi qaytarib qo‘shiladi
       if (unit === "box_quantity") {
         product.box_quantity += quantity;
 
