@@ -10,13 +10,15 @@ import { useGetProductsQuery } from "../../context/service/product.service";
 import { useGetWarehousesQuery } from "../../context/service/ombor.service";
 import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
 import "./transportion.css";
+import socket from "../../socket";
+
 
 const { TabPane } = Tabs;
 const { Option } = Select;
 
 const Transportion = () => {
   const { data: products = [] } = useGetProductsQuery();
-  const { data: sentTransportions = [] } = useGetSentTransportionsQuery();
+  const { data: sentTransportions = [], refetch } = useGetSentTransportionsQuery();
   const [createTransportion] = useCreateTransportionMutation();
   const { data: warehouses = [] } = useGetWarehousesQuery();
   const role = localStorage.getItem('role')
@@ -27,6 +29,21 @@ const Transportion = () => {
   const [toWarehouse, setToWarehouse] = useState(null);
   const id = localStorage.getItem('_id')
   const [fromWarehouse, setFromWarehouse] = useState(role === "admin" ? null : id);
+
+
+
+  useEffect(() => {
+    const handleNewTransportion = () => {
+      refetch();
+    };
+
+    socket.on("newTransportion", handleNewTransportion);
+
+    return () => {
+      socket.off("newTransportion", handleNewTransportion);
+    };
+  }, []);
+
 
   const handleAddToBasket = (product) => {
     if (!basket.find((item) => item._id === product._id)) {

@@ -3,9 +3,9 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 // Настройка базового запроса для RTK Query
 const baseQuery = fetchBaseQuery({
-  // baseUrl: "http://localhost:8080/api",
+  baseUrl: "http://localhost:8081/api",
   // baseUrl: "https://idish-2.vercel.app/api",
-  baseUrl: "https://idish.richman.uz/api",
+  // baseUrl: "https://idish.richman.uz/api",
 
   // Добавление токена авторизации в заголовки запроса
   prepareHeaders: (headers, { getState }) => {

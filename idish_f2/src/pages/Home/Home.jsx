@@ -54,6 +54,8 @@ export default function Home() {
   const [openModal, setOpenModal] = useState(false);
   let sendedData = JSON.parse(localStorage.getItem("newSales")) || [];
   const success = JSON.parse(localStorage.getItem("acsess") || "{}");
+  console.log(success);
+  
   const role = localStorage.getItem("role");
   const [selectedPage, setSelectedPage] = useState(
     role === "admin" ? "home" : "product"
@@ -187,7 +189,7 @@ export default function Home() {
           )}
           {success?.brak && (
             <Menu.Item key="brak" icon={<ExclamationCircleOutlined />}>
-              Возвраты
+              Брак 
             </Menu.Item>
           )}
           {success?.expense && (
@@ -197,7 +199,7 @@ export default function Home() {
           )}
           {success?.report && (
             <Menu.Item key="report" icon={<ScheduleOutlined />}>
-              Сертификат
+              Акт сверка
             </Menu.Item>
           )}
           {success?.["report-add"] && (
@@ -212,7 +214,7 @@ export default function Home() {
           )}
           {success?.oylik && (
             <Menu.Item key="oylik" icon={<DollarOutlined />}>
-              Ежемесячный отчет
+              Заплата 
             </Menu.Item>
           )}
 

@@ -54,6 +54,7 @@ export default function ReconciliationAct() {
         selectedPartner?.partner_number || selectedClient?._id,
         { skip: !selectedPartner && !selectedClient }
     );
+
     const [payDebt] = usePayDebtMutation();
 
     const combinedProducts = [
@@ -62,6 +63,7 @@ export default function ReconciliationAct() {
             quantity: product.quantity || 1,
             createdAt: product.createdAt,
         })),
+
         ...sales
             .filter((sale) => sale.productId && sale.productId.name)
             .map((sale) => {
@@ -316,6 +318,9 @@ export default function ReconciliationAct() {
 
         // Фильтруем только отчеты для выбранного клиента
         const clientReports = reports.filter((r) => r.clientId === clientId);
+        console.log(reports);
+        console.log(clientReports);
+
 
         if (!clientReports.length) {
             message.warning("Chop etish uchun ma'lumotlar yo'q!");
@@ -412,7 +417,7 @@ export default function ReconciliationAct() {
         { title: "Miqdor", dataIndex: "total_quantity", key: "total_quantity", align: "center" },
         { title: "Narx", dataIndex: "purchase_price", key: "purchase_price", align: "center" },
         { title: "Valyuta", dataIndex: "currency", key: "currency" },
-        { title: "Umumiy summa", dataIndex: "total_price", key: "total_price", align: "center" },
+        { title: "Umumiy summa", dataIndex: "total_price", key: "total_price", align: "center", render:(text)=>text.toFixed(2) },
         {
             title: "Tip",
             dataIndex: "type",
@@ -463,7 +468,7 @@ export default function ReconciliationAct() {
                     ? (record.sellingPrice * record.quantity).toLocaleString()
                     : record.amount || "-",
         },
-        { title: "Qoldiq qarz", dataIndex: "remainingAmount", key: "amount", align: "center" },
+        { title: "Qoldiq qarz", dataIndex: "remainingAmount", key: "amount", align: "center", render: (text) => text?.toFixed(2) },
         {
             title: "Holati",
             dataIndex: "type",

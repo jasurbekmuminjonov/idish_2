@@ -89,6 +89,8 @@ export const Routera = memo(() => {
   const role = localStorage.getItem("role");
   const token = localStorage.getItem("access_token") || null;
   const audioRef = useRef(null);
+  // const { data: sentTransportions, refetch } = useGetSentTransportionsQuery();
+
 
   // Foydalanuvchi birinchi interaction qilganda audio-ni "aktiv" qilish
   useEffect(() => {

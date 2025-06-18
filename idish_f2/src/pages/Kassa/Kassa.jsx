@@ -764,8 +764,6 @@ const Kassa = () => {
             p.warehouse?._id === item.warehouse?._id
         );
         console.log(availableProduct);
-
-
         if (!availableProduct || requiredQty > availableProduct.quantity) {
           message.error(
             `${item.name} mahsulotidan omborda yetarli miqdor mavjud emas. Maks: ${availableProduct?.quantity || 0}`

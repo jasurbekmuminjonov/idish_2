@@ -63,7 +63,7 @@ const Debtors = () => {
         title: "Valyuta", dataIndex: "currency", key: "currency"
       },
       { title: "Soni", dataIndex: "quantity", key: "quantity" },
-      { title: "Umumiy summa", dataIndex: "totalAmount", key: "totalAmount" }] : []),
+      { title: "Umumiy summa", dataIndex: "totalAmount", key: "totalAmount", render: (text) => text.toFixed(2) }] : []),
     {
       title: "Qoldiq summa",
       dataIndex: "remainingAmount",
