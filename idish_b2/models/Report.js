@@ -5,7 +5,7 @@ const reportSchema = new mongoose.Schema(
      {
           partnerId: {
                type: String,
-               required: false, // Делаем необязательным, так как может быть clientId
+               required: false, 
           },
           partnerName: {
                type: String,

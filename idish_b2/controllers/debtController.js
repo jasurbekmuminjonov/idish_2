@@ -12,7 +12,7 @@ exports.createDebt = async (req, res) => {
     req.body.clientId = req.body.partnerId;
   }
 
-  if (!clientId || !productId || !quantity || !totalAmount || !warehouseId) {
+  if (!productId || !quantity || !totalAmount || !warehouseId) {
     return res.status(400).json({ message: "All fields are required." });
   }
 
