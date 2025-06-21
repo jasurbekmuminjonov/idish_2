@@ -10,7 +10,7 @@
   font-family: "Poppins", sans-serif;
 
   letter-spacing: 0.03rem;
-  user-select: none;
+  /* user-select: none; */
 }
 body {
   margin: 0;

@@ -8,9 +8,11 @@ import { EyeOutlined } from "@ant-design/icons";
 import moment from "moment";
 import { FaChevronLeft } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
+import { useGetProductsPartnerQuery } from "../../context/service/partner.service";
 
 const Debtors = () => {
   const { data: debtors = [] } = useGetAllDebtorsQuery();
+  const { data: partnerProduct = [] } = useGetProductsPartnerQuery();
   const [payDebt] = usePayDebtMutation();
   const role = localStorage.getItem("role");
   const navigate = useNavigate();
@@ -40,46 +42,46 @@ const Debtors = () => {
   const debtorsColumn = [
     {
       title: "Mijoz ismi",
-      dataIndex: ["clientId", "name"],
-      key: "clientId.name",
+      render: (_, record) => {
+        console.log(record);
+        return record.clientId?.name || partnerProduct.find(p => p.partner_number === record.partnerId)?.name_partner
+      },
     },
     {
       title: "Telefon raqami",
-      dataIndex: ["clientId", "phone"],
-      key: "clientId.phone",
+      render: (_, record) => record.clientId?.phone || partnerProduct.find(p => p.partner_number === record.partnerId)?.partner_number,
     },
     {
       title: "Manzil",
-      dataIndex: ["clientId", "address"],
-      key: "clientId.address",
+      render: (_, record) => record.clientId?.address || partnerProduct.find(p => p.partner_number === record.partnerId)?.partner_address,
     },
     ...(role === "admin"
       ? [
-          {
-            title: "Tovar nomi",
-            dataIndex: ["productId", "name"],
-            key: "productId.name",
-          },
+        {
+          title: "Tovar nomi",
+          dataIndex: ["productId", "name"],
+          key: "productId.name",
+        },
 
-          {
-            title: "Sotish narxi",
-            dataIndex: "sellingPrice",
-            key: "sellingPrice",
-            render: (value) => (value ? `${value?.toFixed(2)}` : "0.00"),
-          },
-          {
-            title: "Valyuta",
-            dataIndex: "currency",
-            key: "currency",
-          },
-          { title: "Soni", dataIndex: "quantity", key: "quantity" },
-          {
-            title: "Umumiy summa",
-            dataIndex: "totalAmount",
-            key: "totalAmount",
-            render: (text) => text.toFixed(2),
-          },
-        ]
+        {
+          title: "Sotish narxi",
+          dataIndex: "sellingPrice",
+          key: "sellingPrice",
+          render: (value) => (value ? `${value?.toFixed(2)}` : "0.00"),
+        },
+        {
+          title: "Valyuta",
+          dataIndex: "currency",
+          key: "currency",
+        },
+        { title: "Soni", dataIndex: "quantity", key: "quantity" },
+        {
+          title: "Umumiy summa",
+          dataIndex: "totalAmount",
+          key: "totalAmount",
+          render: (text) => text.toFixed(2),
+        },
+      ]
       : []),
     {
       title: "Qoldiq summa",

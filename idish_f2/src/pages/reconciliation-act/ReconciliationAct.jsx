@@ -100,7 +100,7 @@ const ReconciliationAct = () => {
     `;
 
       content += `<h2>Продажи</h2><table><thead><tr>
-      <th>Продукт</th><th>Количество</th><th>Единство</th><th>Цена</th><th>Общий</th>
+      <th>Продукт</th><th>Количество</th><th>Единство</th><th>Цена</th><th>Валюта</th><th>Общий</th>
     </tr></thead><tbody>`;
 
       filteredSales.forEach(item => {
@@ -109,6 +109,7 @@ const ReconciliationAct = () => {
         <td>${item.quantity}</td>
         <td>${quantityText[item.unit] || item.unit}</td>
         <td>${item.sellingPrice}</td>
+        <td>${item.currency}</td>
         <td>${item.quantity * item.sellingPrice}</td>
       </tr>`;
       });
@@ -116,7 +117,7 @@ const ReconciliationAct = () => {
       content += `</tbody></table>`;
 
       content += `<h2>Долги</h2><table><thead><tr>
-      <th>Продукт</th><th>Количество</th><th>Единство</th><th>Цена</th><th>Общий</th><th>Остальные</th>
+      <th>Продукт</th><th>Количество</th><th>Единство</th><th>Цена</th><th>Валюта</th><th>Общий</th><th>Остальные</th>
     </tr></thead><tbody>`;
 
       filteredDebts.forEach(item => {
@@ -125,6 +126,7 @@ const ReconciliationAct = () => {
         <td>${item.quantity}</td>
         <td>${quantityText[item.unit] || item.unit}</td>
         <td>${item.sellingPrice}</td>
+        <td>${item.currency}</td>
         <td>${item.totalAmount}</td>
         <td>${item.remainingAmount}</td>
       </tr>`;
@@ -141,7 +143,7 @@ const ReconciliationAct = () => {
     `;
 
       content += `<h2>Продажи</h2><table><thead><tr>
-      <th>Продукт</th><th>Количество</th><th>Единство</th><th>Цена</th><th>Общий</th>
+      <th>Продукт</th><th>Количество</th><th>Единство</th><th>Цена</th><th>Валюта</th><th>Общий</th>
     </tr></thead><tbody>`;
 
       filteredSales.forEach(item => {
@@ -150,6 +152,7 @@ const ReconciliationAct = () => {
         <td>${item.quantity}</td>
         <td>${quantityText[item.unit] || item.unit}</td>
         <td>${item.sellingPrice}</td>
+        <td>${item.currency}</td>
         <td>${item.quantity * item.sellingPrice}</td>
       </tr>`;
       });
@@ -157,7 +160,7 @@ const ReconciliationAct = () => {
       content += `</tbody></table>`;
 
       content += `<h2>Долги</h2><table><thead><tr>
-      <th>Продукт</th><th>Количество</th><th>Единство</th><th>Цена</th><th>Общий</th><th>Остальные</th>
+      <th>Продукт</th><th>Количество</th><th>Единство</th><th>Цена</th><th>Валюта</th><th>Общий</th><th>Остальные</th>
     </tr></thead><tbody>`;
 
       filteredDebts.forEach(item => {
@@ -166,6 +169,7 @@ const ReconciliationAct = () => {
         <td>${item.quantity}</td>
         <td>${quantityText[item.unit] || item.unit}</td>
         <td>${item.sellingPrice}</td>
+        <td>${item.currency}</td>
         <td>${item.totalAmount}</td>
         <td>${item.remainingAmount}</td>
       </tr>`;

@@ -15,6 +15,11 @@ const saleSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    currency: {
+      type: String,
+      enum: ["USD", "SUM", "KYG"],
+      required: true,
+    },
     productId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Product",

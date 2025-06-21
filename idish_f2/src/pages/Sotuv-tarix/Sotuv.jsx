@@ -188,27 +188,30 @@ const Sales = () => {
     },
     {
       title: "Sotish narxi",
-      dataIndex: "sellingPrice",
-      render: (value) => (value ? `${value?.toFixed(2)}` : "0.00"),
+      render: (_, record) => (record.sellingPrice ? `${record.sellingPrice?.toFixed(2)} ${record.currency}` : "0.00"),
     },
     {
-      title: "To'lov(so'm)",
-      render: (_, record) => {
-        const sum = record.payment?.sum;
-        return sum !== undefined && sum !== null
-          ? `${sum?.toFixed(2)} so'm`
-          : "0.00 so'm";
-      },
+      title: "Jami",
+      render: (_, record) => (record.sellingPrice ? `${(record.sellingPrice * record.quantity)?.toFixed(2)} ${record.currency}` : "0.00"),
     },
-    {
-      title: "To'lov($)",
-      render: (_, record) => {
-        const usd = record.payment?.usd;
-        return usd !== undefined && usd !== null
-          ? `${usd?.toFixed(2)}$`
-          : "0.00$";
-      },
-    },
+    // {
+    //   title: "To'lov(so'm)",
+    //   render: (_, record) => {
+    //     const sum = record.payment?.sum;
+    //     return sum !== undefined && sum !== null
+    //       ? `${sum?.toFixed(2)} so'm`
+    //       : "0.00 so'm";
+    //   },
+    // },
+    // {
+    //   title: "To'lov($)",
+    //   render: (_, record) => {
+    //     const usd = record.payment?.usd;
+    //     return usd !== undefined && usd !== null
+    //       ? `${usd?.toFixed(2)}$`
+    //       : "0.00$";
+    //   },
+    // },
     {
       title: "Sotish sanasi",
       dataIndex: "createdAt",

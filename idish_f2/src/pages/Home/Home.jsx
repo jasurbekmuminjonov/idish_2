@@ -27,7 +27,7 @@ import {
   UserAddOutlined,
   CloseOutlined,
 } from "@ant-design/icons";
-import { FaChartLine, FaList } from "react-icons/fa6";
+import { FaChartLine, FaClipboardQuestion, FaList } from "react-icons/fa6";
 
 import { LuTicketPercent } from "react-icons/lu";
 
@@ -341,11 +341,11 @@ export default function Home() {
             </Menu.Item>
           )}
           {(success?.transportions || role === "warehouse") && (
-            <Menu.Item key="unfinished" icon={<LuTicketPercent />}>
-              topilmaganlar
+            <Menu.Item key="unfinished" icon={<FaClipboardQuestion />}>
+              Недоступные тов.
             </Menu.Item>
           )}
-        </Menu>
+        </Menu> 
       </Sider>
       <Layout className="site-layout">
         <Header

@@ -31,7 +31,7 @@ const {
   getSalesHistory,
   getClientHistory,
 } = require("../controllers/saleController");
-const { createClient, getClients } = require("../controllers/clientController");
+const { createClient, getClients, updateClient } = require("../controllers/clientController");
 const {
   createDebt,
   getDebtsByClient,
@@ -133,6 +133,7 @@ router.delete("/partner/:id", auth, deleteProductPartner);
 
 // Client routes
 router.post("/clients", auth, createClient);
+router.put("/clients/:id", auth, updateClient);
 router.get("/clients", auth, getClients);
 // Sales routes
 router.post("/sales/sell", auth, sellProduct);

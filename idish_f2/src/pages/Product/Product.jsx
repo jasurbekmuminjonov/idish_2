@@ -130,14 +130,14 @@ const Product = () => {
       name_partner: product.name_partner || "",
       partner_number: product.partner_number || "",
     })),
-    ...partnerProducts.map((product) => ({
-      ...product,
-      source: "partner",
-      name: product.name || "Noma'lum",
-      barcode: product.barcode || "",
-      name_partner: product.name_partner || "",
-      partner_number: product.partner_number || "",
-    })),
+    // ...partnerProducts.map((product) => ({
+    //   ...product,
+    //   source: "partner",
+    //   name: product.name || "Noma'lum",
+    //   barcode: product.barcode || "",
+    //   name_partner: product.name_partner || "",
+    //   partner_number: product.partner_number || "",
+    // })),
   ];
 
   const barchaMahsulotlar = [
@@ -434,49 +434,53 @@ const Product = () => {
     //   width: 100,
     // },
 
-    // {
-    //   title: "Amallar",
-    //   render: (_, record) => (
-    //     <Space direction="horizontal" size={4}>
-    //       <Button
-    //         type="link"
-    //         size="small"
-    //         onClick={() => {
-    //           setEditingProduct(record._id);
-    //           setEditingSource(record.source);
-    //           form.setFieldsValue({
-    //             ...record,
-    //             package_quantity: record.package_quantity?.toFixed(2),
-    //             box_quantity: record.box_quantity?.toFixed(2),
-    //           });
-    //           setImageUrl(record.image_url);
-    //           setModalVisible(true);
-    //         }}
-    //       >
-    //         <MdEdit />
-    //       </Button>
-    //       <Popconfirm
-    //         title="O'chirishni tasdiqlaysizmi?"
-    //         onConfirm={() => handleDelete(record._id, record.source)}
-    //         okText="Ha"
-    //         cancelText="Yo'q"
-    //       >
-    //         <Button type="link" size="small" danger style={{ color: "red" }}>
-    //           <MdDeleteForever />
-    //         </Button>
-    //       </Popconfirm>
-    //       <Button
-    //         type="link"
-    //         size="small"
-    //         onClick={() => setCurrentBarcode(record.barcode)}
-    //       >
-    //         <MdPrint />
-    //       </Button>
-    //     </Space>
-    //   ),
-    //   align: "center",
-    //   width: 100,
-    // },
+    ...(localStorage.getItem('role') !== 'warehouse'
+      ? [
+        {
+          title: "Amallar",
+          render: (_, record) => (
+            <Space direction="horizontal" size={4}>
+              <Button
+                type="link"
+                size="small"
+                onClick={() => {
+                  setEditingProduct(record._id);
+                  setEditingSource(record.source);
+                  form.setFieldsValue({
+                    ...record,
+                    package_quantity: record.package_quantity?.toFixed(2),
+                    box_quantity: record.box_quantity?.toFixed(2),
+                  });
+                  setImageUrl(record.image_url);
+                  setModalVisible(true);
+                }}
+              >
+                <MdEdit />
+              </Button>
+              <Popconfirm
+                title="O'chirishni tasdiqlaysizmi?"
+                onConfirm={() => handleDelete(record._id, record.source)}
+                okText="Ha"
+                cancelText="Yo'q"
+              >
+                <Button type="link" size="small" danger style={{ color: "red" }}>
+                  <MdDeleteForever />
+                </Button>
+              </Popconfirm>
+              <Button
+                type="link"
+                size="small"
+                onClick={() => setCurrentBarcode(record.barcode)}
+              >
+                <MdPrint />
+              </Button>
+            </Space>
+          ),
+          align: "center",
+          width: 100,
+        },
+      ]
+      : []),
   ];
 
   const filteredProducts = allProducts.filter((product) => {
@@ -559,11 +563,11 @@ const Product = () => {
         dataSource={
           localStorage.getItem("role") === "warehouse"
             ? filteredProducts
-                .filter((p) => p.warehouse._id === localStorage.getItem("_id"))
-                .sort((a, b) => (a.quantity || 0) - (b.quantity || 0))
+              .filter((p) => p.warehouse._id === localStorage.getItem("_id"))
+              .sort((a, b) => (a.quantity || 0) - (b.quantity || 0))
             : filteredProducts.sort(
-                (a, b) => (a.quantity || 0) - (b.quantity || 0)
-              )
+              (a, b) => (a.quantity || 0) - (b.quantity || 0)
+            )
         }
         loading={productsLoading || partnerProductsLoading}
         rowKey="_id"

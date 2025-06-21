@@ -96,6 +96,7 @@ const sellProduct = async (req, res) => {
       warehouseId,
       unit,
       paymentMethod,
+      currency,
       discount,
       storeId: id,
     });

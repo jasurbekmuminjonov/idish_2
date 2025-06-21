@@ -17,13 +17,13 @@ const Partner = () => {
      const [selectedAddress, setSelectedAddress] = useState("");
 
      const barchaMahsulotlar = [
-          ...mahsulotlar.map((mahsulot) => ({
-               ...mahsulot,
-               manba: 'mahsulot',
-               hamkor_nomi: mahsulot.name_partner || '',
-               hamkor_raqami: mahsulot.partner_number || '',
-               hamkor_manzili: mahsulot.partner_address || '',
-          })),
+          // ...mahsulotlar.map((mahsulot) => ({
+          //      ...mahsulot,
+          //      manba: 'mahsulot',
+          //      hamkor_nomi: mahsulot.name_partner || '',
+          //      hamkor_raqami: mahsulot.partner_number || '',
+          //      hamkor_manzili: mahsulot.partner_address || '',
+          // })),
           ...hamkorMahsulotlari.map((mahsulot) => ({
                ...mahsulot,
                manba: 'hamkor',

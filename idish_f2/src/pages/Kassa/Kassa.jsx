@@ -158,6 +158,12 @@ const Kassa = () => {
     if (fromCurrency === "SUM" && toCurrency === "USD") {
       return price / rate;
     }
+    if (fromCurrency === "USD" && toCurrency === "KYG") {
+      return price * usdRate?.kyg;
+    }
+    if (fromCurrency === "KYG" && toCurrency === "USD") {
+      return price / usdRate?.kyg;
+    }
     return price;
   };
 
@@ -166,7 +172,7 @@ const Kassa = () => {
   };
 
   const generatePDF = () => {
-    const { totalUSD, totalSUM } = basket.reduce(
+    const { totalUSD, totalSUM, totalKYG } = basket.reduce(
       (acc, item) => {
         const promo = promos.find((p) => p._id === paymentDiscount);
         const totalPrice =
@@ -174,12 +180,12 @@ const Kassa = () => {
           (selectedUnit === "quantity"
             ? item.quantity
             : selectedUnit === "package_quantity"
-            ? item.quantity * item.quantity_per_package
-            : selectedUnit === "box_quantity"
-            ? item.quantity *
-              item.quantity_per_package *
-              item.package_quantity_per_box
-            : null);
+              ? item.quantity * item.quantity_per_package
+              : selectedUnit === "box_quantity"
+                ? item.quantity *
+                item.quantity_per_package *
+                item.package_quantity_per_box
+                : null);
         const discountedPrice = promo
           ? promo.type === "percent"
             ? totalPrice - (totalPrice / 100) * promo.percent
@@ -188,12 +194,14 @@ const Kassa = () => {
 
         if (item.currency === "USD") {
           acc.totalUSD += discountedPrice;
-        } else {
+        } else if (item.currency === "SUM") {
           acc.totalSUM += discountedPrice;
+        } else {
+          acc.totalKYG += discountedPrice;
         }
         return acc;
       },
-      { totalUSD: 0, totalSUM: 0 }
+      { totalUSD: 0, totalSUM: 0, totalKYG: 0 }
     );
 
     const formValues = sellForm.getFieldsValue();
@@ -216,12 +224,12 @@ const Kassa = () => {
           selectedUnit === "quantity"
             ? item.quantity
             : selectedUnit === "package_quantity"
-            ? item.quantity * item.quantity_per_package
-            : selectedUnit === "box_quantity"
-            ? item.quantity *
-              item.quantity_per_package *
-              item.package_quantity_per_box
-            : 0;
+              ? item.quantity * item.quantity_per_package
+              : selectedUnit === "box_quantity"
+                ? item.quantity *
+                item.quantity_per_package *
+                item.package_quantity_per_box
+                : 0;
 
         const unitPrice = getDiscountedPrice(item.sellingPrice.value, quantity);
         const totalAmount = Math.max(unitPrice * quantity, 0);
@@ -255,12 +263,12 @@ const Kassa = () => {
           (selectedUnit === "quantity"
             ? item.quantity
             : selectedUnit === "package_quantity"
-            ? item.quantity * item.quantity_per_package
-            : selectedUnit === "box_quantity"
-            ? item.quantity *
-              item.quantity_per_package *
-              item.package_quantity_per_box
-            : null);
+              ? item.quantity * item.quantity_per_package
+              : selectedUnit === "box_quantity"
+                ? item.quantity *
+                item.quantity_per_package *
+                item.package_quantity_per_box
+                : null);
         const discountedPrice = promo
           ? promo.type === "percent"
             ? totalPrice - (totalPrice / 100) * promo.percent
@@ -273,27 +281,24 @@ const Kassa = () => {
           <td style="padding: 8px;">${item.name || "Noma'lum mahsulot"}</td>
           <td style="padding: 8px;">${item.size || "-"}</td>
           <td style="padding: 8px;">${item.code || "-"}</td>
-          <td style="padding: 8px;">${
-            selectedUnit === "quantity"
-              ? item.quantity
-              : selectedUnit === "package_quantity"
+          <td style="padding: 8px;">${selectedUnit === "quantity"
+            ? item.quantity
+            : selectedUnit === "package_quantity"
               ? item.quantity * item.quantity_per_package
               : selectedUnit === "box_quantity"
-              ? item.quantity *
+                ? item.quantity *
                 item.quantity_per_package *
                 item.package_quantity_per_box
-              : null
+                : null
           }</td>
           <td style="padding: 8px;">${formatNumber(
             item.sellingPrice.value
           )}</td>
-          <td style="padding: 8px;">${
-            item.currency === "USD" ? "Доллар" : "Сум"
+          <td style="padding: 8px;">${item.currency === "USD" ? "Доллар" : item.currency === "SUM" ? "Сум" : "KYG"
           }</td>
-          <td style="padding: 8px;">${
-            promo
-              ? `${promo.percent} ${promo.type === "percent" ? "%" : "сум"}`
-              : "—"
+          <td style="padding: 8px;">${promo
+            ? `${promo.percent} ${promo.type === "percent" ? "%" : "сум"}`
+            : "—"
           }</td>
           <td style="padding: 8px;">${formatNumber(discountedPrice)}</td>
         </tr>
@@ -306,8 +311,8 @@ const Kassa = () => {
         <div style="border: 2px solid #1a73e8; border-radius: 12px; padding: 20px; background-color: #ffffff; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
           <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e0e0e0; padding-bottom: 10px; margin-bottom: 20px;">
             <h2 style="margin: 0; font-size: 18px; color: #1a73e8;">${moment().format(
-              "DD.MM.YYYY, HH:mm:ss"
-            )} счет-фактура</h2>
+      "DD.MM.YYYY, HH:mm:ss"
+    )} счет-фактура</h2>
             <span style="font-size: 16px; color: #555;">Счет-фактура</span>
           </div>
           <div style="display: flex; width: 100%; margin-bottom: 20px;">
@@ -348,18 +353,20 @@ const Kassa = () => {
           </table>
           <div style="margin-bottom: 20px;">
             <b style="color: #333;">Долларовая часть общей суммы платежа составляет: ${formatNumber(
-              totalUSD
-            )} доллар</b><br/>
+      totalUSD
+    )} доллар</b><br/>
             <b style="color: #333;">Сумовая часть общей суммы платежа составляет: ${formatNumber(
-              totalSUM
-            )} сyм</b></b><br/>
-            ${
-              paymentType === "credit"
-                ? `<b style="color: #333;">Оставшийся долг: ${formatNumber(
-                    totalQarz
-                  )}</b>`
-                : ""
-            }
+      totalSUM
+    )} сyм</b></b><br/>
+            <b style="color: #333;">KYG часть общей суммы платежа составляет: ${formatNumber(
+      totalKYG
+    )} KYG</b></b><br/>
+            ${paymentType === "credit"
+        ? `<b style="color: #333;">Оставшийся долг: ${formatNumber(
+          totalQarz
+        )}</b>`
+        : ""
+      }
           </div>
           <div style="display: flex; justify-content: space-around; margin-top: 20px; border-top: 1px solid #e0e0e0; padding-top: 20px;">
             <div style="text-align: center;">
@@ -477,9 +484,8 @@ const Kassa = () => {
           currency,
           usdRate?.rate
         );
-        return `${formatNumber(convertedPrice)} ${
-          currency === "SUM" ? "сум" : "$"
-        }`;
+        return `${formatNumber(convertedPrice)} ${currency === "SUM" ? "сум" : currency === "USD" ? "$" : "KYG"
+          }`;
       },
     },
     {
@@ -653,6 +659,8 @@ const Kassa = () => {
         >
           <Option value="USD">USD</Option>
           <Option value="SUM">SUM</Option>
+          <Option value="KYG">KYG</Option>
+
         </Select>
       ),
     },
@@ -757,13 +765,13 @@ const Kassa = () => {
               prev.map((item) =>
                 item._id === p._id
                   ? {
-                      ...updatedProduct,
-                      quantity: item.quantity,
-                      currency: item.currency,
-                      originalPrice: item.originalPrice,
-                      sellingPrice: item.sellingPrice,
-                      selectedWarehouse: val,
-                    }
+                    ...updatedProduct,
+                    quantity: item.quantity,
+                    currency: item.currency,
+                    originalPrice: item.originalPrice,
+                    sellingPrice: item.sellingPrice,
+                    selectedWarehouse: val,
+                  }
                   : item
               )
             );
@@ -806,10 +814,8 @@ const Kassa = () => {
 
         if (!availableProduct || requiredQty > availableProduct.quantity) {
           message.error(
-            `${
-              item.name
-            } mahsulotidan omborda yetarli miqdor mavjud emas. Maks: ${
-              availableProduct?.quantity || 0
+            `${item.name
+            } mahsulotidan omborda yetarli miqdor mavjud emas. Maks: ${availableProduct?.quantity || 0
             }`
           );
           return;
@@ -857,12 +863,12 @@ const Kassa = () => {
               selectedUnit === "quantity"
                 ? item.quantity
                 : selectedUnit === "package_quantity"
-                ? item.quantity * item.quantity_per_package
-                : selectedUnit === "box_quantity"
-                ? item.quantity *
-                  item.quantity_per_package *
-                  item.package_quantity_per_box
-                : 0;
+                  ? item.quantity * item.quantity_per_package
+                  : selectedUnit === "box_quantity"
+                    ? item.quantity *
+                    item.quantity_per_package *
+                    item.package_quantity_per_box
+                    : 0;
 
             const unitPrice = getDiscountedPrice(
               item.sellingPrice.value,
@@ -879,13 +885,13 @@ const Kassa = () => {
               paymentHistory: [
                 ...(initialPayment > 0
                   ? [
-                      {
-                        date: moment().format("YYYY-MM-DD"),
-                        amount: initialPayment,
-                        currency: item.currency,
-                        storeId: localStorage.getItem("_id"),
-                      },
-                    ]
+                    {
+                      date: moment().format("YYYY-MM-DD"),
+                      amount: initialPayment,
+                      currency: item.currency,
+                      storeId: localStorage.getItem("_id"),
+                    },
+                  ]
                   : []),
               ],
               unit: selectedUnit,
@@ -910,12 +916,12 @@ const Kassa = () => {
               selectedUnit === "quantity"
                 ? item.quantity
                 : selectedUnit === "package_quantity"
-                ? item.quantity * item.quantity_per_package
-                : selectedUnit === "box_quantity"
-                ? item.quantity *
-                  item.quantity_per_package *
-                  item.package_quantity_per_box
-                : 0;
+                  ? item.quantity * item.quantity_per_package
+                  : selectedUnit === "box_quantity"
+                    ? item.quantity *
+                    item.quantity_per_package *
+                    item.package_quantity_per_box
+                    : 0;
 
             const unitPrice = getDiscountedPrice(
               item.sellingPrice.value,
@@ -998,6 +1004,7 @@ const Kassa = () => {
           >
             <Option value="SUM">SUM</Option>
             <Option value="USD">USD</Option>
+            <Option value="KYG">KYG</Option>
           </Select>
           <Button
             style={{ justifySelf: "end", display: "flex" }}
@@ -1055,38 +1062,41 @@ const Kassa = () => {
           />
           <p style={{ color: "white" }}>
             Umumiy to'lov SUM:{" "}
-            {formatNumber(
-              basket.reduce((acc, item) => {
-                const totalPrice =
-                  item.sellingPrice.value *
-                  (selectedUnit === "quantity"
-                    ? item.quantity
-                    : selectedUnit === "package_quantity"
-                    ? item.quantity * item.quantity_per_package
-                    : selectedUnit === "box_quantity"
-                    ? item.quantity *
-                      item.quantity_per_package *
-                      item.package_quantity_per_box
-                    : null);
-                const promo = promos.find((p) => p._id === paymentDiscount);
-                const discountedPrice = promo
-                  ? promo.type === "percent"
-                    ? totalPrice - (totalPrice / 100) * promo.percent
-                    : totalPrice - promo.percent
-                  : totalPrice;
-                return (
-                  acc +
-                  (item.currency === "SUM"
-                    ? discountedPrice
-                    : convertPrice(
-                        discountedPrice,
-                        "USD",
-                        "SUM",
-                        usdRate?.rate
-                      ))
-                );
-              }, 0)
-            )}{" "}
+            {
+              currency === "KYG" ? "-" :
+
+                formatNumber(
+                  basket.reduce((acc, item) => {
+                    const totalPrice =
+                      item.sellingPrice.value *
+                      (selectedUnit === "quantity"
+                        ? item.quantity
+                        : selectedUnit === "package_quantity"
+                          ? item.quantity * item.quantity_per_package
+                          : selectedUnit === "box_quantity"
+                            ? item.quantity *
+                            item.quantity_per_package *
+                            item.package_quantity_per_box
+                            : null);
+                    const promo = promos.find((p) => p._id === paymentDiscount);
+                    const discountedPrice = promo
+                      ? promo.type === "percent"
+                        ? totalPrice - (totalPrice / 100) * promo.percent
+                        : totalPrice - promo.percent
+                      : totalPrice;
+                    return (
+                      acc +
+                      (item.currency === "SUM"
+                        ? discountedPrice
+                        : convertPrice(
+                          discountedPrice,
+                          "USD",
+                          "SUM",
+                          usdRate?.rate
+                        ))
+                    );
+                  }, 0)
+                )}{" "}
             so'm
           </p>
           <p style={{ color: "white" }}>
@@ -1098,12 +1108,12 @@ const Kassa = () => {
                   (selectedUnit === "quantity"
                     ? item.quantity
                     : selectedUnit === "package_quantity"
-                    ? item.quantity * item.quantity_per_package
-                    : selectedUnit === "box_quantity"
-                    ? item.quantity *
-                      item.quantity_per_package *
-                      item.package_quantity_per_box
-                    : null);
+                      ? item.quantity * item.quantity_per_package
+                      : selectedUnit === "box_quantity"
+                        ? item.quantity *
+                        item.quantity_per_package *
+                        item.package_quantity_per_box
+                        : null);
                 const promo = promos.find((p) => p._id === paymentDiscount);
                 const discountedPrice = promo
                   ? promo.type === "percent"
@@ -1114,16 +1124,56 @@ const Kassa = () => {
                   acc +
                   (item.currency === "USD"
                     ? discountedPrice
-                    : convertPrice(
-                        discountedPrice,
-                        "SUM",
-                        "USD",
-                        usdRate?.rate
-                      ))
-                );
+                    : item.currency === "SUM" ? convertPrice(
+                      discountedPrice,
+                      "SUM",
+                      "USD",
+                      usdRate?.rate
+                    ) : convertPrice(
+                      discountedPrice,
+                      "KYG",
+                      "USD",
+                      usdRate?.kyg))
+                )
               }, 0)
             )}{" "}
             $
+          </p>
+          <p style={{ color: "white" }}>
+            Umumiy to'lov KYG:{" "}
+            {formatNumber(
+              basket.reduce((acc, item) => {
+                const totalPrice =
+                  item.sellingPrice.value *
+                  (selectedUnit === "quantity"
+                    ? item.quantity
+                    : selectedUnit === "package_quantity"
+                      ? item.quantity * item.quantity_per_package
+                      : selectedUnit === "box_quantity"
+                        ? item.quantity *
+                        item.quantity_per_package *
+                        item.package_quantity_per_box
+                        : null);
+                const promo = promos.find((p) => p._id === paymentDiscount);
+                const discountedPrice = promo
+                  ? promo.type === "percent"
+                    ? totalPrice - (totalPrice / 100) * promo.percent
+                    : totalPrice - promo.percent
+                  : totalPrice;
+                return (
+                  acc +
+                  (item.currency === "KYG"
+                    ? discountedPrice
+                    : convertPrice(
+                      discountedPrice,
+                      "KYG",
+                      "USD",
+                      usdRate?.kyg
+                    ))
+                );
+              }, 0)
+            )}{" "}
+            KYG
           </p>
         </div>
       )}
