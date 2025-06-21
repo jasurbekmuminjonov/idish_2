@@ -5,12 +5,25 @@ const Product = require("../models/Product");
 const moment = require("moment");
 
 exports.createDebt = async (req, res) => {
-  const { clientId, productId, quantity, currency, totalAmount, paymentMethod, unit, sellingPrice, warehouseId, discount, dueDate, paymentHistory } =
-    req.body;
+  const {
+    clientId,
+    partnerId,
+    productId,
+    quantity,
+    currency,
+    totalAmount,
+    paymentMethod,
+    unit,
+    sellingPrice,
+    warehouseId,
+    discount,
+    dueDate,
+    paymentHistory,
+  } = req.body;
 
-  if (!clientId) {
-    req.body.clientId = req.body.partnerId;
-  }
+  // if (!clientId) {
+  //   req.body.clientId = req.body.partnerId;
+  // }
 
   if (!productId || !quantity || !totalAmount || !warehouseId) {
     return res.status(400).json({ message: "All fields are required." });
@@ -18,29 +31,42 @@ exports.createDebt = async (req, res) => {
 
   try {
     const product = await Product.findById(productId);
-    product.box_quantity -= (quantity / product.package_quantity_per_box / product.quantity_per_package).toFixed(2);
+    product.box_quantity -= (
+      quantity /
+      product.package_quantity_per_box /
+      product.quantity_per_package
+    ).toFixed(2);
     if (product.isPackage) {
-      product.package_quantity -= (quantity / product.quantity_per_package);
+      product.package_quantity -= quantity / product.quantity_per_package;
     }
     product.quantity -= quantity;
-    product.total_kg -= parseFloat((
-      (unit === "box_quantity"
-        ? quantity / product.package_quantity_per_box / (product.isPackage ? product.quantity_per_package : 1)
-        : unit === "package_quantity"
-          ? (product.isPackage ? quantity / product.quantity_per_package : 0)
+    product.total_kg -= parseFloat(
+      (
+        (unit === "box_quantity"
+          ? quantity /
+            product.package_quantity_per_box /
+            (product.isPackage ? product.quantity_per_package : 1)
+          : unit === "package_quantity"
+          ? product.isPackage
+            ? quantity / product.quantity_per_package
+            : 0
           : unit === "quantity"
-            ? quantity
-            : 0) *
-      (unit === "quantity"
-        ? product.kg_per_quantity
-        : unit === "package_quantity"
-          ? (product.isPackage ? product.kg_per_package : 0)
+          ? quantity
+          : 0) *
+        (unit === "quantity"
+          ? product.kg_per_quantity
+          : unit === "package_quantity"
+          ? product.isPackage
+            ? product.kg_per_package
+            : 0
           : product.kg_per_box)
-    ).toFixed(2));
+      ).toFixed(2)
+    );
 
     await product.save();
     const newDebt = new Debt({
       clientId,
+      partnerId,
       productId,
       quantity,
       unit,
@@ -65,7 +91,9 @@ exports.getDebtsByClient = async (req, res) => {
   const { clientId } = req.params;
 
   try {
-    const debts = await Debt.find({ clientId }).populate("productId").populate("paymentHistory.storeId");
+    const debts = await Debt.find({ clientId })
+      .populate("productId")
+      .populate("paymentHistory.storeId");
     res.status(200).json(debts);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -75,8 +103,7 @@ exports.getDebtsByClient = async (req, res) => {
 exports.payDebt = async (req, res) => {
   const { id } = req.params;
   const storeId = req.user.id;
-  let { amount, currency } = req.body;
-
+  let { amount, currency, type } = req.body;
 
   try {
     const debt = await Debt.findById(id);
@@ -94,7 +121,7 @@ exports.payDebt = async (req, res) => {
 
     const rate = rateObj.rate; // Endi `rate` son bo‘ladi
 
-    debt.paymentHistory.push({ amount, currency, storeId });
+    debt.paymentHistory.push({ amount, currency, storeId, type });
 
     if (debt.currency === currency) {
       debt.remainingAmount -= amount;
@@ -122,11 +149,14 @@ exports.payDebt = async (req, res) => {
         discount: debt.discount,
         paymentMethod: debt.paymentMethod,
         payment: {
-          usd: debt?.paymentHistory?.filter(p => p.currency === "USD")?.reduce((a, b) => a + b?.amount, 0),
-          sum: debt?.paymentHistory?.filter(p => p.currency === "SUM")?.reduce((a, b) => a + b?.amount, 0)
+          usd: debt?.paymentHistory
+            ?.filter((p) => p.currency === "USD")
+            ?.reduce((a, b) => a + b?.amount, 0),
+          sum: debt?.paymentHistory
+            ?.filter((p) => p.currency === "SUM")
+            ?.reduce((a, b) => a + b?.amount, 0),
         },
-      })
-
+      });
     }
 
     await debt.save();
@@ -158,7 +188,9 @@ exports.getDailyPaymentsByStoreId = async (req, res) => {
 
     const targetDate = moment(date, "DD-MM-YYYY");
 
-    const allDebts = await Debt.find({ "paymentHistory.storeId": storeId }).populate('productId').populate('clientId');
+    const allDebts = await Debt.find({ "paymentHistory.storeId": storeId })
+      .populate("productId")
+      .populate("clientId");
 
     const matchedPayments = [];
 
@@ -168,7 +200,8 @@ exports.getDailyPaymentsByStoreId = async (req, res) => {
           const paymentDate = moment(payment.date).utcOffset(5 * 60);
 
           if (
-            paymentDate.format("DD-MM-YYYY") === targetDate.format("DD-MM-YYYY") &&
+            paymentDate.format("DD-MM-YYYY") ===
+              targetDate.format("DD-MM-YYYY") &&
             payment.storeId.toString() === storeId
           ) {
             matchedPayments.push({
@@ -190,4 +223,3 @@ exports.getDailyPaymentsByStoreId = async (req, res) => {
     return res.status(500).json({ message: "Ichki server xatosi" });
   }
 };
-

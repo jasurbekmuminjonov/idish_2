@@ -16,10 +16,10 @@ export const debtApi = apiSlice.injectEndpoints({
       }),
     }),
     payDebt: builder.mutation({
-      query: ({ id, amount, currency }) => ({
+      query: ({ id, amount, currency, type }) => ({
         url: `/debts/pay/${id}`,
         method: "PUT",
-        body: { amount, currency },
+        body: { amount, currency, type },
       }),
     }),
     getAllDebtors: builder.query({

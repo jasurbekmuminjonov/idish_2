@@ -84,7 +84,7 @@ const productSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Warehouse",
       required: false,
-      default: null
+      default: null,
     },
     category: {
       type: String,
@@ -96,11 +96,15 @@ const productSchema = new mongoose.Schema(
     },
     code: {
       type: String,
-      required: false
+      required: false,
     },
     barcode: {
       type: String,
       required: true,
+    },
+    part: {
+      type: String,
+      required: false,
     },
   },
   {

@@ -1,11 +1,18 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const UsdSchema = new mongoose.Schema({
+const UsdSchema = new mongoose.Schema(
+  {
     rate: {
-        type: Number,
-        required: true,
-        default: 1
-    }
-}, { timestamps: true });
+      type: Number,
+      required: true,
+      default: 1,
+    },
+    kyg: {
+      type: Number,
+      default: 1,
+    },
+  },
+  { timestamps: true }
+);
 
-module.exports = mongoose.model('Usd', UsdSchema);
+module.exports = mongoose.model("Usd", UsdSchema);

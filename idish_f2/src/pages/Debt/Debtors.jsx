@@ -13,17 +13,23 @@ const Debtors = () => {
   const { data: debtors = [] } = useGetAllDebtorsQuery();
   const [payDebt] = usePayDebtMutation();
   const role = localStorage.getItem("role");
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [selectedDebtor, setSelectedDebtor] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState("");
-  const [selectedCurrency, setSelectedCurrency] = useState("")
+  const [selectedCurrency, setSelectedCurrency] = useState("");
+  const [paymentType, setPaymentType] = useState("");
   const handlePayDebt = async (debtId) => {
     try {
-      await payDebt({ id: debtId, amount: paymentAmount, currency: selectedCurrency }).unwrap();
-      setSelectedCurrency("")
-      setPaymentAmount(null)
+      await payDebt({
+        id: debtId,
+        amount: paymentAmount,
+        currency: selectedCurrency,
+        type: paymentType,
+      }).unwrap();
+      setSelectedCurrency("");
+      setPaymentAmount(null);
       message.success("Qarz muvaffaqiyatli to'landi");
       setIsModalVisible(false);
     } catch (error) {
@@ -47,30 +53,46 @@ const Debtors = () => {
       dataIndex: ["clientId", "address"],
       key: "clientId.address",
     },
-    ...(role === "admin" ? [
-      {
-        title: "Tovar nomi",
-        dataIndex: ["productId", "name"],
-        key: "productId.name",
-      },
+    ...(role === "admin"
+      ? [
+          {
+            title: "Tovar nomi",
+            dataIndex: ["productId", "name"],
+            key: "productId.name",
+          },
 
-      {
-        title: "Sotish narxi", dataIndex: "sellingPrice", key: "sellingPrice",
-        render: (value) => (value ? `${value?.toFixed(2)}` : "0.00"),
-
-      },
-      {
-        title: "Valyuta", dataIndex: "currency", key: "currency"
-      },
-      { title: "Soni", dataIndex: "quantity", key: "quantity" },
-      { title: "Umumiy summa", dataIndex: "totalAmount", key: "totalAmount", render: (text) => text.toFixed(2) }] : []),
+          {
+            title: "Sotish narxi",
+            dataIndex: "sellingPrice",
+            key: "sellingPrice",
+            render: (value) => (value ? `${value?.toFixed(2)}` : "0.00"),
+          },
+          {
+            title: "Valyuta",
+            dataIndex: "currency",
+            key: "currency",
+          },
+          { title: "Soni", dataIndex: "quantity", key: "quantity" },
+          {
+            title: "Umumiy summa",
+            dataIndex: "totalAmount",
+            key: "totalAmount",
+            render: (text) => text.toFixed(2),
+          },
+        ]
+      : []),
     {
       title: "Qoldiq summa",
       dataIndex: "remainingAmount",
       key: "remainingAmount",
-      render: (text) => text?.toFixed(2)
+      render: (text) => text?.toFixed(2),
     },
-    { title: "Qarz muddati", dataIndex: "dueDate", render: (text) => moment(text).format("DD.MM.YYYY"), key: "dueDate" },
+    {
+      title: "Qarz muddati",
+      dataIndex: "dueDate",
+      render: (text) => moment(text).format("DD.MM.YYYY"),
+      key: "dueDate",
+    },
     {
       title: "Holati",
       dataIndex: "status",
@@ -81,36 +103,29 @@ const Debtors = () => {
       title: "Amallar",
       render: (_, record) => (
         <div className="table_actions">
-          {
-            role === "store" && record?.status === "pending" && (
-
-
-              <Button
-                type="primary"
-                onClick={() => {
-                  setSelectedDebtor(record);
-                  setIsModalVisible(true);
-                }}
-              >
-                To'lash
-              </Button>
-            )
-          }
-          {
-            role !== "store" && (
-
-              <Button
-                type="default"
-                icon={<EyeOutlined />}
-                onClick={() => {
-                  setSelectedDebtor(record);
-                  setIsHistoryModalVisible(true);
-                }}
-              >
-                Tarix
-              </Button>
-            )
-          }
+          {role === "store" && record?.status === "pending" && (
+            <Button
+              type="primary"
+              onClick={() => {
+                setSelectedDebtor(record);
+                setIsModalVisible(true);
+              }}
+            >
+              To'lash
+            </Button>
+          )}
+          {role !== "store" && (
+            <Button
+              type="default"
+              icon={<EyeOutlined />}
+              onClick={() => {
+                setSelectedDebtor(record);
+                setIsHistoryModalVisible(true);
+              }}
+            >
+              Tarix
+            </Button>
+          )}
         </div>
       ),
     },
@@ -118,21 +133,33 @@ const Debtors = () => {
 
   return (
     <div className="page" style={{ overflowX: "auto" }}>
-      <div className="page_header" style={{ display: "flex", alignItems: "center", gap: "12px", color: "#fff", height: "40px", marginTop: "10px" }}>
-
-        <h1 style={{ color: "#001529" }} >Qarzdorlar</h1>
-        {
-          role !== "admin" && (
-            <Button onClick={() => navigate("/")} type="primary">
-              <FaChevronLeft />
-            </Button>
-          )
-        }
+      <div
+        className="page_header"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+          color: "#fff",
+          height: "40px",
+          marginTop: "10px",
+        }}
+      >
+        <h1 style={{ color: "#001529" }}>Qarzdorlar</h1>
+        {role !== "admin" && (
+          <Button onClick={() => navigate("/")} type="primary">
+            <FaChevronLeft />
+          </Button>
+        )}
       </div>
-      <Table columns={debtorsColumn} scroll={{ x: "max-content" }} dataSource={debtors} rowKey="_id" />
+      <Table
+        columns={debtorsColumn}
+        scroll={{ x: "max-content" }}
+        dataSource={debtors}
+        rowKey="_id"
+      />
       <Modal
         title="Qarz to'lash"
-        visible={isModalVisible}
+        open={isModalVisible}
         onOk={() => handlePayDebt(selectedDebtor._id)}
         onCancel={() => setIsModalVisible(false)}
       >
@@ -148,11 +175,21 @@ const Debtors = () => {
           type="text"
           placeholder="To'lov valyutasini tanlang"
           value={selectedCurrency}
-
           onChange={(value) => setSelectedCurrency(value)}
         >
           <Select.Option value="USD">USD</Select.Option>
           <Select.Option value="SUM">SUM</Select.Option>
+        </Select>
+
+        <Select
+          style={{ width: "100%", marginTop: "12px" }}
+          type="text"
+          placeholder="To'lov valyutasini tanlang"
+          value={selectedCurrency}
+          onChange={(value) => setPaymentType(value)}
+        >
+          <Select.Option value="naqt">Naqt</Select.Option>
+          <Select.Option value="karta">Karta</Select.Option>
         </Select>
       </Modal>
       <Modal
@@ -183,7 +220,7 @@ const Debtors = () => {
               title: "Do'kon",
               dataIndex: "storeId",
               render: (store) => store.name,
-            }
+            },
           ]}
           dataSource={selectedDebtor ? selectedDebtor.paymentHistory : []}
           rowKey={(record) => record.date}
