@@ -7,9 +7,12 @@ const partnerSchema = new mongoose.Schema(
       required: true,
     },
     name_partner: {
-      // Новое поле для имени партнера
       type: String,
       required: true,
+    },
+    partner_number: {
+      type: String,
+      default: "",
     },
     currency: {
       type: String,

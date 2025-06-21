@@ -131,14 +131,14 @@ router.get("/partner/warehouse/:id", auth, getProductsByWarehousePartner);
 router.put("/partner/:id", auth, updateProductPartner);
 router.delete("/partner/:id", auth, deleteProductPartner);
 
+// Client routes
+router.post("/clients", auth, createClient);
+router.get("/clients", auth, getClients);
 // Sales routes
 router.post("/sales/sell", auth, sellProduct);
 router.get("/sales/history", auth, getSalesHistory);
 router.get("/clients/:clientId/history", auth, getClientHistory);
 
-// Client routes
-router.post("/clients", auth, createClient);
-router.get("/clients", auth, getClients);
 
 // Debt routes
 router.post("/debts", auth, createDebt);
