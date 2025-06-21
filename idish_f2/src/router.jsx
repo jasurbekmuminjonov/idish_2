@@ -84,6 +84,7 @@ import Debtors from "./pages/Debt/Debtors";
 import socket from "./socket";
 import smsAudio from "./assets/sms.mp3";
 import { notification } from "antd";
+import ReconciliationAct from "./pages/reconciliation-act/ReconciliationAct";
 
 export const Routera = memo(() => {
   const role = localStorage.getItem("role");
@@ -178,6 +179,7 @@ export const Routera = memo(() => {
               }
             />
             <Route path="/debtors" element={<Debtors />} />
+            <Route path="/dalolatnoma" element={<ReconciliationAct />} />
             <Route path="*" element={<h1>Page Not Found</h1>} />
           </Route>
         </Routes>

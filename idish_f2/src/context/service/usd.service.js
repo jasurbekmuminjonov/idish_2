@@ -9,10 +9,10 @@ export const usdRateApi = apiSlice.injectEndpoints({
     }),
     // USD kursini yangilash uchun POST so'rovi
     updateUsdRate: builder.mutation({
-      query: (newRate) => ({
+      query: (body) => ({
         url: "/usd", // Backend endpoint
         method: "POST",
-        body: { rate: newRate },
+        body: body,
       }),
     }),
   }),

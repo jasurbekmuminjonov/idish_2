@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Tabs, Table, Button, InputNumber, Modal, Select, message, Popover } from "antd";
+import {
+  Tabs,
+  Table,
+  Button,
+  InputNumber,
+  Modal,
+  Select,
+  message,
+  Popover,
+} from "antd";
 import {
   useCreateTransportionMutation,
   useGetSentTransportionsQuery,
@@ -12,25 +21,25 @@ import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
 import "./transportion.css";
 import socket from "../../socket";
 
-
 const { TabPane } = Tabs;
 const { Option } = Select;
 
 const Transportion = () => {
   const { data: products = [] } = useGetProductsQuery();
-  const { data: sentTransportions = [], refetch } = useGetSentTransportionsQuery();
+  const { data: sentTransportions = [], refetch } =
+    useGetSentTransportionsQuery();
   const [createTransportion] = useCreateTransportionMutation();
   const { data: warehouses = [] } = useGetWarehousesQuery();
-  const role = localStorage.getItem('role')
+  const role = localStorage.getItem("role");
   const [acceptTransportion] = useAcceptTransportionMutation();
   const [cencelTransportion] = useCencelTransportionMutation();
   const [basket, setBasket] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [toWarehouse, setToWarehouse] = useState(null);
-  const id = localStorage.getItem('_id')
-  const [fromWarehouse, setFromWarehouse] = useState(role === "admin" ? null : id);
-
-
+  const id = localStorage.getItem("_id");
+  const [fromWarehouse, setFromWarehouse] = useState(
+    role === "admin" ? null : id
+  );
 
   useEffect(() => {
     const handleNewTransportion = () => {
@@ -44,10 +53,9 @@ const Transportion = () => {
     };
   }, []);
 
-
   const handleAddToBasket = (product) => {
     if (!basket.find((item) => item._id === product._id)) {
-      setBasket([...basket, { ...product, quantity: 1, unit: 'quantity' }]);
+      setBasket([...basket, { ...product, quantity: 1, unit: "quantity" }]);
     } else {
       message.warning("Bu mahsulot allaqachon qo‘shilgan");
     }
@@ -67,7 +75,6 @@ const Transportion = () => {
     );
   };
 
-
   const handleCreateTransportion = async () => {
     for (let item of basket) {
       const product = products.find((p) => p._id === item._id);
@@ -86,7 +93,11 @@ const Transportion = () => {
 
       if (item.quantity > available) {
         return message.error(
-          `${item.name} mahsuloti uchun ombordagi miqdor yetarli emas (${item.quantity?.toFixed(2)} > ${available?.toFixed(2)})`
+          `${
+            item.name
+          } mahsuloti uchun ombordagi miqdor yetarli emas (${item.quantity?.toFixed(
+            2
+          )} > ${available?.toFixed(2)})`
         );
       }
     }
@@ -121,9 +132,21 @@ const Transportion = () => {
   const productColumns = [
     { title: "Nomi", dataIndex: "name" },
     { title: "Dona soni", dataIndex: "quantity" },
-    { title: "Pachka soni", dataIndex: "package_quantity", render: (text) => text?.toFixed(2) },
-    { title: "Karobka soni", dataIndex: "box_quantity", render: (text) => text?.toFixed(2) },
-    { title: "Umumiy vazni", dataIndex: "total_kg", render: (text) => text?.toFixed(2) },
+    {
+      title: "Pachka soni",
+      dataIndex: "package_quantity",
+      render: (text) => text?.toFixed(2),
+    },
+    {
+      title: "Karobka soni",
+      dataIndex: "box_quantity",
+      render: (text) => text?.toFixed(2),
+    },
+    {
+      title: "Umumiy vazni",
+      dataIndex: "total_kg",
+      render: (text) => text?.toFixed(2),
+    },
     {
       title: "Amal",
       render: (_, record) => (
@@ -147,7 +170,6 @@ const Transportion = () => {
       title: "Miqdor",
       dataIndex: "quantity",
       render: (_, record) => {
-
         return (
           <InputNumber
             value={record.quantity}
@@ -155,7 +177,7 @@ const Transportion = () => {
             min={1}
             onChange={(val) => updateQuantity(record._id, val)}
           />
-        )
+        );
       },
     },
     {
@@ -165,9 +187,7 @@ const Transportion = () => {
           value={item.unit}
           onChange={(val) => updateUnit(item._id, val)}
           style={{ width: "200px" }}
-          defaultValue={'quantity'}
-
-
+          defaultValue={"quantity"}
         >
           <Option value="quantity">Dona</Option>
           {item.isPackage && <Option value="package_quantity">Pachka</Option>}
@@ -178,11 +198,11 @@ const Transportion = () => {
   ];
 
   const stm = {
-    kg_quantity: 'kg',
-    quantity: 'dona',
-    box_quantity: 'karobka',
-    package_quantity: 'pachka',
-  }
+    kg_quantity: "kg",
+    quantity: "dona",
+    box_quantity: "karobka",
+    package_quantity: "pachka",
+  };
 
   const acceptData = async (id) => {
     try {
@@ -223,10 +243,10 @@ const Transportion = () => {
         val === "in_process"
           ? "Jarayonda"
           : val === "delivered"
-            ? "Yetkazib berildi"
-            : val === "cancelled"
-              ? "Bekor qilindi"
-              : val,
+          ? "Yetkazib berildi"
+          : val === "cancelled"
+          ? "Bekor qilindi"
+          : val,
     },
     {
       title: "Amal",
@@ -242,16 +262,27 @@ const Transportion = () => {
             icon={<CloseOutlined />}
             danger
           />
-          <Popover placement="bottom" trigger='click' content={
-            <Table dataSource={item.products} columns={
-              [
-                { title: "Tovar nomi", render: (_, record) => record.product_id.name },
-                { title: "Miqdor", render: (_, record) => record.quantity },
-                { title: "Birlik", dataIndex: "unit", render: (text) => stm[text] || text },
-              ]
-            } />
-          }>
-
+          <Popover
+            placement="bottom"
+            trigger="click"
+            content={
+              <Table
+                dataSource={item.products}
+                columns={[
+                  {
+                    title: "Tovar nomi",
+                    render: (_, record) => record.product_id.name,
+                  },
+                  { title: "Miqdor", render: (_, record) => record.quantity },
+                  {
+                    title: "Birlik",
+                    dataIndex: "unit",
+                    render: (text) => stm[text] || text,
+                  },
+                ]}
+              />
+            }
+          >
             <Button type="link">Mahsulotlar</Button>
           </Popover>
         </div>
@@ -262,14 +293,22 @@ const Transportion = () => {
   return (
     <>
       <Tabs defaultActiveKey="1" style={{ overflowX: "auto" }}>
-        <TabPane defaultActiveKey="1" style={{ overflowX: "auto" }} tab="Jo‘natma yaratish" key="1">
-          <div className="transportion" style={{ display: "flex", flexDirection: "column" }}>
+        <TabPane
+          defaultActiveKey="1"
+          style={{ overflowX: "auto" }}
+          tab="Jo‘natma yaratish"
+          key="1"
+        >
+          <div
+            className="transportion"
+            style={{ display: "flex", flexDirection: "column" }}
+          >
             <h3>Qaysi ombordan</h3>
             <Select
               placeholder="Omborni tanlang"
               style={{ width: "20%" }}
               value={fromWarehouse}
-              disabled={role === 'warehouse'}
+              disabled={role === "warehouse"}
               onChange={(val) => setFromWarehouse(val)}
             >
               {warehouses.map((wh) => (
@@ -278,22 +317,20 @@ const Transportion = () => {
                 </Option>
               ))}
             </Select>
-            <div style={{ display: "flex", width: "100%", flexDirection: "column" }}>
-
-              <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
-
-                <h3>Mavjud mahsulotlar</h3>
-                <Table
-                  rowKey="_id"
-                  columns={productColumns}
-                  dataSource={products.filter(
-                    (p) => p.warehouse._id === fromWarehouse
-                  )}
-                  pagination={false}
-                />
-              </div>
-
-              <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
+            <div
+              style={{
+                display: "flex",
+                width: "100%",
+                flexDirection: "column",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  width: "100%",
+                }}
+              >
                 <h3 className="mt-4">Savatcha</h3>
                 <Table
                   rowKey="_id"
@@ -316,6 +353,24 @@ const Transportion = () => {
                 >
                   Jo'natma yaratish
                 </Button>
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  width: "100%",
+                }}
+              >
+                <h3>Mavjud mahsulotlar</h3>
+                <Table
+                  rowKey="_id"
+                  columns={productColumns}
+                  dataSource={products.filter(
+                    (p) => p.warehouse._id === fromWarehouse
+                  )}
+                  pagination={false}
+                />
               </div>
             </div>
 
@@ -341,8 +396,7 @@ const Transportion = () => {
             </Modal>
           </div>
         </TabPane>
-        {role === 'admin' && (
-
+        {role === "admin" && (
           <TabPane tab="Yuborilganlar" key="2">
             <Table
               rowKey="_id"
@@ -351,7 +405,7 @@ const Transportion = () => {
             />
           </TabPane>
         )}
-      </Tabs >
+      </Tabs>
     </>
   );
 };

@@ -86,8 +86,17 @@ const {
   deleteSalaryPayment,
 } = require("../controllers/salaryPaymentController");
 const { createStore, getStores } = require("../controllers/storeController");
-const { getSentTransportions, getGotTransportions, createTransportion, acceptController, rejectTransportion, getAllTransportions } = require("../controllers/Transportion");
+const {
+  getSentTransportions,
+  getGotTransportions,
+  createTransportion,
+  acceptController,
+  rejectTransportion,
+  getAllTransportions,
+} = require("../controllers/Transportion");
 const { getDailyPaymentsByStoreId } = require("../controllers/debtController");
+
+const UnfinishedController = require("../controllers/UnfinishedController");
 
 const router = express.Router();
 
@@ -186,13 +195,18 @@ router.get("/salary-payments", auth, getAllSalaryPayments); // 📋 Barcha to‘
 router.get("/salary-payments/employee/:id", auth, getPaymentsByEmployee); // 👤 Hodim bo‘yicha to‘lovlar
 router.delete("/salary-payments/:id", auth, deleteSalaryPayment); // ❌ To‘lovni o‘chirish
 
-router.post('/transportion/create', auth, createTransportion)
-router.get('/transportion/sent', auth, getSentTransportions)
-router.get('/transportion/got', auth, getGotTransportions)
-router.put('/transportion/accept/:transportion_id', auth, acceptController)
-router.put('/transportion/reject/:transportion_id', auth, rejectTransportion)
-router.get('/transportion/all', auth, getAllTransportions)
-router.get('/daily/debt', auth, getDailyPaymentsByStoreId)
+router.post("/transportion/create", auth, createTransportion);
+router.get("/transportion/sent", auth, getSentTransportions);
+router.get("/transportion/got", auth, getGotTransportions);
+router.put("/transportion/accept/:transportion_id", auth, acceptController);
+router.put("/transportion/reject/:transportion_id", auth, rejectTransportion);
+router.get("/transportion/all", auth, getAllTransportions);
+router.get("/daily/debt", auth, getDailyPaymentsByStoreId);
 
+// UnfinishedController;
+router.post("/unfinished/add", auth, UnfinishedController.createUnfinished);
+router.get("/unfinished", auth, UnfinishedController.getUnfinished);
+router.put("/unfinished/:id", auth, UnfinishedController.updateUnfinished);
+router.delete("/unfinished/:id", auth, UnfinishedController.deleteUnfinished);
 
 module.exports = router;

@@ -86,7 +86,7 @@ const WarehouseCard = ({ ombor, usdRate, sales, index }) => {
                          <div className="invest-stat-item">
                               <p><strong><CalendarOutlined /> Sana:</strong> <span className="invest-date">{stats.latestDate}</span></p>
                          </div>
-                         <Divider style={{ margin: "10px 0", borderColor: "#e8e8e8" }} />
+                         {/* <Divider style={{ margin: "10px 0", borderColor: "#e8e8e8" }} />
                          <div className="invest-stat-item">
                               <p><strong><DollarOutlined /> Xarajat:</strong></p>
                               <p><span className="invest-purchase">{stats.purchaseUZS.toLocaleString("uz-UZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} UZS</span></p>
@@ -97,7 +97,7 @@ const WarehouseCard = ({ ombor, usdRate, sales, index }) => {
                               <p><strong><RiseOutlined /> Foyda:</strong></p>
                               <p><span className="invest-profit">{stats.profitUZS.toLocaleString("uz-UZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} UZS</span></p>
                               <p><span className="invest-profit">{stats.profitUSD?.toFixed(2)} $</span></p>
-                         </div>
+                         </div> */}
                          <Divider style={{ margin: "10px 0", borderColor: "#e8e8e8" }} />
                          <div className="invest-stat-item">
                               <p><strong><ShoppingCartOutlined /> Jami (mavjud):</strong> <span className="invest-quantity">{stats.totalQuantity} dona</span></p>
@@ -190,7 +190,7 @@ export default function Investitsiya() {
      return (
           <div className="invest-container">
                <div className="invest-warehouse-cards">
-                    <SummaryCard expenses={expenses} debtors={debtors} products={products} sales={sales} usdRate={usdRate} />
+                    {/* <SummaryCard expenses={expenses} debtors={debtors} products={products} sales={sales} usdRate={usdRate} /> */}
                     {omborlar.map((ombor, index) => (
                          <WarehouseCard key={ombor._id} ombor={ombor} usdRate={usdRate} sales={sales} index={index} />
                     ))}

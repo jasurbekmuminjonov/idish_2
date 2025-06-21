@@ -7,46 +7,57 @@ import {
 } from "../../context/service/usd.service";
 
 export default function Usd() {
-  const { data: usdRateData, isLoading: isUsdRateLoading } = useGetUsdRateQuery();
+  const { data: usdRateData, isLoading: isUsdRateLoading } =
+    useGetUsdRateQuery();
   const [updateUsdRate] = useUpdateUsdRateMutation();
   const [usdRate, setUsdRate] = useState(usdRateData?.rate || 1);
-
+  const [kyg, setKyg] = useState(usdRateData?.kyg || 1);
   useEffect(() => {
     if (usdRateData) {
       setUsdRate(usdRateData.rate);
+      setKyg(usdRateData.kyg);
     }
   }, [usdRateData]);
 
   const handleUsdRateChange = async () => {
     try {
-      await updateUsdRate(usdRate).unwrap();
+      await updateUsdRate({ rate: +usdRate, kyg: +kyg }).unwrap();
       message.success("USD kursi muvaffaqiyatli yangilandi!");
     } catch (error) {
       message.error("Xatolik yuz berdi. Iltimos qayta urinib ko'ring.");
     }
   };
 
+  let role = localStorage.getItem("role");
+
   return (
-    <div className="admin-buttons">
-      <Row>
-        <Col span={20}>
-          <Input
-            placeholder="Bugungi USD kursini kiriting"
-            value={usdRate}
-            onChange={(e) => setUsdRate(e.target.value)}
-            type="number"
-          />
-        </Col>
-        <Col span={4}>
-          <Button
-            style={{ marginLeft: 20 }}
-            type="primary"
-            onClick={handleUsdRateChange}
-          >
-            Saqlash
-          </Button>
-        </Col>
-      </Row>
+    <div
+      className="admin-buttons"
+      style={{ display: "flex", alignItems: "center", gap: "10px" }}
+    >
+      <p>USD</p>
+      <Input
+        placeholder="Bugungi USD kursini kiriting"
+        value={usdRate}
+        onChange={(e) => setUsdRate(e.target.value)}
+        type="number"
+        readOnly={role === "warehouse"}
+      />
+      <p>KYG</p>
+      <Input
+        placeholder="Bugungi USD kursini kiriting"
+        value={kyg}
+        onChange={(e) => setKyg(e.target.value)}
+        type="number"
+        readOnly={role === "warehouse"}
+      />
+      <Button
+        style={{ marginLeft: 20 }}
+        type="primary"
+        onClick={handleUsdRateChange}
+      >
+        Saqlash
+      </Button>
     </div>
   );
 }

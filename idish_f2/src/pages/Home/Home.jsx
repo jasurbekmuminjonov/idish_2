@@ -1,5 +1,14 @@
-import React, { useState } from "react";
-import { Layout, Menu, Button, Modal, Card, Table, Badge } from "antd";
+import React, { useState, useEffect } from "react";
+import {
+  Layout,
+  Menu,
+  Button,
+  Modal,
+  Card,
+  Table,
+  Badge,
+  Checkbox,
+} from "antd";
 import {
   MenuUnfoldOutlined,
   MenuFoldOutlined,
@@ -19,7 +28,6 @@ import {
   CloseOutlined,
 } from "@ant-design/icons";
 import { FaChartLine, FaList } from "react-icons/fa6";
-import { BiTransferAlt } from "react-icons/bi";
 
 import { LuTicketPercent } from "react-icons/lu";
 
@@ -47,29 +55,58 @@ import Stores from "../Stores/Stores";
 import Transportion from "../transportion/Transportion";
 import { IoIosNotifications } from "react-icons/io";
 import Daily from "../Daily/Daily";
+import { useAddUnfinishedMutation } from "../../context/service/unfinished.service";
+import Unfinished from "../unfinished/Unfinished";
+
 const { Header, Sider, Content } = Layout;
 
 export default function Home() {
   const [collapsed, setCollapsed] = useState(false);
   const [openModal, setOpenModal] = useState(false);
-  let sendedData = JSON.parse(localStorage.getItem("newSales")) || [];
+  const [products, setProducts] = useState([]);
   const success = JSON.parse(localStorage.getItem("acsess") || "{}");
-  console.log(success);
-  
+  const [addUnfinished] = useAddUnfinishedMutation();
+
+  useEffect(() => {
+    let sendedData = JSON.parse(localStorage.getItem("newSales")) || [];
+    if (sendedData.length > 0) {
+      setProducts(sendedData);
+    }
+  }, [products]);
+
+  const handleCheckboxChange = (index, record, e) => {
+    let item = products.find((item, inx) => inx === index);
+
+    item.products = item.products.map((product) => {
+      if (product.id === record.id) {
+        product.checked = e.target.checked;
+      }
+      return product;
+    });
+    let newData = products.map((i, order) => {
+      if (order === index) {
+        i = item;
+      }
+      return i;
+    });
+
+    setProducts(newData);
+
+    localStorage.setItem("newSales", JSON.stringify(newData));
+  };
+
   const role = localStorage.getItem("role");
   const [selectedPage, setSelectedPage] = useState(
     role === "admin" ? "home" : "product"
   );
 
-  const toggle = () => {
-    setCollapsed(!collapsed);
-  };
+  const toggle = () => setCollapsed(!collapsed);
   const stm = {
-    kg_quantity: 'kg',
-    quantity: 'dona',
-    box_quantity: 'karobka',
-    package_quantity: 'pachka',
-  }
+    kg_quantity: "kg",
+    quantity: "dona",
+    box_quantity: "karobka",
+    package_quantity: "pachka",
+  };
   const renderContent = () => {
     switch (selectedPage) {
       case "admin":
@@ -110,10 +147,90 @@ export default function Home() {
         return <Stores />;
       case "transportions":
         return <Transportion />;
+      case "unfinished":
+        return <Unfinished />;
       case "home":
       default:
         return <Investitsiya />;
     }
+  };
+
+  // ...existing code...
+  const handlePrint = (item) => {
+    // Jadval HTMLini yaratish
+    const tableHtml = `
+    <html>
+      <head>
+        <title>Chop etish</title>
+        <style>
+          table { border-collapse: collapse; width: 100%; }
+          th, td { border: 1px solid #333; padding: 8px; text-align: left; }
+        </style>
+      </head>
+      <body>
+        <h2>Yuboruvchi: ${item.sender.name}</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Mahsulot nomi</th>
+              <th>Birlik</th>
+              <th>Soni</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${item.products
+              .map(
+                (prod) => `
+                  <tr>
+                    <td>${prod.productId.name}</td>
+                    <td>${stm[prod.unit] || prod.unit}</td>
+                    <td>${prod.quantity}</td>
+                  </tr>
+                `
+              )
+              .join("")}
+          </tbody>
+        </table>
+      </body>
+    </html>
+  `;
+    // Yangi oynada ochib, chop etish
+    const printWindow = window.open("", "_blank");
+    printWindow.document.write(tableHtml);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+  };
+  // ...existing code...
+
+  const removeItem = async (item) => {
+    // checkProducts
+    try {
+      let data = products.find((el) => el.sender._id === item.sender._id);
+      let state = data.products.every((el) => el.checked === true);
+
+      if (state !== true) {
+        let body = {
+          senderId: data.sender._id,
+          senderName: data.sender.name,
+          products: data.products.map((i) => ({
+            productId: i.productId._id,
+            quantity: i.quantity,
+            unit: i.unit,
+            name: i.productId.name,
+            checked: i.checked,
+          })),
+        };
+        await addUnfinished(body);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+
+    const newArr = products.filter((el) => el.sender._id !== item.sender._id);
+    localStorage.setItem("newSales", JSON.stringify(newArr));
+    setOpenModal(false);
+    setTimeout(() => setOpenModal(true), 0);
   };
 
   return (
@@ -189,7 +306,7 @@ export default function Home() {
           )}
           {success?.brak && (
             <Menu.Item key="brak" icon={<ExclamationCircleOutlined />}>
-              Брак 
+              Брак
             </Menu.Item>
           )}
           {success?.expense && (
@@ -214,7 +331,7 @@ export default function Home() {
           )}
           {success?.oylik && (
             <Menu.Item key="oylik" icon={<DollarOutlined />}>
-              Заплата 
+              Заплата
             </Menu.Item>
           )}
 
@@ -223,8 +340,12 @@ export default function Home() {
               Передача товара
             </Menu.Item>
           )}
+          {(success?.transportions || role === "warehouse") && (
+            <Menu.Item key="unfinished" icon={<LuTicketPercent />}>
+              topilmaganlar
+            </Menu.Item>
+          )}
         </Menu>
-
       </Sider>
       <Layout className="site-layout">
         <Header
@@ -245,7 +366,7 @@ export default function Home() {
             style={{ padding: 0 }}
           >
             <Badge
-              count={sendedData.length}
+              count={products.length}
               style={{
                 backgroundColor: "red",
                 color: "white",
@@ -265,7 +386,7 @@ export default function Home() {
             onCancel={() => setOpenModal(false)}
             title="Yuborilgan buyurtmalar"
           >
-            {sendedData?.map((item, index) => (
+            {products?.map((item, index) => (
               <Card
                 key={index}
                 title={
@@ -277,28 +398,39 @@ export default function Home() {
                     }}
                   >
                     <span>{item.sender.name}</span>
-                    <Button
-                      type="text"
-                      icon={<CloseOutlined />}
-                      onClick={() => {
-                        const newArr = sendedData.filter(
-                          (el) => el.sender._id !== item.sender._id
-                        );
-                        localStorage.setItem(
-                          "newSales",
-                          JSON.stringify(newArr)
-                        );
-                        // Modalni yangilash uchun sahifani refresh qilmasdan state update qiling:
-                        setOpenModal(false);
-                        setTimeout(() => setOpenModal(true), 0);
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
                       }}
-                    />
+                    >
+                      <Button onClick={() => handlePrint(item)} type="primary">
+                        Chop etish
+                      </Button>
+                      <Button
+                        type="text"
+                        icon={<CloseOutlined />}
+                        onClick={() => removeItem(item)}
+                      />
+                    </div>
                   </div>
                 }
               >
                 <Table
                   size="small"
                   columns={[
+                    {
+                      title: "Holat",
+                      render: (text, record) => (
+                        <Checkbox
+                          checked={record.checked}
+                          onChange={(e) =>
+                            handleCheckboxChange(index, record, e)
+                          }
+                        />
+                      ),
+                    },
                     {
                       title: "Mahsulot nomi",
                       dataIndex: ["productId", "name"],
@@ -314,6 +446,7 @@ export default function Home() {
                     },
                   ]}
                   dataSource={item.products}
+                  pagination={false}
                 />
               </Card>
             ))}

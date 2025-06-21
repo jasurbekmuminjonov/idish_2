@@ -75,14 +75,14 @@ const Kassa = () => {
       code: product.code || "",
       partnerName: product.name_partner || "Noma'lum",
     })),
-    ...partnerProducts.map((product) => ({
-      ...product,
-      source: "partner",
-      name: product.name || "Noma'lum",
-      barcode: product.barcode || "",
-      code: product.code || "",
-      partnerName: product.name_partner || "Noma'lum",
-    })),
+    // ...partnerProducts.map((product) => ({
+    //   ...product,
+    //   source: "partner",
+    //   name: product.name || "Noma'lum",
+    //   barcode: product.barcode || "",
+    //   code: product.code || "",
+    //   partnerName: product.name_partner || "Noma'lum",
+    // })),
   ];
 
   const combinedPartners = [
@@ -92,12 +92,12 @@ const Kassa = () => {
         name: p.partnerName,
         id: p.partner_number,
       })),
-    ...partnersFromApi
-      .filter((p) => p.partner_name && p.partner_number)
-      .map((p) => ({
-        name: p.partner_name,
-        id: p.partner_number,
-      })),
+    // ...partnersFromApi
+    //   .filter((p) => p.partner_name && p.partner_number)
+    //   .map((p) => ({
+    //     name: p.partner_name,
+    //     id: p.partner_number,
+    //   })),
   ];
 
   const uniquePartners = Array.from(
@@ -174,12 +174,12 @@ const Kassa = () => {
           (selectedUnit === "quantity"
             ? item.quantity
             : selectedUnit === "package_quantity"
-              ? item.quantity * item.quantity_per_package
-              : selectedUnit === "box_quantity"
-                ? item.quantity *
-                item.quantity_per_package *
-                item.package_quantity_per_box
-                : null);
+            ? item.quantity * item.quantity_per_package
+            : selectedUnit === "box_quantity"
+            ? item.quantity *
+              item.quantity_per_package *
+              item.package_quantity_per_box
+            : null);
         const discountedPrice = promo
           ? promo.type === "percent"
             ? totalPrice - (totalPrice / 100) * promo.percent
@@ -200,6 +200,39 @@ const Kassa = () => {
 
     let buyerName = "Noma'lum";
     let buyerAddress = "Noma'lum";
+    let paymentType = sellForm.getFieldValue("paymentMethod");
+    const promo = promos.find((p) => p._id === paymentDiscount);
+
+    const getDiscountedPrice = (price, quantity) => {
+      if (!promo) return price;
+      return promo.type === "percent"
+        ? price - (price * promo.percent) / 100
+        : (price * quantity - promo.percent) / quantity;
+    };
+
+    const getBasketTotal = (basket, selectedUnit, getDiscountedPrice) => {
+      return basket.reduce((sum, item) => {
+        const quantity =
+          selectedUnit === "quantity"
+            ? item.quantity
+            : selectedUnit === "package_quantity"
+            ? item.quantity * item.quantity_per_package
+            : selectedUnit === "box_quantity"
+            ? item.quantity *
+              item.quantity_per_package *
+              item.package_quantity_per_box
+            : 0;
+
+        const unitPrice = getDiscountedPrice(item.sellingPrice.value, quantity);
+        const totalAmount = Math.max(unitPrice * quantity, 0);
+
+        return sum + totalAmount;
+      }, 0);
+    };
+    let initialPayment = sellForm.getFieldValue("initialPayment");
+
+    let totalQarz =
+      getBasketTotal(basket, selectedUnit, getDiscountedPrice) - initialPayment;
 
     if (buyerType === "client" && selectedBuyer) {
       const client = clients.find((c) => c._id === selectedBuyer);
@@ -222,12 +255,12 @@ const Kassa = () => {
           (selectedUnit === "quantity"
             ? item.quantity
             : selectedUnit === "package_quantity"
-              ? item.quantity * item.quantity_per_package
-              : selectedUnit === "box_quantity"
-                ? item.quantity *
-                item.quantity_per_package *
-                item.package_quantity_per_box
-                : null);
+            ? item.quantity * item.quantity_per_package
+            : selectedUnit === "box_quantity"
+            ? item.quantity *
+              item.quantity_per_package *
+              item.package_quantity_per_box
+            : null);
         const discountedPrice = promo
           ? promo.type === "percent"
             ? totalPrice - (totalPrice / 100) * promo.percent
@@ -240,24 +273,27 @@ const Kassa = () => {
           <td style="padding: 8px;">${item.name || "Noma'lum mahsulot"}</td>
           <td style="padding: 8px;">${item.size || "-"}</td>
           <td style="padding: 8px;">${item.code || "-"}</td>
-          <td style="padding: 8px;">${selectedUnit === "quantity"
-            ? item.quantity
-            : selectedUnit === "package_quantity"
+          <td style="padding: 8px;">${
+            selectedUnit === "quantity"
+              ? item.quantity
+              : selectedUnit === "package_quantity"
               ? item.quantity * item.quantity_per_package
               : selectedUnit === "box_quantity"
-                ? item.quantity *
+              ? item.quantity *
                 item.quantity_per_package *
                 item.package_quantity_per_box
-                : null
+              : null
           }</td>
           <td style="padding: 8px;">${formatNumber(
             item.sellingPrice.value
           )}</td>
-          <td style="padding: 8px;">${item.currency === "USD" ? "Доллар" : "Сум"
+          <td style="padding: 8px;">${
+            item.currency === "USD" ? "Доллар" : "Сум"
           }</td>
-          <td style="padding: 8px;">${promo
-            ? `${promo.percent} ${promo.type === "percent" ? "%" : "сум"}`
-            : "—"
+          <td style="padding: 8px;">${
+            promo
+              ? `${promo.percent} ${promo.type === "percent" ? "%" : "сум"}`
+              : "—"
           }</td>
           <td style="padding: 8px;">${formatNumber(discountedPrice)}</td>
         </tr>
@@ -270,8 +306,8 @@ const Kassa = () => {
         <div style="border: 2px solid #1a73e8; border-radius: 12px; padding: 20px; background-color: #ffffff; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
           <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e0e0e0; padding-bottom: 10px; margin-bottom: 20px;">
             <h2 style="margin: 0; font-size: 18px; color: #1a73e8;">${moment().format(
-      "DD.MM.YYYY, HH:mm:ss"
-    )} счет-фактура</h2>
+              "DD.MM.YYYY, HH:mm:ss"
+            )} счет-фактура</h2>
             <span style="font-size: 16px; color: #555;">Счет-фактура</span>
           </div>
           <div style="display: flex; width: 100%; margin-bottom: 20px;">
@@ -312,11 +348,18 @@ const Kassa = () => {
           </table>
           <div style="margin-bottom: 20px;">
             <b style="color: #333;">Долларовая часть общей суммы платежа составляет: ${formatNumber(
-      totalUSD
-    )} доллар</b><br/>
+              totalUSD
+            )} доллар</b><br/>
             <b style="color: #333;">Сумовая часть общей суммы платежа составляет: ${formatNumber(
-      totalSUM
-    )} сyм</b>
+              totalSUM
+            )} сyм</b></b><br/>
+            ${
+              paymentType === "credit"
+                ? `<b style="color: #333;">Оставшийся долг: ${formatNumber(
+                    totalQarz
+                  )}</b>`
+                : ""
+            }
           </div>
           <div style="display: flex; justify-content: space-around; margin-top: 20px; border-top: 1px solid #e0e0e0; padding-top: 20px;">
             <div style="text-align: center;">
@@ -415,7 +458,7 @@ const Kassa = () => {
       title: "Karobka soni",
       dataIndex: "box_quantity",
       key: "box_quantity",
-      render: (text) => text.toFixed(1),
+      render: (text) => text?.toFixed(1),
     },
     // {
     //   title: "Pachka soni",
@@ -434,8 +477,9 @@ const Kassa = () => {
           currency,
           usdRate?.rate
         );
-        return `${formatNumber(convertedPrice)} ${currency === "SUM" ? "сум" : "$"
-          }`;
+        return `${formatNumber(convertedPrice)} ${
+          currency === "SUM" ? "сум" : "$"
+        }`;
       },
     },
     {
@@ -448,7 +492,6 @@ const Kassa = () => {
               const price = record.sellingPrice?.value || 0;
               const productCurrency = record.currency || "SUM";
               setBasket([
-
                 {
                   ...record,
                   quantity: 1,
@@ -484,7 +527,10 @@ const Kassa = () => {
 
   const findWarehouse = (item) =>
     allProducts.filter((p) =>
-      [item].some((b) => b.code === p.code && b.name === p.name && b.quantity <= p.quantity)
+      [item].some(
+        (b) =>
+          b.code === p.code && b.name === p.name && b.quantity <= p.quantity
+      )
     );
 
   const basketColumn = [
@@ -652,9 +698,7 @@ const Kassa = () => {
     // },
     {
       title: "Sotish narxi",
-      render: (_, record) => (
-        <p>{formatNumber(record?.sellingPrice?.value)}</p>
-      )
+      render: (_, record) => <p>{formatNumber(record?.sellingPrice?.value)}</p>,
     },
     {
       title: "O'lchov birlik",
@@ -704,7 +748,6 @@ const Kassa = () => {
                 product.warehouse?._id === val
             );
 
-
             if (!updatedProduct) {
               message.error("Tanlangan omborda mahsulot topilmadi");
               return;
@@ -714,13 +757,13 @@ const Kassa = () => {
               prev.map((item) =>
                 item._id === p._id
                   ? {
-                    ...updatedProduct,
-                    quantity: item.quantity,
-                    currency: item.currency,
-                    originalPrice: item.originalPrice,
-                    sellingPrice: item.sellingPrice,
-                    selectedWarehouse: val,
-                  }
+                      ...updatedProduct,
+                      quantity: item.quantity,
+                      currency: item.currency,
+                      originalPrice: item.originalPrice,
+                      sellingPrice: item.sellingPrice,
+                      selectedWarehouse: val,
+                    }
                   : item
               )
             );
@@ -735,7 +778,6 @@ const Kassa = () => {
             </Select.Option>
           ))}
         </Select>
-
       ),
     },
   ];
@@ -747,26 +789,28 @@ const Kassa = () => {
         const warehouseQty = item.quantity;
         let requiredQty = 0;
 
-
         if (unit === "quantity") {
           requiredQty = item.quantity;
         } else if (unit === "package_quantity") {
           requiredQty = item.quantity * item.quantity_per_package;
         } else if (unit === "box_quantity") {
-          requiredQty = item.quantity * item.quantity_per_package * item.package_quantity_per_box;
+          requiredQty =
+            item.quantity *
+            item.quantity_per_package *
+            item.package_quantity_per_box;
         }
-        console.log(requiredQty);
-
 
         const availableProduct = allProducts.find(
-          (p) =>
-            p._id === item._id &&
-            p.warehouse?._id === item.warehouse?._id
+          (p) => p._id === item._id && p.warehouse?._id === item.warehouse?._id
         );
-        console.log(availableProduct);
+
         if (!availableProduct || requiredQty > availableProduct.quantity) {
           message.error(
-            `${item.name} mahsulotidan omborda yetarli miqdor mavjud emas. Maks: ${availableProduct?.quantity || 0}`
+            `${
+              item.name
+            } mahsulotidan omborda yetarli miqdor mavjud emas. Maks: ${
+              availableProduct?.quantity || 0
+            }`
           );
           return;
         }
@@ -813,12 +857,12 @@ const Kassa = () => {
               selectedUnit === "quantity"
                 ? item.quantity
                 : selectedUnit === "package_quantity"
-                  ? item.quantity * item.quantity_per_package
-                  : selectedUnit === "box_quantity"
-                    ? item.quantity *
-                    item.quantity_per_package *
-                    item.package_quantity_per_box
-                    : 0;
+                ? item.quantity * item.quantity_per_package
+                : selectedUnit === "box_quantity"
+                ? item.quantity *
+                  item.quantity_per_package *
+                  item.package_quantity_per_box
+                : 0;
 
             const unitPrice = getDiscountedPrice(
               item.sellingPrice.value,
@@ -835,13 +879,13 @@ const Kassa = () => {
               paymentHistory: [
                 ...(initialPayment > 0
                   ? [
-                    {
-                      date: moment().format("YYYY-MM-DD"),
-                      amount: initialPayment,
-                      currency: item.currency,
-                      storeId: localStorage.getItem("_id")
-                    },
-                  ]
+                      {
+                        date: moment().format("YYYY-MM-DD"),
+                        amount: initialPayment,
+                        currency: item.currency,
+                        storeId: localStorage.getItem("_id"),
+                      },
+                    ]
                   : []),
               ],
               unit: selectedUnit,
@@ -866,12 +910,12 @@ const Kassa = () => {
               selectedUnit === "quantity"
                 ? item.quantity
                 : selectedUnit === "package_quantity"
-                  ? item.quantity * item.quantity_per_package
-                  : selectedUnit === "box_quantity"
-                    ? item.quantity *
-                    item.quantity_per_package *
-                    item.package_quantity_per_box
-                    : 0;
+                ? item.quantity * item.quantity_per_package
+                : selectedUnit === "box_quantity"
+                ? item.quantity *
+                  item.quantity_per_package *
+                  item.package_quantity_per_box
+                : 0;
 
             const unitPrice = getDiscountedPrice(
               item.sellingPrice.value,
@@ -965,6 +1009,13 @@ const Kassa = () => {
           <Button
             style={{ justifySelf: "end", display: "flex" }}
             type="primary"
+            onClick={() => navigate("/dalolatnoma")}
+          >
+            Dalolatnoma
+          </Button>
+          <Button
+            style={{ justifySelf: "end", display: "flex" }}
+            type="primary"
             onClick={() => setXarajatModal(true)}
           >
             Xarajat qo'shish
@@ -979,7 +1030,17 @@ const Kassa = () => {
           rowKey="_id"
         />
       </div>
-      <Button style={{ maxWidth: "170px", display: "flex", justifySelf: "end", alignSelf: "end", marginRight: "15px" }} type="primary" onClick={() => setIsModalVisible(true)}>
+      <Button
+        style={{
+          maxWidth: "170px",
+          display: "flex",
+          justifySelf: "end",
+          alignSelf: "end",
+          marginRight: "15px",
+        }}
+        type="primary"
+        onClick={() => setIsModalVisible(true)}
+      >
         Sotish
       </Button>
       {basket.length > 0 && (
@@ -1001,12 +1062,12 @@ const Kassa = () => {
                   (selectedUnit === "quantity"
                     ? item.quantity
                     : selectedUnit === "package_quantity"
-                      ? item.quantity * item.quantity_per_package
-                      : selectedUnit === "box_quantity"
-                        ? item.quantity *
-                        item.quantity_per_package *
-                        item.package_quantity_per_box
-                        : null);
+                    ? item.quantity * item.quantity_per_package
+                    : selectedUnit === "box_quantity"
+                    ? item.quantity *
+                      item.quantity_per_package *
+                      item.package_quantity_per_box
+                    : null);
                 const promo = promos.find((p) => p._id === paymentDiscount);
                 const discountedPrice = promo
                   ? promo.type === "percent"
@@ -1018,11 +1079,11 @@ const Kassa = () => {
                   (item.currency === "SUM"
                     ? discountedPrice
                     : convertPrice(
-                      discountedPrice,
-                      "USD",
-                      "SUM",
-                      usdRate?.rate
-                    ))
+                        discountedPrice,
+                        "USD",
+                        "SUM",
+                        usdRate?.rate
+                      ))
                 );
               }, 0)
             )}{" "}
@@ -1037,12 +1098,12 @@ const Kassa = () => {
                   (selectedUnit === "quantity"
                     ? item.quantity
                     : selectedUnit === "package_quantity"
-                      ? item.quantity * item.quantity_per_package
-                      : selectedUnit === "box_quantity"
-                        ? item.quantity *
-                        item.quantity_per_package *
-                        item.package_quantity_per_box
-                        : null);
+                    ? item.quantity * item.quantity_per_package
+                    : selectedUnit === "box_quantity"
+                    ? item.quantity *
+                      item.quantity_per_package *
+                      item.package_quantity_per_box
+                    : null);
                 const promo = promos.find((p) => p._id === paymentDiscount);
                 const discountedPrice = promo
                   ? promo.type === "percent"
@@ -1054,17 +1115,16 @@ const Kassa = () => {
                   (item.currency === "USD"
                     ? discountedPrice
                     : convertPrice(
-                      discountedPrice,
-                      "SUM",
-                      "USD",
-                      usdRate?.rate
-                    ))
+                        discountedPrice,
+                        "SUM",
+                        "USD",
+                        usdRate?.rate
+                      ))
                 );
               }, 0)
             )}{" "}
             $
           </p>
-
         </div>
       )}
       <Modal

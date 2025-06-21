@@ -11,7 +11,7 @@ import {
   Upload,
   Switch,
   Space,
-  AutoComplete
+  AutoComplete,
 } from "antd";
 import { useReactToPrint } from "react-to-print";
 import Barcode from "react-barcode";
@@ -52,11 +52,15 @@ const Product = () => {
   const [selectedImage, setSelectedImage] = useState("");
   const [editingProduct, setEditingProduct] = useState("");
   const [editingSource, setEditingSource] = useState("");
-  const { data: products = [], isLoading: productsLoading } = useGetProductsQuery();
-  const { data: partnerProducts = [], isLoading: partnerProductsLoading } = useGetProductsPartnerQuery();
-  const { data: warehouses = [], isLoading: warehousesLoading } = useGetWarehousesQuery();
+  const { data: products = [], isLoading: productsLoading } =
+    useGetProductsQuery();
+  const { data: partnerProducts = [], isLoading: partnerProductsLoading } =
+    useGetProductsPartnerQuery();
+  const { data: warehouses = [], isLoading: warehousesLoading } =
+    useGetWarehousesQuery();
   const [addProduct] = useAddProductMutation();
-  const { data: partnersFromApi = [], isLoading: partnersLoading } = useGetActPartnersQuery();
+  const { data: partnersFromApi = [], isLoading: partnersLoading } =
+    useGetActPartnersQuery();
   const [deleteProduct] = useDeleteProductMutation();
   const [deleteProductPartner] = useDeleteProductPartnerMutation();
   const [editProduct] = useUpdateProductMutation();
@@ -72,11 +76,12 @@ const Product = () => {
 
   const handleNameSearch = (value) => {
     const filtered = unikalHamkorlar
-      .filter(h =>
-        h.nom.toLowerCase().includes(value.toLowerCase()) ||
-        h.raqam.toLowerCase().includes(value.toLowerCase())
+      .filter(
+        (h) =>
+          h.nom.toLowerCase().includes(value.toLowerCase()) ||
+          h.raqam.toLowerCase().includes(value.toLowerCase())
       )
-      .map(h => ({
+      .map((h) => ({
         value: h.nom,
         label: `${h.nom} (${h.raqam})`,
       }));
@@ -86,11 +91,12 @@ const Product = () => {
 
   const handleNumberSearch = (value) => {
     const filtered = unikalHamkorlar
-      .filter(h =>
-        h.raqam.toLowerCase().includes(value.toLowerCase()) ||
-        h.nom.toLowerCase().includes(value.toLowerCase())
+      .filter(
+        (h) =>
+          h.raqam.toLowerCase().includes(value.toLowerCase()) ||
+          h.nom.toLowerCase().includes(value.toLowerCase())
       )
-      .map(h => ({
+      .map((h) => ({
         value: h.raqam,
         label: `${h.raqam} (${h.nom})`,
       }));
@@ -99,19 +105,19 @@ const Product = () => {
   };
 
   const handleNameSelect = (value, form) => {
-    const selected = unikalHamkorlar.find(h => h.nom === value);
+    const selected = unikalHamkorlar.find((h) => h.nom === value);
     if (selected) {
-      form.setFieldValue('partner_number', selected.raqam); // Set number when name is selected
-      form.setFieldValue('partner_address', selected.manzil);
+      form.setFieldValue("partner_number", selected.raqam); // Set number when name is selected
+      form.setFieldValue("partner_address", selected.manzil);
     }
   };
 
   // Handle number selection
   const handleNumberSelect = (value, form) => {
-    const selected = unikalHamkorlar.find(h => h.raqam === value);
+    const selected = unikalHamkorlar.find((h) => h.raqam === value);
     if (selected) {
-      form.setFieldValue('name_partner', selected.nom); // Set name when number is selected
-      form.setFieldValue('partner_address', selected.manzil);
+      form.setFieldValue("name_partner", selected.nom); // Set name when number is selected
+      form.setFieldValue("partner_address", selected.manzil);
     }
   };
 
@@ -134,27 +140,26 @@ const Product = () => {
     })),
   ];
 
-
   const barchaMahsulotlar = [
     ...products.map((mahsulot) => ({
       ...mahsulot,
-      manba: 'mahsulot',
-      hamkor_nomi: mahsulot.name_partner || '',
-      hamkor_raqami: mahsulot.partner_number || '',
-      hamkor_manzili: mahsulot.partner_address || '',
+      manba: "mahsulot",
+      hamkor_nomi: mahsulot.name_partner || "",
+      hamkor_raqami: mahsulot.partner_number || "",
+      hamkor_manzili: mahsulot.partner_address || "",
     })),
     ...partnerProducts.map((mahsulot) => ({
       ...mahsulot,
-      manba: 'hamkor',
-      hamkor_nomi: mahsulot.name_partner || '',
-      hamkor_raqami: mahsulot.partner_number || '',
-      hamkor_manzili: mahsulot.partner_address || '',
+      manba: "hamkor",
+      hamkor_nomi: mahsulot.name_partner || "",
+      hamkor_raqami: mahsulot.partner_number || "",
+      hamkor_manzili: mahsulot.partner_address || "",
     })),
     ...partnersFromApi.map((partner) => ({
-      manba: 'api',
-      hamkor_nomi: partner.partner_name || '',
-      hamkor_raqami: partner.partner_number || '',
-      hamkor_manzili: partner.partner_address || '',
+      manba: "api",
+      hamkor_nomi: partner.partner_name || "",
+      hamkor_raqami: partner.partner_number || "",
+      hamkor_manzili: partner.partner_address || "",
     })),
   ];
 
@@ -162,14 +167,20 @@ const Product = () => {
     new Map(
       barchaMahsulotlar
         .filter((p) => p.hamkor_nomi && p.hamkor_raqami)
-        .map((p) => [p.hamkor_nomi, { nom: p.hamkor_nomi, raqam: p.hamkor_raqami, manzil: p.hamkor_manzili }])
+        .map((p) => [
+          p.hamkor_nomi,
+          {
+            nom: p.hamkor_nomi,
+            raqam: p.hamkor_raqami,
+            manzil: p.hamkor_manzili,
+          },
+        ])
     ).values()
-  )
-
-  const unikalManzillar = Array.from(
-    new Set(barchaMahsulotlar.map(p => p.hamkor_manzili).filter(Boolean))
   );
 
+  const unikalManzillar = Array.from(
+    new Set(barchaMahsulotlar.map((p) => p.hamkor_manzili).filter(Boolean))
+  );
 
   const handleUpload = async (file) => {
     const formData = new FormData();
@@ -177,7 +188,10 @@ const Product = () => {
     formData.append("key", "65384e0beb6c45b817d791e806199b7e");
 
     try {
-      const response = await axios.post("https://api.imgbb.com/1/upload", formData);
+      const response = await axios.post(
+        "https://api.imgbb.com/1/upload",
+        formData
+      );
       const url = response.data.data.url;
       setImageUrl(url);
       message.success("Rasm muvaffaqiyatli yuklandi!");
@@ -214,8 +228,8 @@ const Product = () => {
 
   const onFinish = async (values) => {
     try {
-      if (localStorage.getItem('role') === 'warehouse') {
-        values.warehouse = localStorage.getItem('_id');
+      if (localStorage.getItem("role") === "warehouse") {
+        values.warehouse = localStorage.getItem("_id");
       }
       if (!editingProduct) {
         const newBarcode = generateBarcode();
@@ -230,9 +244,10 @@ const Product = () => {
         values.kg_per_box = values.box_quantity
           ? (total_kg / Number(values.box_quantity))?.toFixed(2)
           : null;
-        values.kg_per_package = isPackage && values.package_quantity
-          ? (total_kg / Number(values.package_quantity))?.toFixed(2)
-          : null;
+        values.kg_per_package =
+          isPackage && values.package_quantity
+            ? (total_kg / Number(values.package_quantity))?.toFixed(2)
+            : null;
         values.kg_per_quantity = values.quantity
           ? (total_kg / Number(values.quantity))?.toFixed(2)
           : null;
@@ -262,7 +277,9 @@ const Product = () => {
       setModalVisible(false);
       setImageUrl("");
     } catch (error) {
-      if (error.data?.message?.includes("E11000 duplicate key error collection")) {
+      if (
+        error.data?.message?.includes("E11000 duplicate key error collection")
+      ) {
         message.error("Barcode must be unique");
       } else {
         message.error("Mahsulotni qo'shishda xatolik yuz berdi!");
@@ -318,18 +335,10 @@ const Product = () => {
       width: 200,
     },
     {
-      title: "Xamkor",
-      dataIndex: "name_partner",
-      key: "name_partner",
-      render: (text) => text || "-",
+      title: "Kategoriya",
+      dataIndex: "category",
+      key: "category",
       width: 120,
-    },
-    {
-      title: "Raqam",
-      dataIndex: "partner_number",
-      key: "partner_number",
-      render: (text) => text || "-",
-      width: 100,
     },
     {
       title: "Kod",
@@ -344,19 +353,12 @@ const Product = () => {
       width: 80,
     },
     {
-      title: "Vazn (kg)",
-      dataIndex: "total_kg",
-      key: "total_kg",
-      render: (text) => (text ? text?.toFixed(2) : "-"),
+      title: "Pachka",
+      key: "package_quantity",
+      render: (_, record) =>
+        record?.isPackage ? record?.package_quantity?.toFixed(2) || "-" : "-",
       align: "center",
       width: 80,
-    },
-    {
-      title: "Dona",
-      dataIndex: "quantity",
-      key: "quantity",
-      align: "center",
-      width: 60,
     },
     {
       title: "Karobka",
@@ -367,26 +369,10 @@ const Product = () => {
       width: 80,
     },
     {
-      title: "Pachka",
-      key: "package_quantity",
-      render: (_, record) =>
-        record?.isPackage ? (record?.package_quantity?.toFixed(2) || "-") : "-",
-      align: "center",
-      width: 80,
-    },
-    {
       title: "Valyuta",
       dataIndex: "currency",
       key: "currency",
       width: 80,
-    },
-    {
-      title: "Tan narxi",
-      dataIndex: "purchasePrice",
-      key: "purchasePrice",
-      render: (text, record) => `${record.purchasePrice?.value || "-"}`,
-      align: "center",
-      width: 100,
     },
     {
       title: "Sotish",
@@ -403,61 +389,94 @@ const Product = () => {
       render: (text, record) => record?.warehouse?.name || "-",
       width: 120,
     },
-    {
-      title: "Shtrix",
-      dataIndex: "barcode",
-      key: "barcode",
-      width: 100,
-    },
-    {
-      title: "Kategoriya",
-      dataIndex: "category",
-      key: "category",
-      width: 120,
-    },
-    {
-      title: "Amallar",
-      render: (_, record) => (
-        <Space direction="horizontal" size={4}>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              setEditingProduct(record._id);
-              setEditingSource(record.source);
-              form.setFieldsValue({
-                ...record,
-                package_quantity: record.package_quantity?.toFixed(2),
-                box_quantity: record.box_quantity?.toFixed(2),
-              });
-              setImageUrl(record.image_url);
-              setModalVisible(true);
-            }}
-          >
-            <MdEdit />
-          </Button>
-          <Popconfirm
-            title="O'chirishni tasdiqlaysizmi?"
-            onConfirm={() => handleDelete(record._id, record.source)}
-            okText="Ha"
-            cancelText="Yo'q"
-          >
-            <Button type="link" size="small" danger style={{ color: "red" }}>
-              <MdDeleteForever />
-            </Button>
-          </Popconfirm>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => setCurrentBarcode(record.barcode)}
-          >
-            <MdPrint />
-          </Button>
-        </Space>
-      ),
-      align: "center",
-      width: 100,
-    },
+    // {
+    //   title: "Xamkor",
+    //   dataIndex: "name_partner",
+    //   key: "name_partner",
+    //   render: (text) => text || "-",
+    //   width: 120,
+    // },
+    // {
+    //   title: "Raqam",
+    //   dataIndex: "partner_number",
+    //   key: "partner_number",
+    //   render: (text) => text || "-",
+    //   width: 100,
+    // },
+    // {
+    //   title: "Vazn (kg)",
+    //   dataIndex: "total_kg",
+    //   key: "total_kg",
+    //   render: (text) => (text ? text?.toFixed(2) : "-"),
+    //   align: "center",
+    //   width: 80,
+    // },
+    // {
+    //   title: "Dona",
+    //   dataIndex: "quantity",
+    //   key: "quantity",
+    //   align: "center",
+    //   width: 60,
+    // },
+    // {
+    //   title: "Tan narxi",
+    //   dataIndex: "purchasePrice",
+    //   key: "purchasePrice",
+    //   render: (text, record) => `${record.purchasePrice?.value || "-"}`,
+    //   align: "center",
+    //   width: 100,
+    // },
+
+    // {
+    //   title: "Shtrix",
+    //   dataIndex: "barcode",
+    //   key: "barcode",
+    //   width: 100,
+    // },
+
+    // {
+    //   title: "Amallar",
+    //   render: (_, record) => (
+    //     <Space direction="horizontal" size={4}>
+    //       <Button
+    //         type="link"
+    //         size="small"
+    //         onClick={() => {
+    //           setEditingProduct(record._id);
+    //           setEditingSource(record.source);
+    //           form.setFieldsValue({
+    //             ...record,
+    //             package_quantity: record.package_quantity?.toFixed(2),
+    //             box_quantity: record.box_quantity?.toFixed(2),
+    //           });
+    //           setImageUrl(record.image_url);
+    //           setModalVisible(true);
+    //         }}
+    //       >
+    //         <MdEdit />
+    //       </Button>
+    //       <Popconfirm
+    //         title="O'chirishni tasdiqlaysizmi?"
+    //         onConfirm={() => handleDelete(record._id, record.source)}
+    //         okText="Ha"
+    //         cancelText="Yo'q"
+    //       >
+    //         <Button type="link" size="small" danger style={{ color: "red" }}>
+    //           <MdDeleteForever />
+    //         </Button>
+    //       </Popconfirm>
+    //       <Button
+    //         type="link"
+    //         size="small"
+    //         onClick={() => setCurrentBarcode(record.barcode)}
+    //       >
+    //         <MdPrint />
+    //       </Button>
+    //     </Space>
+    //   ),
+    //   align: "center",
+    //   width: 100,
+    // },
   ];
 
   const filteredProducts = allProducts.filter((product) => {
@@ -476,9 +495,11 @@ const Product = () => {
     <div className="product-container">
       <div className="page_header">
         <Space>
-          <Button type="primary" onClick={handleAddProduct} size="small">
-            Tovar qo'shish
-          </Button>
+          {localStorage.getItem("role") === "admin" && (
+            <Button type="primary" onClick={handleAddProduct} size="small">
+              Tovar qo'shish
+            </Button>
+          )}
           <Input
             placeholder="Tovar nomi"
             value={searchName}
@@ -495,8 +516,17 @@ const Product = () => {
           />
         </Space>
         <div className="stats">
-          <p>Umumiy dona: {allProducts.reduce((a, b) => a + (b.quantity || 0), 0)}</p>
           <p>
+            Umumiy dona:{" "}
+            {allProducts?.reduce((a, b) => a + (b.quantity || 0), 0)}
+          </p>
+          <p>
+            Umumiy Karobka:{" "}
+            {allProducts
+              ?.reduce((a, b) => a + (b.box_quantity || 0), 0)
+              ?.toFixed(2)}
+          </p>
+          {/* <p>
             Tan narxi (SUM):{" "}
             {allProducts
               .filter((p) => p.currency === "SUM")
@@ -519,14 +549,22 @@ const Product = () => {
               )
               .toLocaleString()}{" "}
             $
-          </p>
+          </p> */}
         </div>
       </div>
 
       <Table
         className="product-table"
         columns={columns}
-        dataSource={localStorage.getItem('role') === 'warehouse' ? filteredProducts.filter((p) => p.warehouse._id === localStorage.getItem('_id')).sort((a, b) => (a.quantity || 0) - (b.quantity || 0)) : filteredProducts.sort((a, b) => (a.quantity || 0) - (b.quantity || 0))}
+        dataSource={
+          localStorage.getItem("role") === "warehouse"
+            ? filteredProducts
+                .filter((p) => p.warehouse._id === localStorage.getItem("_id"))
+                .sort((a, b) => (a.quantity || 0) - (b.quantity || 0))
+            : filteredProducts.sort(
+                (a, b) => (a.quantity || 0) - (b.quantity || 0)
+              )
+        }
         loading={productsLoading || partnerProductsLoading}
         rowKey="_id"
         size="small"
@@ -534,7 +572,8 @@ const Product = () => {
         scroll={{ x: "max-content" }}
         rowClassName={(record) => {
           if (record.quantity < 30) return "row-danger";
-          if (record.quantity >= 30 && record.quantity <= 50) return "row-warning";
+          if (record.quantity >= 30 && record.quantity <= 50)
+            return "row-warning";
           return "";
         }}
         bordered
@@ -561,7 +600,7 @@ const Product = () => {
           >
             <AutoComplete
               placeholder="Tovar nomi"
-              options={allProducts.map(product => ({
+              options={allProducts.map((product) => ({
                 value: product.name,
               }))}
               filterOption={(inputValue, option) =>
@@ -574,9 +613,9 @@ const Product = () => {
           <Form.Item name="name_partner" label="Xamkor ismi">
             <AutoComplete
               options={nameOptions}
-              onSearch={value => handleNameSearch(value, form)}
+              onSearch={(value) => handleNameSearch(value, form)}
               onSelect={(value) => handleNameSelect(value, form)}
-              value={form.getFieldValue('name_partner')}
+              value={form.getFieldValue("name_partner")}
               placeholder="Xamkor ismi"
               filterOption={false}
             >
@@ -586,9 +625,9 @@ const Product = () => {
           <Form.Item name="partner_number" label="Xamkor raqami">
             <AutoComplete
               options={numberOptions}
-              onSearch={value => handleNumberSearch(value, form)}
+              onSearch={(value) => handleNumberSearch(value, form)}
               onSelect={(value) => handleNumberSelect(value, form)}
-              value={form.getFieldValue('partner_number')}
+              value={form.getFieldValue("partner_number")}
               placeholder="Xamkor raqami"
               filterOption={false}
             >
@@ -668,11 +707,17 @@ const Product = () => {
               <Option value="SUM">SUM</Option>
             </Select>
           </Form.Item>
-          <Form.Item
-            label="Ombor"
-            name="warehouse"
-          >
-            <Select disabled={localStorage.getItem('role') === 'warehouse'} defaultValue={localStorage.getItem('role') === 'warehouse' ? localStorage.getItem('_id') : null} placeholder="Ombor tanlash" loading={warehousesLoading}>
+          <Form.Item label="Ombor" name="warehouse">
+            <Select
+              disabled={localStorage.getItem("role") === "warehouse"}
+              defaultValue={
+                localStorage.getItem("role") === "warehouse"
+                  ? localStorage.getItem("_id")
+                  : null
+              }
+              placeholder="Ombor tanlash"
+              loading={warehousesLoading}
+            >
               {warehouses.map((warehouse) => (
                 <Option key={warehouse._id} value={warehouse._id}>
                   {warehouse?.name}
@@ -680,11 +725,11 @@ const Product = () => {
               ))}
             </Select>
           </Form.Item>
-          <Form.Item
-            label="Kategoriya"
-            name="category"
-          >
+          <Form.Item label="Kategoriya" name="category">
             <Input placeholder="Kategoriya" />
+          </Form.Item>
+          <Form.Item label="Partiya " name="part">
+            <Input placeholder="Partiya" />
           </Form.Item>
           <Form.Item label="Barkod" name="barcode" hidden>
             <Input />
@@ -699,7 +744,11 @@ const Product = () => {
           </Upload>
           {imageUrl && (
             <div className="product-upload-preview">
-              <img src={imageUrl} alt="Uploaded" className="product-upload-image" />
+              <img
+                src={imageUrl}
+                alt="Uploaded"
+                className="product-upload-image"
+              />
               <a href={imageUrl} target="_blank" rel="noopener noreferrer">
                 Rasm URL
               </a>
