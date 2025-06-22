@@ -68,144 +68,214 @@ const ReconciliationAct = () => {
     box_quantity: "Karobka"
   }
 
-  const printPDF = () => {
-    let content = `
-    <html>
-    <head>
-      <style>
-        body {
-          font-family: Arial, sans-serif;
-        }
-        table {
-          width: 100%;
-          border-collapse: collapse;
-        }
-        th, td {
-          border: 1px solid #000;
-          padding: 5px;
-          text-align: left;
-          font-size: 12px;
-        }
-      </style>
-    </head>
-    <body>
+const printPDF = () => {
+  let content = `
+  <html>
+  <head>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+      }
+      th, td {
+        border: 1px solid #000;
+        padding: 5px;
+        text-align: left;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+`;
+
+  if (selectedClient) {
+    const client = clients.find(c => c._id === selectedClient);
+    content += `
+    <h2>Клиент: ${client?.name}</h2>
+    <p>Номер телефона: ${client?.phone}</p>
+    <p>Адрес: ${client?.address}</p>
   `;
 
-    if (selectedClient) {
-      const client = clients.find(c => c._id === selectedClient);
-      content += `
-      <h2>Клиент: ${client?.name}</h2>
-      <p>Номер телефона: ${client?.phone}</p>
-      <p>Адрес: ${client?.address}</p>
-    `;
+    // SALES
+    content += `<h2>Продажи</h2><table><thead><tr>
+    <th>Продукт</th><th>Количество</th><th>Единство</th><th>Цена</th><th>Валюта</th><th>Общий</th>
+  </tr></thead><tbody>`;
 
-      content += `<h2>Продажи</h2><table><thead><tr>
-      <th>Продукт</th><th>Количество</th><th>Единство</th><th>Цена</th><th>Валюта</th><th>Общий</th>
-    </tr></thead><tbody>`;
+    let salesUSD = 0, salesSUM = 0, salesKYG = 0;
 
-      filteredSales.forEach(item => {
-        content += `<tr>
-        <td>${item.productId?.name}</td>
-        <td>${item.quantity}</td>
-        <td>${quantityText[item.unit] || item.unit}</td>
-        <td>${item.sellingPrice}</td>
-        <td>${item.currency}</td>
-        <td>${item.quantity * item.sellingPrice}</td>
-      </tr>`;
-      });
+    filteredSales.forEach(item => {
+      const total = item.quantity * item.sellingPrice;
+      if (item.currency === 'USD') salesUSD += total;
+      else if (item.currency === 'SUM') salesSUM += total;
+      else if (item.currency === 'KYG') salesKYG += total;
 
-      content += `</tbody></table>`;
+      content += `<tr>
+      <td>${item.productId?.name}</td>
+      <td>${item.quantity}</td>
+      <td>${quantityText[item.unit] || item.unit}</td>
+      <td>${item.sellingPrice}</td>
+      <td>${item.currency}</td>
+      <td>${total.toFixed(2)}</td>
+    </tr>`;
+    });
 
-      content += `<h2>Долги</h2><table><thead><tr>
-      <th>Продукт</th><th>Количество</th><th>Единство</th><th>Цена</th><th>Валюта</th><th>Общий</th><th>Остальные</th>
-    </tr></thead><tbody>`;
+    content += `<tr>
+      <td colspan="2"><strong>${salesUSD.toFixed(2)} USD</strong></td>
+      <td colspan="2"><strong>${salesSUM.toFixed(2)} SUM</strong></td>
+      <td colspan="2"><strong>${salesKYG.toFixed(2)} KYG</strong></td>
+    </tr>`;
 
-      filteredDebts.forEach(item => {
-        content += `<tr>
-        <td>${item.productId?.name}</td>
-        <td>${item.quantity}</td>
-        <td>${quantityText[item.unit] || item.unit}</td>
-        <td>${item.sellingPrice}</td>
-        <td>${item.currency}</td>
-        <td>${item.totalAmount}</td>
-        <td>${item.remainingAmount}</td>
-      </tr>`;
-      });
+    content += `</tbody></table>`;
 
-      content += `</tbody></table>`;
-    }
+    // DEBTS
+    content += `<h2>Долги</h2><table><thead><tr>
+    <th>Продукт</th><th>Количество</th><th>Единство</th><th>Цена</th><th>Валюта</th><th>Общий</th><th>Остальные</th>
+  </tr></thead><tbody>`;
 
-    if (selectedPartner) {
-      const partner = allPartners.find(p => p.value === selectedPartner);
-      content += `
-      <h2>Партнер: ${partner?.label}</h2>
-      <p>Номер телефона: ${partner?.value}</p>
-    `;
+    let debtUSD = 0, debtSUM = 0, debtKYG = 0;
 
-      content += `<h2>Продажи</h2><table><thead><tr>
-      <th>Продукт</th><th>Количество</th><th>Единство</th><th>Цена</th><th>Валюта</th><th>Общий</th>
-    </tr></thead><tbody>`;
+    filteredDebts.forEach(item => {
+      if (item.currency === 'USD') debtUSD += item.remainingAmount;
+      else if (item.currency === 'SUM') debtSUM += item.remainingAmount;
+      else if (item.currency === 'KYG') debtKYG += item.remainingAmount;
 
-      filteredSales.forEach(item => {
-        content += `<tr>
-        <td>${item.productId?.name}</td>
-        <td>${item.quantity}</td>
-        <td>${quantityText[item.unit] || item.unit}</td>
-        <td>${item.sellingPrice}</td>
-        <td>${item.currency}</td>
-        <td>${item.quantity * item.sellingPrice}</td>
-      </tr>`;
-      });
+      content += `<tr>
+      <td>${item.productId?.name}</td>
+      <td>${item.quantity}</td>
+      <td>${quantityText[item.unit] || item.unit}</td>
+      <td>${item.sellingPrice}</td>
+      <td>${item.currency}</td>
+      <td>${item.totalAmount}</td>
+      <td>${item.remainingAmount}</td>
+    </tr>`;
+    });
 
-      content += `</tbody></table>`;
+    content += `<tr>
+      <td colspan="2"><strong>${debtUSD.toFixed(2)} USD</strong></td>
+      <td colspan="2"><strong>${debtSUM.toFixed(2)} SUM</strong></td>
+      <td colspan="3"><strong>${debtKYG.toFixed(2)} KYG</strong></td>
+    </tr>`;
 
-      content += `<h2>Долги</h2><table><thead><tr>
-      <th>Продукт</th><th>Количество</th><th>Единство</th><th>Цена</th><th>Валюта</th><th>Общий</th><th>Остальные</th>
-    </tr></thead><tbody>`;
+    content += `</tbody></table>`;
+  }
 
-      filteredDebts.forEach(item => {
-        content += `<tr>
-        <td>${item.productId?.name}</td>
-        <td>${item.quantity}</td>
-        <td>${quantityText[item.unit] || item.unit}</td>
-        <td>${item.sellingPrice}</td>
-        <td>${item.currency}</td>
-        <td>${item.totalAmount}</td>
-        <td>${item.remainingAmount}</td>
-      </tr>`;
-      });
+  if (selectedPartner) {
+    const partner = allPartners.find(p => p.value === selectedPartner);
+    content += `
+    <h2>Партнер: ${partner?.label}</h2>
+    <p>Номер телефона: ${partner?.value}</p>
+  `;
 
-      content += `</tbody></table>`;
+    // SALES
+    content += `<h2>Продажи</h2><table><thead><tr>
+    <th>Продукт</th><th>Количество</th><th>Единство</th><th>Цена</th><th>Валюта</th><th>Общий</th>
+  </tr></thead><tbody>`;
 
-      content += `<h2>Товары партнёра</h2><table><thead><tr>
-      <th>Продукт</th><th>Размер</th><th>Количество</th><th>Пачка</th><th>Каробка</th><th>Цена покупки</th><th>Цена продажи</th><th>Валюта</th><th>Общий</th>
-    </tr></thead><tbody>`;
+    let salesUSD = 0, salesSUM = 0, salesKYG = 0;
 
-      filteredPartnerProducts.forEach(item => {
-        content += `<tr>
-        <td>${item.name}</td>
-        <td>${item.size}</td>
-        <td>${item.quantity}</td>
-        <td>${item.package_quantity}</td>
-        <td>${item.box_quantity}</td>
-        <td>${item.purchasePrice?.value}</td>
-        <td>${item.sellingPrice?.value}</td>
-        <td>${item.currency}</td>
-        <td>${item.quantity * item.sellingPrice?.value}</td>
-      </tr>`;
-      });
+    filteredSales.forEach(item => {
+      const total = item.quantity * item.sellingPrice;
+      if (item.currency === 'USD') salesUSD += total;
+      else if (item.currency === 'SUM') salesSUM += total;
+      else if (item.currency === 'KYG') salesKYG += total;
 
-      content += `</tbody></table>`;
-    }
+      content += `<tr>
+      <td>${item.productId?.name}</td>
+      <td>${item.quantity}</td>
+      <td>${quantityText[item.unit] || item.unit}</td>
+      <td>${item.sellingPrice}</td>
+      <td>${item.currency}</td>
+      <td>${total.toFixed(2)}</td>
+    </tr>`;
+    });
 
-    content += `</body></html>`;
+    content += `<tr>
+      <td colspan="2"><strong>${salesUSD.toFixed(2)} USD</strong></td>
+      <td colspan="2"><strong>${salesSUM.toFixed(2)} SUM</strong></td>
+      <td colspan="2"><strong>${salesKYG.toFixed(2)} KYG</strong></td>
+    </tr>`;
 
-    const printWindow = window.open("", "_blank");
-    printWindow.document.open();
-    printWindow.document.write(content);
-    printWindow.document.close();
-    printWindow.print();
-  };
+    content += `</tbody></table>`;
+
+    // DEBTS
+    content += `<h2>Долги</h2><table><thead><tr>
+    <th>Продукт</th><th>Количество</th><th>Единство</th><th>Цена</th><th>Валюта</th><th>Общий</th><th>Остальные</th>
+  </tr></thead><tbody>`;
+
+    let debtUSD = 0, debtSUM = 0, debtKYG = 0;
+
+    filteredDebts.forEach(item => {
+      if (item.currency === 'USD') debtUSD += item.remainingAmount;
+      else if (item.currency === 'SUM') debtSUM += item.remainingAmount;
+      else if (item.currency === 'KYG') debtKYG += item.remainingAmount;
+
+      content += `<tr>
+      <td>${item.productId?.name}</td>
+      <td>${item.quantity}</td>
+      <td>${quantityText[item.unit] || item.unit}</td>
+      <td>${item.sellingPrice}</td>
+      <td>${item.currency}</td>
+      <td>${item.totalAmount}</td>
+      <td>${item.remainingAmount}</td>
+    </tr>`;
+    });
+
+    content += `<tr>
+      <td colspan="2"><strong>${debtUSD.toFixed(2)} USD</strong></td>
+      <td colspan="2"><strong>${debtSUM.toFixed(2)} SUM</strong></td>
+      <td colspan="3"><strong>${debtKYG.toFixed(2)} KYG</strong></td>
+    </tr>`;
+
+    content += `</tbody></table>`;
+
+    // PARTNER PRODUCTS
+    content += `<h2>Товары партнёра</h2><table><thead><tr>
+    <th>Продукт</th><th>Размер</th><th>Количество</th><th>Пачка</th><th>Каробка</th><th>Цена покупки</th><th>Цена продажи</th><th>Валюта</th><th>Общий</th>
+  </tr></thead><tbody>`;
+
+    let prodUSD = 0, prodSUM = 0, prodKYG = 0;
+
+    filteredPartnerProducts.forEach(item => {
+      const total = item.quantity * item.purchasePrice?.value;
+      if (item.currency === 'USD') prodUSD += total;
+      else if (item.currency === 'SUM') prodSUM += total;
+      else if (item.currency === 'KYG') prodKYG += total;
+
+      content += `<tr>
+      <td>${item.name}</td>
+      <td>${item.size}</td>
+      <td>${item.quantity}</td>
+      <td>${item.package_quantity}</td>
+      <td>${item.box_quantity}</td>
+      <td>${item.purchasePrice?.value}</td>
+      <td>${item.sellingPrice?.value}</td>
+      <td>${item.currency}</td>
+      <td>${total.toFixed(2)}</td>
+    </tr>`;
+    });
+
+    content += `<tr>
+      <td colspan="3"><strong>${prodUSD.toFixed(2)} USD</strong></td>
+      <td colspan="3"><strong>${prodSUM.toFixed(2)} SUM</strong></td>
+      <td colspan="3"><strong>${prodKYG.toFixed(2)} KYG</strong></td>
+    </tr>`;
+
+    content += `</tbody></table>`;
+  }
+
+  content += `</body></html>`;
+
+  const printWindow = window.open("", "_blank");
+  printWindow.document.open();
+  printWindow.document.write(content);
+  printWindow.document.close();
+  printWindow.print();
+};
+
 
 
   return (
