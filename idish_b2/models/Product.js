@@ -58,7 +58,7 @@ const productSchema = new mongoose.Schema(
     package_quantity_per_box: {
       type: Number,
       default: 1,
-    },
+    },   
     isPackage: {
       type: Boolean,
       default: true,

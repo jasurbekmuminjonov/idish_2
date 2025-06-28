@@ -87,12 +87,12 @@ export default function ReportAdd() {
                partner_number: product.partner_number || '',
           })),
           // Добавляем партнеров из partnersFromApi для полноты
-          ...partnersFromApi.map((partner) => ({
-               source: 'api',
-               partner_name: partner.partner_name || '',
-               partner_number: partner.partner_number || '',
-          })),
-     ], [products, partnerProducts, partnersFromApi]);
+          // ...partnersFromApi.map((partner) => ({
+          //      source: 'api',
+          //      partner_name: partner.partner_name || '',
+          //      partner_number: partner.partner_number || '',
+          // })),
+     ], [products, partnerProducts]);
 
      const uniquePartners = React.useMemo(() => {
           const partnerMap = new Map(

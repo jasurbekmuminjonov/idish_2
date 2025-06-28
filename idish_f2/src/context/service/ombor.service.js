@@ -42,6 +42,19 @@ export const omborApi = apiSlice.injectEndpoints({
         method: "DELETE",
       }),
     }),
+    updateStore: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `/stores/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+    }),
+    deleteStore: builder.mutation({
+      query: (id) => ({
+        url: `/stores/${id}`,
+        method: "DELETE",
+      }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -52,5 +65,7 @@ export const {
   useUpdateWarehouseMutation,
   useDeleteWarehouseMutation,
   useAddStoreMutation,
-  useGetStoresQuery
+  useGetStoresQuery,
+  useUpdateStoreMutation,
+  useDeleteStoreMutation,
 } = omborApi;

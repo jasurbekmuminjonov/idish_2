@@ -12,6 +12,10 @@ import {
   Switch,
   Space,
   AutoComplete,
+  Card,
+  Col,
+  Row,
+  Checkbox,
 } from "antd";
 import { useReactToPrint } from "react-to-print";
 import Barcode from "react-barcode";
@@ -29,9 +33,13 @@ import {
 import { useGetWarehousesQuery } from "../../context/service/ombor.service";
 import { MdEdit, MdDeleteForever, MdPrint } from "react-icons/md";
 import axios from "axios";
-import { FaUpload } from "react-icons/fa";
+import { FaPlus, FaUpload } from "react-icons/fa";
 import "./product.css";
-import { useGetActPartnersQuery } from "../../context/service/act-partner.service";
+import {
+  useCreateActPartnerMutation,
+  useGetActPartnersQuery,
+  useUpdateActPartnerMutation,
+} from "../../context/service/act-partner.service";
 
 const { Option } = Select;
 
@@ -73,6 +81,30 @@ const Product = () => {
 
   const [nameOptions, setNameOptions] = useState([]);
   const [numberOptions, setNumberOptions] = useState([]);
+
+  const [partnerModal, setParnerModal] = useState(false);
+  const [partnerFormModal, setPartnerFormModal] = useState(false);
+  const [partnerForm] = Form.useForm();
+  const [createPartner] = useCreateActPartnerMutation();
+  const [editPartner] = useUpdateActPartnerMutation();
+  const [editingPartner, setEditingPartner] = useState(null);
+
+  async function handleAddPartner(values) {
+    try {
+      if (!editingPartner) {
+        await createPartner(values);
+        message.success("Hamkor qo'shildi");
+      } else {
+        await editPartner({ id: editingPartner, body: values });
+        message.success("Hamkor tahrirlandi");
+      }
+      setPartnerFormModal(false);
+      setEditingPartner(null);
+      partnerForm.resetFields();
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
   const handleNameSearch = (value) => {
     const filtered = unikalHamkorlar
@@ -155,12 +187,12 @@ const Product = () => {
       hamkor_raqami: mahsulot.partner_number || "",
       hamkor_manzili: mahsulot.partner_address || "",
     })),
-    ...partnersFromApi.map((partner) => ({
-      manba: "api",
-      hamkor_nomi: partner.partner_name || "",
-      hamkor_raqami: partner.partner_number || "",
-      hamkor_manzili: partner.partner_address || "",
-    })),
+    // ...partnersFromApi.map((partner) => ({
+    //   manba: "api",
+    //   hamkor_nomi: partner.partner_name || "",
+    //   hamkor_raqami: partner.partner_number || "",
+    //   hamkor_manzili: partner.partner_address || "",
+    // })),
   ];
 
   const unikalHamkorlar = Array.from(
@@ -228,6 +260,13 @@ const Product = () => {
 
   const onFinish = async (values) => {
     try {
+      const partnerData = partnersFromApi.find(
+        (p) => p.partner_number === localStorage.getItem("selectedPartner")
+      );
+      values.name_partner = partnerData.partner_name;
+      values.partner_number = partnerData.partner_number;
+      values.partner_address = partnerData.partner_address;
+      values.part = localStorage.getItem("selectedPartiya");
       if (localStorage.getItem("role") === "warehouse") {
         values.warehouse = localStorage.getItem("_id");
       }
@@ -434,52 +473,57 @@ const Product = () => {
     //   width: 100,
     // },
 
-    ...(localStorage.getItem('role') !== 'warehouse'
+    ...(localStorage.getItem("role") !== "warehouse"
       ? [
-        {
-          title: "Amallar",
-          render: (_, record) => (
-            <Space direction="horizontal" size={4}>
-              <Button
-                type="link"
-                size="small"
-                onClick={() => {
-                  setEditingProduct(record._id);
-                  setEditingSource(record.source);
-                  form.setFieldsValue({
-                    ...record,
-                    package_quantity: record.package_quantity?.toFixed(2),
-                    box_quantity: record.box_quantity?.toFixed(2),
-                  });
-                  setImageUrl(record.image_url);
-                  setModalVisible(true);
-                }}
-              >
-                <MdEdit />
-              </Button>
-              <Popconfirm
-                title="O'chirishni tasdiqlaysizmi?"
-                onConfirm={() => handleDelete(record._id, record.source)}
-                okText="Ha"
-                cancelText="Yo'q"
-              >
-                <Button type="link" size="small" danger style={{ color: "red" }}>
-                  <MdDeleteForever />
+          {
+            title: "Amallar",
+            render: (_, record) => (
+              <Space direction="horizontal" size={4}>
+                <Button
+                  type="link"
+                  size="small"
+                  onClick={() => {
+                    setEditingProduct(record._id);
+                    setEditingSource(record.source);
+                    form.setFieldsValue({
+                      ...record,
+                      package_quantity: record.package_quantity?.toFixed(2),
+                      box_quantity: record.box_quantity?.toFixed(2),
+                    });
+                    setImageUrl(record.image_url);
+                    setModalVisible(true);
+                  }}
+                >
+                  <MdEdit />
                 </Button>
-              </Popconfirm>
-              <Button
-                type="link"
-                size="small"
-                onClick={() => setCurrentBarcode(record.barcode)}
-              >
-                <MdPrint />
-              </Button>
-            </Space>
-          ),
-          align: "center",
-          width: 100,
-        },
-      ]
+                <Popconfirm
+                  title="O'chirishni tasdiqlaysizmi?"
+                  onConfirm={() => handleDelete(record._id, record.source)}
+                  okText="Ha"
+                  cancelText="Yo'q"
+                >
+                  <Button
+                    type="link"
+                    size="small"
+                    danger
+                    style={{ color: "red" }}
+                  >
+                    <MdDeleteForever />
+                  </Button>
+                </Popconfirm>
+                <Button
+                  type="link"
+                  size="small"
+                  onClick={() => setCurrentBarcode(record.barcode)}
+                >
+                  <MdPrint />
+                </Button>
+              </Space>
+            ),
+            align: "center",
+            width: 100,
+          },
+        ]
       : []),
   ];
 
@@ -500,7 +544,15 @@ const Product = () => {
       <div className="page_header">
         <Space>
           {localStorage.getItem("role") === "admin" && (
-            <Button type="primary" onClick={handleAddProduct} size="small">
+            <Button
+              disabled={
+                !localStorage.getItem("selectedPartner") ||
+                !localStorage.getItem("selectedPartiya")
+              }
+              type="primary"
+              onClick={handleAddProduct}
+              size="small"
+            >
               Tovar qo'shish
             </Button>
           )}
@@ -518,6 +570,25 @@ const Product = () => {
             size="small"
             style={{ width: 150 }}
           />
+          <Button onClick={() => setPartnerFormModal(true)} type="primary">
+            Hamkor qo'shish
+          </Button>
+          <Button onClick={() => setParnerModal(true)} type="primary">
+            Hamkorlar
+          </Button>
+          <Space style={{ alignItems: "start" }} direction="vertical">
+            <p>
+              <strong>Tanlangan hamkor:</strong>{" "}
+              {partnersFromApi?.find(
+                (p) =>
+                  p.partner_number === localStorage.getItem("selectedPartner")
+              )?.partner_name || ""}
+            </p>
+            <p>
+              <strong>Tanlangan partiya:</strong>{" "}
+              {localStorage.getItem("selectedPartiya") || ""}
+            </p>
+          </Space>
         </Space>
         <div className="stats">
           <p>
@@ -530,44 +601,19 @@ const Product = () => {
               ?.reduce((a, b) => a + (b.box_quantity || 0), 0)
               ?.toFixed(2)}
           </p>
-          {/* <p>
-            Tan narxi (SUM):{" "}
-            {allProducts
-              .filter((p) => p.currency === "SUM")
-              .reduce(
-                (acc, product) =>
-                  acc + (product.quantity || 0) * (product.purchasePrice?.value || 0),
-                0
-              )
-              .toLocaleString()}{" "}
-            so'm
-          </p>
-          <p>
-            Tan narxi (USD):{" "}
-            {allProducts
-              .filter((p) => p.currency === "USD")
-              .reduce(
-                (acc, product) =>
-                  acc + (product.quantity || 0) * (product.purchasePrice?.value || 0),
-                0
-              )
-              .toLocaleString()}{" "}
-            $
-          </p> */}
         </div>
       </div>
-
       <Table
         className="product-table"
         columns={columns}
         dataSource={
           localStorage.getItem("role") === "warehouse"
             ? filteredProducts
-              .filter((p) => p.warehouse._id === localStorage.getItem("_id"))
-              .sort((a, b) => (a.quantity || 0) - (b.quantity || 0))
+                .filter((p) => p.warehouse._id === localStorage.getItem("_id"))
+                .sort((a, b) => (a.quantity || 0) - (b.quantity || 0))
             : filteredProducts.sort(
-              (a, b) => (a.quantity || 0) - (b.quantity || 0)
-            )
+                (a, b) => (a.quantity || 0) - (b.quantity || 0)
+              )
         }
         loading={productsLoading || partnerProductsLoading}
         rowKey="_id"
@@ -582,7 +628,6 @@ const Product = () => {
         }}
         bordered
       />
-
       <Modal
         title={editingProduct ? "Tovar tahrirlash" : "Tovar qo'shish"}
         visible={modalVisible}
@@ -614,7 +659,7 @@ const Product = () => {
               <Input />
             </AutoComplete>
           </Form.Item>
-          <Form.Item name="name_partner" label="Xamkor ismi">
+          {/* <Form.Item name="name_partner" label="Xamkor ismi">
             <AutoComplete
               options={nameOptions}
               onSearch={(value) => handleNameSearch(value, form)}
@@ -651,7 +696,7 @@ const Product = () => {
             >
               <Input />
             </AutoComplete>
-          </Form.Item>
+          </Form.Item> */}
           <Form.Item name="size" label="O'lcham">
             <Input placeholder="O'lcham" type="text" />
           </Form.Item>
@@ -732,9 +777,9 @@ const Product = () => {
           <Form.Item label="Kategoriya" name="category">
             <Input placeholder="Kategoriya" />
           </Form.Item>
-          <Form.Item label="Partiya " name="part">
+          {/* <Form.Item label="Partiya " name="part">
             <Input placeholder="Partiya" />
-          </Form.Item>
+          </Form.Item> */}
           <Form.Item label="Barkod" name="barcode" hidden>
             <Input />
           </Form.Item>
@@ -765,7 +810,6 @@ const Product = () => {
           </Form.Item>
         </Form>
       </Modal>
-
       <Modal
         title="Tovar rasmi"
         visible={imageModalVisible}
@@ -778,6 +822,159 @@ const Product = () => {
         ) : (
           <div className="no-image-placeholder">Rasm yo'q</div>
         )}
+      </Modal>
+      <Modal
+        open={partnerFormModal}
+        onCancel={() => {
+          setPartnerFormModal(false);
+          partnerForm.resetFields();
+        }}
+        title={editingPartner ? "Hamkorni tahrirlash" : "Hamkor qo'shish"}
+        footer={null}
+      >
+        <Form form={partnerForm} layout="vertical" onFinish={handleAddPartner}>
+          <Form.Item
+            label="Hamkor nomi"
+            name="partner_name"
+            rules={[{ required: true, message: "Iltimos, nomini kiriting" }]}
+          >
+            <Input placeholder="Hamkor nomini kiriting" />
+          </Form.Item>
+
+          <Form.Item
+            label="Hamkor raqami"
+            name="partner_number"
+            rules={[{ required: true, message: "Iltimos, raqamini kiriting" }]}
+          >
+            <Input placeholder="Hamkor raqamini kiriting" />
+          </Form.Item>
+
+          <Form.Item label="Hamkor manzili" name="partner_address">
+            <Input placeholder="Manzil (ixtiyoriy)" />
+          </Form.Item>
+
+          <Form.List name="parts">
+            {(fields, { add, remove }) => (
+              <>
+                <label>Partiyalar</label>
+                {fields.map(({ key, name, ...restField }) => (
+                  <Space
+                    key={key}
+                    style={{ display: "flex", marginBottom: 8 }}
+                    align="baseline"
+                  >
+                    <Form.Item
+                      {...restField}
+                      name={name}
+                      rules={[
+                        { required: true, message: "Qism nomini kiriting" },
+                      ]}
+                    >
+                      <Input placeholder="Partiya" />
+                    </Form.Item>
+                  </Space>
+                ))}
+                <Form.Item>
+                  <Button
+                    type="dashed"
+                    onClick={() => add()}
+                    icon={<FaPlus />}
+                    block
+                  >
+                    Partiya qo‘shish
+                  </Button>
+                </Form.Item>
+              </>
+            )}
+          </Form.List>
+
+          <Form.Item>
+            <Button type="primary" htmlType="submit">
+              Saqlash
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        open={partnerModal}
+        footer={null}
+        title="Hamkorlar"
+        onCancel={() => setParnerModal(false)}
+      >
+        <Row gutter={[16, 16]}>
+          {partnersFromApi.map((partner) => {
+            const selectedPartner = localStorage.getItem("selectedPartner");
+            const selectedPartiya = localStorage.getItem("selectedPartiya");
+            const isChecked = partner.partner_number === selectedPartner;
+
+            return (
+              <Col span={24} key={partner.partner_number}>
+                <Card
+                  title={partner.partner_name}
+                  extra={
+                    <Space>
+                      <Button
+                        onClick={() => {
+                          setEditingPartner(partner._id);
+                          partnerForm.setFieldsValue({
+                            partner_name: partner.partner_name,
+                            partner_number: partner.partner_number,
+                            partner_address: partner.partner_address,
+                            parts: partner.parts,
+                          });
+                          setPartnerFormModal(true);
+                        }}
+                        type="primary"
+                      >
+                        <MdEdit />
+                      </Button>
+                      <Checkbox
+                        defaultChecked={isChecked}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            localStorage.setItem(
+                              "selectedPartner",
+                              partner.partner_number
+                            );
+                            localStorage.setItem("selectedPartiya", "");
+                          } else {
+                            localStorage.removeItem("selectedPartner");
+                            localStorage.setItem("selectedPartiya", "");
+                          }
+                          window.location.reload();
+                        }}
+                      />
+                    </Space>
+                  }
+                >
+                  <p style={{ marginBottom: "5px" }}>
+                    <strong>Telefon:</strong> {partner.partner_number}
+                  </p>
+                  <p style={{ marginBottom: "5px" }}>
+                    <strong>Manzil:</strong> {partner.partner_address}
+                  </p>
+                  <p style={{ marginBottom: "5px" }}>Partiya</p>
+                  <Select
+                    style={{ width: "100%" }}
+                    disabled={!isChecked}
+                    defaultValue={isChecked ? selectedPartiya : undefined}
+                    onChange={(value) => {
+                      localStorage.setItem("selectedPartiya", value);
+                      window.location.reload();
+                    }}
+                  >
+                    {partner.parts.map((item) => (
+                      <Select.Option key={item} value={item}>
+                        {item}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Card>
+              </Col>
+            );
+          })}
+        </Row>
       </Modal>
 
       <div style={{ display: "none" }}>

@@ -15,10 +15,10 @@ export const actPartnerApi = apiSlice.injectEndpoints({
                invalidatesTags: ['ActPartner'],
           }),
           updateActPartner: builder.mutation({
-               query: ({ id, ...partner }) => ({
+               query: ({ id, body }) => ({
                     url: `/actpartner/${id}`,
                     method: 'PUT',
-                    body: partner,
+                    body: body,
                }),
                invalidatesTags: ['ActPartner'],
           }),

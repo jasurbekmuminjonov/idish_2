@@ -85,7 +85,7 @@ const {
   getPaymentsByEmployee,
   deleteSalaryPayment,
 } = require("../controllers/salaryPaymentController");
-const { createStore, getStores } = require("../controllers/storeController");
+const { createStore, getStores, editStore, deleteStore } = require("../controllers/storeController");
 const {
   getSentTransportions,
   getGotTransportions,
@@ -116,6 +116,8 @@ router.delete("/warehouses/:id", auth, deleteWarehouse);
 
 router.post("/stores/add", auth, createStore);
 router.get("/stores", auth, getStores);
+router.put("/stores/:id", auth, editStore);
+router.delete("/stores/:id", auth, deleteStore);
 
 // Product routes
 router.post("/products/add", auth, createProduct);

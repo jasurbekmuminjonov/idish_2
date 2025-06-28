@@ -37,7 +37,9 @@ exports.getActPartnerById = async (req, res) => {
 // Get partners by warehouse (исправлено)
 exports.getActPartnerByWarehouse = async (req, res) => {
   try {
-    const partners = await ActPartner.find({ warehouse: req.params.id }).populate("warehouse");
+    const partners = await ActPartner.find({
+      warehouse: req.params.id,
+    }).populate("warehouse");
     res.status(200).json(partners);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -47,10 +49,14 @@ exports.getActPartnerByWarehouse = async (req, res) => {
 // Update a partner by ID
 exports.updateActPartnerById = async (req, res) => {
   try {
-    const partner = await ActPartner.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const partner = await ActPartner.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
     if (!partner) {
       return res.status(404).json({ error: "Partner not found" });
     }
