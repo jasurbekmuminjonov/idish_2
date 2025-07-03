@@ -10,10 +10,7 @@ import {
   Space,
   Input,
   Select,
-<<<<<<< HEAD
-=======
   message,
->>>>>>> 1c3a0b98a493c0fbd0bd50346eb4c258067c2483
   Button,
 } from "antd";
 import { MdScale } from "react-icons/md";

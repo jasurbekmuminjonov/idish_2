@@ -17,16 +17,11 @@ root.render(
       <Provider store={store}>
         <SnackbarProvider>
           <Loading />
-<<<<<<< HEAD
           <Routera />
-          {/* <p>Sayt ishlab chiqilmoqda tez orada ishga tushadi, xatoliklar kelib chiqmasligi uchun shunday qilinmoqda</p> */}
-=======
-          {/* <Routera /> */}
-          <p>
+          {/* <p>
             Sayt ishlab chiqilmoqda tez orada ishga tushadi, xatoliklar kelib
             chiqmasligi uchun shunday qilinmoqda
-          </p>
->>>>>>> 1c3a0b98a493c0fbd0bd50346eb4c258067c2483
+          </p> */}
         </SnackbarProvider>
       </Provider>
     </ChakraProvider>

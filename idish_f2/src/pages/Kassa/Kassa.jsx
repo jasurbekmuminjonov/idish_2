@@ -25,14 +25,6 @@ import moment from "moment";
 import html2pdf from "html2pdf.js";
 import yodgor_abdullaev from "../../assets/yodgor_abdullaev.svg";
 import zolotayaroza77 from "../../assets/zolotayaroza77.svg";
-<<<<<<< HEAD
-=======
-import { useGetActPartnersQuery } from "../../context/service/act-partner.service";
-import {
-  useGetWarehousesQuery,
-  useGetStoresQuery,
-} from "../../context/service/ombor.service";
->>>>>>> 1c3a0b98a493c0fbd0bd50346eb4c258067c2483
 
 const { Option } = Select;
 
