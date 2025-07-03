@@ -25,6 +25,14 @@ import moment from "moment";
 import html2pdf from "html2pdf.js";
 import yodgor_abdullaev from "../../assets/yodgor_abdullaev.svg";
 import zolotayaroza77 from "../../assets/zolotayaroza77.svg";
+<<<<<<< HEAD
+=======
+import { useGetActPartnersQuery } from "../../context/service/act-partner.service";
+import {
+  useGetWarehousesQuery,
+  useGetStoresQuery,
+} from "../../context/service/ombor.service";
+>>>>>>> 1c3a0b98a493c0fbd0bd50346eb4c258067c2483
 
 const { Option } = Select;
 
@@ -39,6 +47,7 @@ const Kassa = () => {
   const [createDebt] = useCreateDebtMutation();
   const [addExpense] = useAddExpenseMutation();
   const [sellProduct] = useSellProductMutation();
+  const { data: storelar } = useGetStoresQuery();
   const [categories, setCategories] = useState([]);
   const [form] = Form.useForm();
   const [categoryForm] = Form.useForm();
@@ -198,6 +207,7 @@ const Kassa = () => {
 
     let buyerName = "Noma'lum";
     let buyerAddress = "Noma'lum";
+    let buyerPhone = storelar?.find((s) => s.login === userLogin)?.phone;
     let paymentType = sellForm.getFieldValue("paymentMethod");
     const promo = promos.find((p) => p._id === paymentDiscount);
 
@@ -317,6 +327,10 @@ const Kassa = () => {
               <div style="display: flex; flex-direction: column;">
                 <b style="color: #333;">Поставщик:</b>
                 <p style="margin: 5px 0; color: #555;">${userLogin}</p>
+              </div>
+              <div style="display: flex; flex-direction: column;">
+                <b style="color: #333;">Телефон:</b>
+                <p style="margin: 5px 0; color: #555;">${buyerPhone}</p>
               </div>
             </div>
             <div style="display: flex; flex-direction: column; gap: 10px; width: 50%;">
@@ -926,7 +940,6 @@ const Kassa = () => {
       }
 
       generatePDF();
-
       setIsModalVisible(false);
       setBasket([]);
       setPaymentMethod("");

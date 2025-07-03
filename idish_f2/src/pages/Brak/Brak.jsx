@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   useGetBrakHistoryQuery,
   useAddBrakMutation,
@@ -6,7 +6,6 @@ import {
 } from "../../context/service/brak.service";
 import { Table, Form, Input, Button, Select } from "antd";
 import moment from "moment";
-// import "./brak.css";
 
 const { Option } = Select;
 
@@ -22,23 +21,35 @@ const Brak = () => {
 
   const [selectedUnit, setSelectedUnit] = useState("quantity");
 
+  const [searchText, setSearchText] = useState("");
+  const [searched, setSearched] = useState([]);
+
   const stm = {
-    kg_quantity: 'kg',
-    quantity: 'dona',
-    box_quantity: 'karobka',
-    package_quantity: 'pachka',
-  }
+    kg_quantity: "kg",
+    quantity: "dona",
+    box_quantity: "karobka",
+    package_quantity: "pachka",
+  };
 
   const columns = [
     {
       title: "Mahsulot nomi",
       dataIndex: ["productId", "name"],
       key: "productId",
-      render: (text) => text || "Tovar o'chirilgan"
+      render: (text) => text || "Tovar o'chirilgan",
     },
     {
       title: "Soni",
-      render: (_, record) => record.unit === "box_quantity" ? record.quantity / record?.productId?.package_quantity_per_box / record?.productId?.quantity_per_package : record.unit === "package_quantity" ? record.quantity / record.productId?.quantity_per_package : record.unit === "quantity" ? record.quantity : null,
+      render: (_, record) =>
+        record.unit === "box_quantity"
+          ? record.quantity /
+            record?.productId?.package_quantity_per_box /
+            record?.productId?.quantity_per_package
+          : record.unit === "package_quantity"
+          ? record.quantity / record.productId?.quantity_per_package
+          : record.unit === "quantity"
+          ? record.quantity
+          : null,
       key: "quantity",
     },
     {
@@ -47,20 +58,73 @@ const Brak = () => {
       render: (text) => stm[text] || text,
       key: "unit",
     },
+    {
+      title: "Kategoriya",
+      dataIndex: "productId",
+      key: "productId",
+      render: (text) => text?.category || "-",
+    },
+    {
+      title: "Kod",
+      dataIndex: "productId",
+      key: "productId",
+      render: (text) => text?.code || "-",
+    },
+    {
+      title: "O'lcham",
+      dataIndex: "productId",
+      key: "productId",
+      render: (text) => text?.size || "-",
+    },
     { title: "Sababi", dataIndex: "reason", key: "reason" },
-    { title: "Qo'shilgan vaqti", dataIndex: "createdAt", key: "createdAt", render: (text) => moment(text).format("DD.MM.YYYY HH:mm") },
+    {
+      title: "Qo'shilgan vaqti",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (text) => moment(text).format("DD.MM.YYYY HH:mm"),
+    },
   ];
 
   const onFinish = (values) => {
     const item = products.find((p) => p._id === values.productId);
-    values.quantity = (selectedUnit === "quantity" ? values.quantity : selectedUnit === "package_quantity" ? values.quantity * item?.quantity_per_package : selectedUnit === "box_quantity" ? values.quantity * item?.quantity_per_package * item.package_quantity_per_box : null)
+    values.quantity =
+      selectedUnit === "quantity"
+        ? values.quantity
+        : selectedUnit === "package_quantity"
+        ? values.quantity * item?.quantity_per_package
+        : selectedUnit === "box_quantity"
+        ? values.quantity *
+          item?.quantity_per_package *
+          item.package_quantity_per_box
+        : null;
     addBrak(values);
   };
+
+  const handleSearch = () => {
+    setSearched(
+      braks.filter(
+        (brak) =>
+          brak.productId.name
+            .toLowerCase()
+            .includes(searchText.toLowerCase()) ||
+          brak.productId.code.toLowerCase().includes(searchText.toLowerCase())
+      )
+    );
+  };
+
+  useEffect(() => {
+    handleSearch();
+  }, [braks, searchText]);
 
   return (
     <div className="brak-page">
       <h1>Brak Mahsulotlar</h1>
-      <Form autoComplete="off" onFinish={onFinish} layout="inline">
+      <Form
+        autoComplete="off"
+        onFinish={onFinish}
+        layout="inline"
+        style={{ marginBottom: "20px" }}
+      >
         <Form.Item
           name="productId"
           label="Mahsulot"
@@ -109,9 +173,28 @@ const Brak = () => {
           </Button>
         </Form.Item>
       </Form>
+      <nav
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          background: "dodgerblue",
+          padding: "10px",
+        }}
+      >
+        <h1>Braklar tarixi</h1>
+        <div className="search-input">
+          <Input
+            placeholder="Mahsulotni qidiring"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
+        </div>
+      </nav>
+
       <Table
         columns={columns}
-        dataSource={braks}
+        dataSource={searched}
         rowKey="_id"
         loading={isLoadingBraks}
         style={{ overflowX: "auto" }}

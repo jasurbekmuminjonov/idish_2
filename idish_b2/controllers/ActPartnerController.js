@@ -1,4 +1,5 @@
 const ActPartner = require("../models/ActPartner");
+const Product = require("../models/Product");
 
 // Create a new partner
 exports.createActPartner = async (req, res) => {
@@ -69,12 +70,21 @@ exports.updateActPartnerById = async (req, res) => {
 // Delete a partner by ID
 exports.deleteActPartnerById = async (req, res) => {
   try {
-    const partner = await ActPartner.findByIdAndDelete(req.params.id);
+    let check = await Product.find({
+      partner_number: req.body.partner_number,
+      quantity: { $gt: 0 },
+    });
+    if (check.length > 0) {
+      return res
+        .status(400)
+        .json({ error: "Hamkorni ochirib bo'lmaydi, mahsulotlari bor" });
+    }
+    const partner = await ActPartner.findByIdAndDelete(req.body._id);
     if (!partner) {
       return res.status(404).json({ error: "Partner not found" });
     }
     res.status(200).json({ message: "Partner deleted successfully" });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error });
   }
 };

@@ -1,4 +1,4 @@
-    import React from "react";
+import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import "./assets/global.css";
@@ -17,8 +17,16 @@ root.render(
       <Provider store={store}>
         <SnackbarProvider>
           <Loading />
+<<<<<<< HEAD
           <Routera />
           {/* <p>Sayt ishlab chiqilmoqda tez orada ishga tushadi, xatoliklar kelib chiqmasligi uchun shunday qilinmoqda</p> */}
+=======
+          {/* <Routera /> */}
+          <p>
+            Sayt ishlab chiqilmoqda tez orada ishga tushadi, xatoliklar kelib
+            chiqmasligi uchun shunday qilinmoqda
+          </p>
+>>>>>>> 1c3a0b98a493c0fbd0bd50346eb4c258067c2483
         </SnackbarProvider>
       </Provider>
     </ChakraProvider>
