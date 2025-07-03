@@ -29,7 +29,7 @@ const Layout = memo(() => {
   CloseModal({ modalRef: menuRef, onClose: () => setMenu(false) });
 
   return (
-    <main className="main">
+    <main className="main" >
       {role === "admin" ? (
         <header className={`header ${!sidebarOpen ? "headerOpen" : ""}`}>
           <Usd />

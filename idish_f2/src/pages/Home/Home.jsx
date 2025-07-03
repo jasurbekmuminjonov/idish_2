@@ -234,7 +234,7 @@ export default function Home() {
   };
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
+    <Layout style={{ maxHeight: "calc(100vh - 50px)", overflow: "hidden" }}>
       <Sider trigger={null} collapsible collapsed={collapsed}>
         <div className="logo" />
         <Menu
@@ -245,109 +245,190 @@ export default function Home() {
           onClick={(e) => setSelectedPage(e.key)}
         >
           {success?.home && (
-            <Menu.Item key="home" icon={<HomeOutlined />}>
+            <Menu.Item
+              style={{ height: "35px" }}
+              key="home"
+              icon={<HomeOutlined />}
+            >
               Домашняя страница
             </Menu.Item>
           )}
           {success?.daily && (
-            <Menu.Item key="daily" icon={<FaList />}>
+            <Menu.Item style={{ height: "35px" }} key="daily" icon={<FaList />}>
               Ежедневный отчет
             </Menu.Item>
           )}
           {success?.statistika && (
-            <Menu.Item key="statistika" icon={<FaChartLine />}>
+            <Menu.Item
+              style={{ height: "35px" }}
+              key="statistika"
+              icon={<FaChartLine />}
+            >
               Статистика
             </Menu.Item>
           )}
           {success?.admin && (
-            <Menu.Item key="admin" icon={<UserOutlined />}>
+            <Menu.Item
+              style={{ height: "35px" }}
+              key="admin"
+              icon={<UserOutlined />}
+            >
               Админы
             </Menu.Item>
           )}
           {success?.ombor && (
-            <Menu.Item key="ombor" icon={<AppstoreOutlined />}>
+            <Menu.Item
+              style={{ height: "35px" }}
+              key="ombor"
+              icon={<AppstoreOutlined />}
+            >
               Склады
             </Menu.Item>
           )}
           {success?.stores && (
-            <Menu.Item key="stores" icon={<AppstoreOutlined />}>
+            <Menu.Item
+              style={{ height: "35px" }}
+              key="stores"
+              icon={<AppstoreOutlined />}
+            >
               Магазины
             </Menu.Item>
           )}
           {(success?.product || role === "warehouse") && (
-            <Menu.Item key="product" icon={<ShoppingOutlined />}>
+            <Menu.Item
+              style={{ height: "35px" }}
+              key="product"
+              icon={<ShoppingOutlined />}
+            >
               Продукты
             </Menu.Item>
           )}
           {success?.partner && (
-            <Menu.Item key="partner" icon={<UserSwitchOutlined />}>
+            <Menu.Item
+              style={{ height: "35px" }}
+              key="partner"
+              icon={<UserSwitchOutlined />}
+            >
               Поставщики
             </Menu.Item>
           )}
           {success?.client && (
-            <Menu.Item key="client" icon={<TeamOutlined />}>
+            <Menu.Item
+              style={{ height: "35px" }}
+              key="client"
+              icon={<TeamOutlined />}
+            >
               Покупатели
             </Menu.Item>
           )}
           {success?.debtors && (
-            <Menu.Item key="debtors" icon={<CreditCardOutlined />}>
+            <Menu.Item
+              style={{ height: "35px" }}
+              key="debtors"
+              icon={<CreditCardOutlined />}
+            >
               Должники
             </Menu.Item>
           )}
           {success?.promo && (
-            <Menu.Item key="promo" icon={<LuTicketPercent />}>
+            <Menu.Item
+              style={{ height: "35px" }}
+              key="promo"
+              icon={<LuTicketPercent />}
+            >
               Промокоды
             </Menu.Item>
           )}
           {success?.sales && (
-            <Menu.Item key="sales" icon={<BarChartOutlined />}>
+            <Menu.Item
+              style={{ height: "35px" }}
+              key="sales"
+              icon={<BarChartOutlined />}
+            >
               Проданные товары
             </Menu.Item>
           )}
           {success?.brak && (
-            <Menu.Item key="brak" icon={<ExclamationCircleOutlined />}>
+            <Menu.Item
+              style={{ height: "35px" }}
+              key="brak"
+              icon={<ExclamationCircleOutlined />}
+            >
               Брак
             </Menu.Item>
           )}
           {success?.expense && (
-            <Menu.Item key="expense" icon={<MoneyCollectOutlined />}>
+            <Menu.Item
+              style={{ height: "35px" }}
+              key="expense"
+              icon={<MoneyCollectOutlined />}
+            >
               Расходы
             </Menu.Item>
           )}
           {success?.report && (
-            <Menu.Item key="report" icon={<ScheduleOutlined />}>
+            <Menu.Item
+              style={{ height: "35px" }}
+              key="report"
+              icon={<ScheduleOutlined />}
+            >
               Акт сверка
             </Menu.Item>
           )}
           {success?.["report-add"] && (
-            <Menu.Item key="report-add" icon={<UserAddOutlined />}>
+            <Menu.Item
+              style={{ height: "35px" }}
+              key="report-add"
+              icon={<UserAddOutlined />}
+            >
               Добавить остаток
             </Menu.Item>
           )}
           {success?.hodimlar && (
-            <Menu.Item key="hodimlar" icon={<TeamOutlined />}>
+            <Menu.Item
+              style={{ height: "35px" }}
+              key="hodimlar"
+              icon={<TeamOutlined />}
+            >
               Сотрудники
             </Menu.Item>
           )}
           {success?.oylik && (
-            <Menu.Item key="oylik" icon={<DollarOutlined />}>
+            <Menu.Item
+              style={{ height: "35px" }}
+              key="oylik"
+              icon={<DollarOutlined />}
+            >
               Заплата
             </Menu.Item>
           )}
 
           {(success?.transportions || role === "warehouse") && (
-            <Menu.Item key="transportions" icon={<ShoppingOutlined />}>
+            <Menu.Item
+              style={{ height: "35px" }}
+              key="transportions"
+              icon={<ShoppingOutlined />}
+            >
               Передача товара
             </Menu.Item>
           )}
           {(success?.transportions || role === "warehouse") && (
-            <Menu.Item key="unfinished" icon={<FaClipboardQuestion />}>
+            <Menu.Item
+              style={{ height: "35px" }}
+              key="unfinished"
+              icon={<FaClipboardQuestion />}
+            >
               Недоступные тов.
             </Menu.Item>
           )}
-        </Menu> 
+        </Menu>
       </Sider>
-      <Layout className="site-layout">
+      <Layout
+        className="site-layout"
+        style={{
+          overflow: "scroll",
+        }}
+      >
         <Header
           className="site-layout-background"
           style={{
@@ -458,6 +539,7 @@ export default function Home() {
             padding: 6,
             minHeight: 280,
             minWidth: 280,
+            overflow: "scroll",
           }}
         >
           {renderContent()}

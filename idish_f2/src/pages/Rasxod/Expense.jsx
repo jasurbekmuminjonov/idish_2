@@ -30,7 +30,7 @@ const Expense = () => {
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
   const [categoryForm] = Form.useForm();
-  const [filteredExpenses, setFilteredExpenses] = useState([])
+  const [filteredExpenses, setFilteredExpenses] = useState([]);
   const [filters, setFilters] = useState({ category: null, dateRange: [] });
   useEffect(() => {
     const uniqueCategories = [
@@ -40,7 +40,12 @@ const Expense = () => {
   }, [expenses]);
 
   const columns = [
-    { title: "Sana", dataIndex: "date", render: (text) => moment(text).format("DD.MM.YYYY HH:mm"), key: "date" },
+    {
+      title: "Sana",
+      dataIndex: "date",
+      render: (text) => moment(text).format("DD.MM.YYYY"),
+      key: "date",
+    },
     { title: "Miqdor", dataIndex: "amount", key: "amount" },
     { title: "Kategoriya", dataIndex: "category", key: "category" },
     { title: "Tavsif", dataIndex: "description", key: "description" },
@@ -101,8 +106,7 @@ const Expense = () => {
       onOk() {
         handleDelete(id);
       },
-      onCancel() {
-      },
+      onCancel() {},
     });
   };
 
@@ -140,18 +144,27 @@ const Expense = () => {
       setFilters((prev) => ({ ...prev, dateRange: dates }));
     }
   };
-  ;
   useEffect(() => {
-    setFilteredExpenses(expenses.filter((expense) => {
-      const isCategoryMatch = filters.category ? expense.category === filters.category : true;
-      const isDateMatch =
-        !filters.dateRange.length ||
-        (moment(expense.date).isSameOrAfter(moment(filters.dateRange[0]), "day") &&
-          moment(expense.date).isSameOrBefore(moment(filters.dateRange[1]), "day"));
+    setFilteredExpenses(
+      expenses.filter((expense) => {
+        const isCategoryMatch = filters.category
+          ? expense.category === filters.category
+          : true;
+        const isDateMatch =
+          !filters.dateRange.length ||
+          (moment(expense.date).isSameOrAfter(
+            moment(filters.dateRange[0]),
+            "day"
+          ) &&
+            moment(expense.date).isSameOrBefore(
+              moment(filters.dateRange[1]),
+              "day"
+            ));
 
-      return isCategoryMatch && isDateMatch;
-    }))
-  }, [filters, expenses])
+        return isCategoryMatch && isDateMatch;
+      })
+    );
+  }, [filters, expenses]);
   return (
     <div className="expense-page">
       <div className="page_header">

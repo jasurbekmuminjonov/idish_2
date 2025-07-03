@@ -119,7 +119,7 @@ const getSalesHistory = async (req, res) => {
       .populate("clientId", "name")
       .populate(
         "productId",
-        "name purchasePrice.value sellingPrice.value code size currency"
+        "name purchasePrice.value sellingPrice.value code size currency category"
       )
       .populate("warehouseId", "name")
       .sort({ createdAt: -1 });

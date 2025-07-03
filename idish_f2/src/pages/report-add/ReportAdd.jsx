@@ -564,14 +564,38 @@ export default function ReportAdd() {
             selectedPartner?.partner_name || selectedClient?.name || ""
           }`}
           extra={
-            <Button
-              type="primary"
-              icon={<PrinterOutlined />}
-              onClick={generatePDF}
-              disabled={reportsData.length === 0}
-            >
-              Chop etish
-            </Button>
+            <Space>
+              <p>
+                USD:{" "}
+                {(
+                  reportsData
+                    .filter((r) => r.currency === "USD" && r.type === "payment")
+                    .reduce((acc, i) => acc + i.amount, 0) -
+                  reportsData
+                    .filter((r) => r.currency === "USD" && r.type === "debt")
+                    .reduce((acc, i) => acc + i.amount, 0)
+                )?.toLocaleString()}
+              </p>
+              <p>
+                UZS:{" "}
+                {(
+                  reportsData
+                    .filter((r) => r.currency === "SUM" && r.type === "payment")
+                    .reduce((acc, i) => acc + i.amount, 0) -
+                  reportsData
+                    .filter((r) => r.currency === "SUM" && r.type === "debt")
+                    .reduce((acc, i) => acc + i.amount, 0)
+                )?.toLocaleString()}
+              </p>
+              <Button
+                type="primary"
+                icon={<PrinterOutlined />}
+                onClick={generatePDF}
+                disabled={reportsData.length === 0}
+              >
+                Chop etish
+              </Button>
+            </Space>
           }
         >
           <Table

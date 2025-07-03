@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useGetProductsQuery } from "../../context/service/product.service";
-import { useGetProductsPartnerQuery } from "../../context/service/partner.service";
 import {
   useGetClientsQuery,
   useCreateClientMutation,
@@ -12,7 +11,10 @@ import "./kassa.css";
 import { MdDeleteForever } from "react-icons/md";
 import { useSellProductMutation } from "../../context/service/sales.service";
 import { useGetUsdRateQuery } from "../../context/service/usd.service";
-import { useCreateDebtMutation } from "../../context/service/debt.service";
+import {
+  useCreateDebtMutation,
+  useGetAllDebtorsQuery,
+} from "../../context/service/debt.service";
 import { useGetPromosQuery } from "../../context/service/promo.service";
 import { useNavigate } from "react-router-dom";
 import {
@@ -23,21 +25,16 @@ import moment from "moment";
 import html2pdf from "html2pdf.js";
 import yodgor_abdullaev from "../../assets/yodgor_abdullaev.svg";
 import zolotayaroza77 from "../../assets/zolotayaroza77.svg";
-import { useGetActPartnersQuery } from "../../context/service/act-partner.service";
-import { useGetWarehousesQuery } from "../../context/service/ombor.service";
 
 const { Option } = Select;
 
 const Kassa = () => {
   const { data: products = [] } = useGetProductsQuery();
-  const { data: partnerProducts = [] } = useGetProductsPartnerQuery();
-  const { data: partnersFromApi = [], isLoading: partnersLoading } =
-    useGetActPartnersQuery();
+  const { data: debtors = [] } = useGetAllDebtorsQuery();
   const { data: promos = [] } = useGetPromosQuery();
   const { data: usdRate = {} } = useGetUsdRateQuery();
   const { data: clients = [] } = useGetClientsQuery();
   const { data: expenses = [] } = useGetExpensesQuery();
-  const { data: warehouses = [] } = useGetWarehousesQuery();
   const [createClient] = useCreateClientMutation();
   const [createDebt] = useCreateDebtMutation();
   const [addExpense] = useAddExpenseMutation();
@@ -61,29 +58,18 @@ const Kassa = () => {
   const [dueDate, setDueDate] = useState(null);
   const [currency, setCurrency] = useState("SUM");
   const [selectedUnit, setSelectedUnit] = useState("quantity");
-  const id = localStorage.getItem("_id");
-  const role = localStorage.getItem("role");
   const userLogin =
     localStorage.getItem("user_login") || "Noma'lum foydalanuvchi";
 
-  const allProducts = [
-    ...products.map((product) => ({
+  const allProducts = useMemo(() => {
+    return products.map((product) => ({
       ...product,
-      source: "product",
       name: product.name || "Noma'lum",
       barcode: product.barcode || "",
       code: product.code || "",
       partnerName: product.name_partner || "Noma'lum",
-    })),
-    // ...partnerProducts.map((product) => ({
-    //   ...product,
-    //   source: "partner",
-    //   name: product.name || "Noma'lum",
-    //   barcode: product.barcode || "",
-    //   code: product.code || "",
-    //   partnerName: product.name_partner || "Noma'lum",
-    // })),
-  ];
+    }));
+  }, [products]);
 
   const combinedPartners = [
     ...allProducts
@@ -92,17 +78,12 @@ const Kassa = () => {
         name: p.partnerName,
         id: p.partner_number,
       })),
-    // ...partnersFromApi
-    //   .filter((p) => p.partner_name && p.partner_number)
-    //   .map((p) => ({
-    //     name: p.partner_name,
-    //     id: p.partner_number,
-    //   })),
   ];
 
   const uniquePartners = Array.from(
     new Map(combinedPartners.map((p) => [p.id, p])).values()
   );
+  console.log(debtors);
 
   useEffect(() => {
     const uniqueCategories = [
@@ -385,6 +366,42 @@ const Kassa = () => {
                 : ""
             }
           </div>
+          <table style="border-collapse: collapse; width: 100%; margin-bottom: 20px; border: 1px solid #e0e0e0;">
+            <thead>
+              <tr style="background-color: #f1f3f4; text-align: center;">
+                <th style="padding: 10px; border: 1px solid #e0e0e0;">Название продукта</th>
+                <th style="padding: 10px; border: 1px solid #e0e0e0;">Размер</th>
+                <th style="padding: 10px; border: 1px solid #e0e0e0;">Код</th>
+                <th style="padding: 10px; border: 1px solid #e0e0e0;">Количество</th>
+                <th style="padding: 10px; border: 1px solid #e0e0e0;">Цена</th>
+                <th style="padding: 10px; border: 1px solid #e0e0e0;">Валюта</th>
+                <th style="padding: 10px; border: 1px solid #e0e0e0;">Общая сумма</th>
+                <th style="padding: 10px; border: 1px solid #e0e0e0;">Оставшаяся сумма</th>
+              </tr>
+            </thead>
+           <tbody>
+  ${debtors
+    .filter(
+      (d) => d.partnerId === selectedBuyer || d.clientId?._id === selectedBuyer
+    )
+    .map(
+      (item, index) => `
+        <tr style="text-align: center;">
+          <td style="padding: 8px;">${item.productId.name}</td>
+          <td style="padding: 8px;">${item.productId.size}</td>
+          <td style="padding: 8px;">${item.productId.code}</td>
+          <td style="padding: 8px;">${item.quantity}</td>
+          <td style="padding: 8px;">${item.sellingPrice?.toLocaleString()}</td>
+          <td style="padding: 8px;">${item.currency}</td>
+          <td style="padding: 8px;">${item.totalAmount?.toLocaleString()}</td>
+          <td style="padding: 8px;">${item.remainingAmount?.toLocaleString()}</td>
+        </tr>
+      `
+    )
+    .join("")}
+</tbody>
+
+          </table>
           <div style="display: flex; justify-content: space-around; margin-top: 20px; border-top: 1px solid #e0e0e0; padding-top: 20px;">
             <div style="text-align: center;">
               <img src="${yodgor_abdullaev}" style="width: 100px; height: 100px; border-radius: 10px; background: white; padding: 10px;" />
@@ -469,27 +486,13 @@ const Kassa = () => {
     },
     { title: "O'lcham", dataIndex: "size", key: "size" },
     { title: "Ombor", render: (_, record) => record.warehouse?.name || "-" },
-    // { title: "Shtrix kod", dataIndex: "barcode", key: "barcode" },
     { title: "Kod", dataIndex: "code", key: "code" },
-    // {
-    //   title: "Umumiy vazni(kg)",
-    //   dataIndex: "total_kg",
-    //   key: "total_kg",
-    //   render: (text) => formatNumber(text || 0),
-    // },
-    // { title: "Dona soni", dataIndex: "quantity", key: "quantity" },
     {
       title: "Karobka soni",
       dataIndex: "box_quantity",
       key: "box_quantity",
       render: (text) => text?.toFixed(1),
     },
-    // {
-    //   title: "Pachka soni",
-    //   key: "package_quantity",
-    //   render: (_, record) =>
-    //     record?.isPackage ? Math.floor(record?.package_quantity) : "-",
-    // },
     {
       title: "Sotish narxi",
       render: (_, record) => {
@@ -595,7 +598,6 @@ const Kassa = () => {
       ),
     },
     { title: "Ombor", render: (_, record) => record.warehouse?.name || "-" },
-    // { title: "Shtrix kod", dataIndex: "barcode" },
     {
       title: "Soni",
       render: (_, record) => (
@@ -681,46 +683,6 @@ const Kassa = () => {
         </Select>
       ),
     },
-    // {
-    //   title: "Sotish narxi",
-    //   render: (_, record) => (
-    //     <div>
-    //       <Input
-    //         style={{ width: "100px" }}
-    //         type="number"
-    //         onChange={(e) => {
-    //           const newPrice = parseFloat(e.target.value) || 0;
-    //           const newBasket = basket.map((item) => {
-    //             if (item._id === record._id) {
-    //               return {
-    //                 ...item,
-    //                 sellingPrice: {
-    //                   ...item.sellingPrice,
-    //                   value: newPrice,
-    //                 },
-    //                 originalPrice: {
-    //                   value: convertPrice(
-    //                     newPrice,
-    //                     item.currency,
-    //                     item.originalPrice.currency,
-    //                     usdRate?.rate
-    //                   ),
-    //                   currency: item.originalPrice.currency,
-    //                 },
-    //               };
-    //             }
-    //             return item;
-    //           });
-    //           setBasket(newBasket);
-    //         }}
-    //         value={record?.sellingPrice?.value}
-    //       />
-    //       <span style={{ marginLeft: "5px" }}>
-    //         {record.currency === "SUM" ? "сум" : "$"}
-    //       </span>
-    //     </div>
-    //   ),
-    // },
     {
       title: "Sotish narxi",
       render: (_, record) => <p>{formatNumber(record?.sellingPrice?.value)}</p>,
@@ -811,7 +773,6 @@ const Kassa = () => {
     try {
       for (let item of basket) {
         const unit = selectedUnit;
-        const warehouseQty = item.quantity;
         let requiredQty = 0;
 
         if (unit === "quantity") {
@@ -896,7 +857,6 @@ const Kassa = () => {
             const totalAmount = Math.max(unitPrice * quantity, 0);
 
             return createDebt({
-              // mijoz yoki hamkor
               ...(clientId && { clientId }),
               ...(partnerId && { partnerId }),
               productId: item._id,

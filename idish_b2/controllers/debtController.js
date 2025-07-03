@@ -44,22 +44,22 @@ exports.createDebt = async (req, res) => {
       (
         (unit === "box_quantity"
           ? quantity /
-          product.package_quantity_per_box /
-          (product.isPackage ? product.quantity_per_package : 1)
+            product.package_quantity_per_box /
+            (product.isPackage ? product.quantity_per_package : 1)
           : unit === "package_quantity"
-            ? product.isPackage
-              ? quantity / product.quantity_per_package
-              : 0
-            : unit === "quantity"
-              ? quantity
-              : 0) *
+          ? product.isPackage
+            ? quantity / product.quantity_per_package
+            : 0
+          : unit === "quantity"
+          ? quantity
+          : 0) *
         (unit === "quantity"
           ? product.kg_per_quantity
           : unit === "package_quantity"
-            ? product.isPackage
-              ? product.kg_per_package
-              : 0
-            : product.kg_per_box)
+          ? product.isPackage
+            ? product.kg_per_package
+            : 0
+          : product.kg_per_box)
       ).toFixed(2)
     );
 
@@ -78,7 +78,9 @@ exports.createDebt = async (req, res) => {
       paymentMethod,
       dueDate,
       paymentHistory: paymentHistory || [],
-      remainingAmount: (req.body.initialPayment ? totalAmount - req.body.initialPayment : totalAmount),
+      remainingAmount: req.body.initialPayment
+        ? totalAmount - req.body.initialPayment
+        : totalAmount,
     });
     await newDebt.save();
     res.status(201).json(newDebt);
@@ -201,7 +203,7 @@ exports.getDailyPaymentsByStoreId = async (req, res) => {
 
           if (
             paymentDate.format("DD-MM-YYYY") ===
-            targetDate.format("DD-MM-YYYY") &&
+              targetDate.format("DD-MM-YYYY") &&
             payment.storeId.toString() === storeId
           ) {
             matchedPayments.push({

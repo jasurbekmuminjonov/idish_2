@@ -6,6 +6,8 @@ import moment from "moment";
 import { useGetClientsQuery } from "../../context/service/client.service";
 import { useGetProductsQuery } from "../../context/service/product.service";
 import { useGetProductsPartnerQuery } from "../../context/service/partner.service";
+import { FaPrint } from "react-icons/fa";
+import { useGetUsdRateQuery } from "../../context/service/usd.service";
 
 const { Option } = Select;
 
@@ -13,30 +15,33 @@ const Sales = () => {
   const { data: clients = [] } = useGetClientsQuery();
   const { data: mahsulotlar = [] } = useGetProductsQuery();
   const { data: hamkorMahsulotlari = [] } = useGetProductsPartnerQuery();
-
+  const { data: usdRateData = {} } = useGetUsdRateQuery();
   const [searchName, setSearchName] = useState("");
   const [searchNumber, setSearchNumber] = useState("");
   const barchaMahsulotlar = [
     ...mahsulotlar.map((mahsulot) => ({
       ...mahsulot,
-      manba: 'mahsulot',
-      hamkor_nomi: mahsulot.name_partner || '',
-      hamkor_raqami: mahsulot.partner_number || '',
+      manba: "mahsulot",
+      hamkor_nomi: mahsulot.name_partner || "",
+      hamkor_raqami: mahsulot.partner_number || "",
     })),
     ...hamkorMahsulotlari.map((mahsulot) => ({
       ...mahsulot,
-      manba: 'hamkor',
-      hamkor_nomi: mahsulot.name_partner || '',
-      hamkor_raqami: mahsulot.partner_number || '',
+      manba: "hamkor",
+      hamkor_nomi: mahsulot.name_partner || "",
+      hamkor_raqami: mahsulot.partner_number || "",
     })),
   ];
   const unikalHamkorlar = Array.from(
     new Map(
       barchaMahsulotlar
         .filter((p) => p.hamkor_nomi && p.hamkor_raqami)
-        .map((p) => [p.hamkor_nomi, { nom: p.hamkor_nomi, raqam: p.hamkor_raqami }])
+        .map((p) => [
+          p.hamkor_nomi,
+          { nom: p.hamkor_nomi, raqam: p.hamkor_raqami },
+        ])
     ).values()
-  )
+  );
 
   const { data: sales = [], isLoading } = useGetSalesHistoryQuery();
   const [filters, setFilters] = useState({
@@ -54,21 +59,45 @@ const Sales = () => {
         const matchesProductName = sale.productId?.name
           ?.toLowerCase()
           .includes(filters.productName?.toLowerCase());
-
+        const matchesProductCategory = sale.productId?.category
+          ?.toLowerCase()
+          .includes(filters.productName?.toLowerCase());
         const matchesProductCode = sale.productId?.code
           ?.toLowerCase()
-          .includes(filters.productCode?.toLowerCase());
+          .includes(filters.productName?.toLowerCase());
+        const matchesProductSize = sale.productId?.size
+          ?.toLowerCase()
+          .includes(filters.productName?.toLowerCase());
+
+        // const matchesProductCode = sale.productId?.code
+        //   ?.toLowerCase()
+        //   .includes(filters.productCode?.toLowerCase());
         const matchesClient = filters.selectedClient
           ? sale.clientId?._id === filters.selectedClient
           : true;
 
         const matchesPaymentMethod =
-          !filters.paymentMethod || sale.paymentMethod === filters.paymentMethod;
+          !filters.paymentMethod ||
+          sale.paymentMethod === filters.paymentMethod;
         const matchesDateRange =
           !filters.dateRange.length ||
-          (moment(sale.createdAt).isSameOrAfter(moment(filters.dateRange[0]), "day") &&
-            moment(sale.createdAt).isSameOrBefore(moment(filters.dateRange[1]), "day"));
-        return matchesProductName && matchesProductCode && matchesPaymentMethod && matchesDateRange && matchesClient;
+          (moment(sale.createdAt).isSameOrAfter(
+            moment(filters.dateRange[0]),
+            "day"
+          ) &&
+            moment(sale.createdAt).isSameOrBefore(
+              moment(filters.dateRange[1]),
+              "day"
+            ));
+        return (
+          (matchesProductName ||
+            matchesProductCategory ||
+            matchesProductCode ||
+            matchesProductSize) &&
+          matchesPaymentMethod &&
+          matchesDateRange &&
+          matchesClient
+        );
       })
     );
   }, [filters, sales]);
@@ -82,7 +111,12 @@ const Sales = () => {
     }
 
     const totalPrice = (sale.sellingPrice || 0) * (sale.quantity || 0);
-    const paymentMethodText = sale.paymentMethod === "cash" ? "Naqd" : sale.paymentMethod === "card" ? "Karta" : "Noma'lum";
+    const paymentMethodText =
+      sale.paymentMethod === "cash"
+        ? "Naqd"
+        : sale.paymentMethod === "card"
+        ? "Karta"
+        : "Noma'lum";
 
     // Determine buyer name - show client name if exists, otherwise show partner name
     const buyerName = sale.clientId?.name || sale.partnerName || "Noma'lum";
@@ -161,6 +195,11 @@ const Sales = () => {
       key: "productId",
     },
     {
+      title: "Mahsulot kategoriyasi",
+      dataIndex: ["productId", "category"],
+      key: "productId",
+    },
+    {
       title: "Mahsulot kodi",
       dataIndex: ["productId", "code"],
       key: "productId",
@@ -183,16 +222,27 @@ const Sales = () => {
       title: "Sotib olish narxi",
       key: "purchasePrice",
       render: (_, record) =>
-        `${record.productId?.purchasePrice?.value || 0} ${record.productId?.currency || "N/A"
+        `${record.productId?.purchasePrice?.value || 0} ${
+          record.productId?.currency || "N/A"
         }`,
     },
     {
       title: "Sotish narxi",
-      render: (_, record) => (record.sellingPrice ? `${record.sellingPrice?.toFixed(2)} ${record.currency}` : "0.00"),
+      render: (_, record) =>
+        record.sellingPrice
+          ? `${Number(record.sellingPrice?.toFixed(2))?.toLocaleString()} ${
+              record.currency
+            }`
+          : "0.00",
     },
     {
       title: "Jami",
-      render: (_, record) => (record.sellingPrice ? `${(record.sellingPrice * record.quantity)?.toFixed(2)} ${record.currency}` : "0.00"),
+      render: (_, record) =>
+        record.sellingPrice
+          ? `${Number(
+              (record.sellingPrice * record.quantity)?.toFixed(2)
+            )?.toLocaleString()} ${record.currency}`
+          : "0.00",
     },
     // {
     //   title: "To'lov(so'm)",
@@ -222,12 +272,8 @@ const Sales = () => {
       title: "Harakat",
       key: "actions",
       render: (_, record) => (
-        <Button
-          type="primary"
-          icon={<PrinterOutlined />}
-          onClick={() => generatePDF(record)}
-        >
-          Chop etish
+        <Button type="primary" onClick={() => generatePDF(record)}>
+          <FaPrint />
         </Button>
       ),
     },
@@ -238,59 +284,195 @@ const Sales = () => {
   }
 
   return (
-    <div className="sales-page" style={{ overflowX: 'auto' }}>
+    <div className="sales-page" style={{ overflowX: "auto" }}>
       <div className="page_header">
-        <h1>Sotilgan Mahsulotlar</h1>
         <div className="header_actions">
-          <Space>
-            <Input
-              style={{ width: "300px" }}
-              placeholder="Mahsulot nomi"
-              onChange={(e) => setFilters({ ...filters, productName: e.target.value })}
-            />
-            <Input
+          <Space style={{ display: "flex", alignItems: "start" }}>
+            {/* <Input
               style={{ width: "200px" }}
               placeholder="Mahsulot kodi"
-              onChange={(e) => setFilters({ ...filters, productCode: e.target.value })}
-            />
-            <Select
-              style={{ width: "150px" }}
-              onChange={(value) => setFilters({ ...filters, selectedClient: value })}
-              value={filters.selectedClient}
-            >
-              <Option value="">Barchasi</Option>
-              {clients.map((client) => (
-                <Option key={client._id} value={client._id}>
-                  {client.name}
-                </Option>
-              ))}
-            </Select>
-            <Select
-              style={{ width: "150px" }}
-              placeholder="To'lov usuli"
-              onChange={(value) => setFilters({ ...filters, paymentMethod: value })}
-              value={filters.paymentMethod}
-            >
-              <Option value="">Barchasi</Option>
-              <Option value="cash">Naqd</Option>
-              <Option value="card">Karta</Option>
-            </Select>
-            <DatePicker.RangePicker
-              style={{ width: "300px" }}
-              placeholder={["Dan", "Gacha"]}
-              onChange={(dates, dateStrings) => {
-                if (!dateStrings[0] || !dateStrings[1]) {
-                  setFilters({ ...filters, dateRange: [] });
-                } else {
-                  setFilters({ ...filters, dateRange: dateStrings });
+              onChange={(e) =>
+                setFilters({ ...filters, productCode: e.target.value })
+              }
+            /> */}
+            <Space direction="vertical">
+              <Select
+                style={{ width: "200px" }}
+                onChange={(value) =>
+                  setFilters({ ...filters, selectedClient: value })
                 }
+                value={filters.selectedClient}
+              >
+                <Option value="">Barchasi</Option>
+                {clients.map((client) => (
+                  <Option key={client._id} value={client._id}>
+                    {client.name}
+                  </Option>
+                ))}
+              </Select>
+              <Select
+                style={{ width: "200px" }}
+                placeholder="To'lov usuli"
+                onChange={(value) =>
+                  setFilters({ ...filters, paymentMethod: value })
+                }
+                value={filters.paymentMethod}
+              >
+                <Option value="">Barchasi</Option>
+                <Option value="cash">Naqd</Option>
+                <Option value="card">Karta</Option>
+              </Select>
+            </Space>
+            <Space direction="vertical">
+              <Input
+                style={{ width: "250px" }}
+                placeholder="Mahsulot nomi"
+                onChange={(e) =>
+                  setFilters({ ...filters, productName: e.target.value })
+                }
+              />
+              <DatePicker.RangePicker
+                style={{ width: "250px" }}
+                placeholder={["Dan", "Gacha"]}
+                onChange={(dates, dateStrings) => {
+                  if (!dateStrings[0] || !dateStrings[1]) {
+                    setFilters({ ...filters, dateRange: [] });
+                  } else {
+                    setFilters({ ...filters, dateRange: dateStrings });
+                  }
+                }}
+              />
+            </Space>
+            <table
+              style={{
+                border: "1px solid #000",
+                width: "300px",
+                padding: "5px",
               }}
-            />
+            >
+              <tr
+                style={{
+                  border: "1px solid #000",
+                  padding: "5px",
+                }}
+              >
+                <td style={{ border: "1px solid #ccc", padding: "5px" }}>
+                  Valyuta
+                </td>
+                <td style={{ border: "1px solid #ccc", padding: "5px" }}>
+                  Sof foyda
+                </td>
+                <td style={{ border: "1px solid #ccc", padding: "5px" }}>
+                  Sotuv
+                </td>
+              </tr>
+              <tr
+                style={{
+                  border: "1px solid #000",
+                  padding: "5px",
+                }}
+              >
+                <td style={{ border: "1px solid #ccc", padding: "5px" }}>
+                  USD
+                </td>
+                <td style={{ border: "1px solid #ccc", padding: "5px" }}>
+                  {filteredSales
+                    .filter((s) => s.currency === "USD")
+                    .reduce(
+                      (acc, item) =>
+                        acc +
+                        (item.sellingPrice -
+                          item.productId.purchasePrice.value) *
+                          item.quantity,
+                      0
+                    )}
+                </td>
+                <td style={{ border: "1px solid #ccc", padding: "5px" }}>
+                  {filteredSales
+                    .filter((s) => s.currency === "USD")
+                    .reduce(
+                      (acc, item) => acc + item.sellingPrice * item.quantity,
+                      0
+                    )}
+                </td>
+              </tr>
+              <tr
+                style={{
+                  border: "1px solid #000",
+                  padding: "5px",
+                }}
+              >
+                <td style={{ border: "1px solid #ccc", padding: "5px" }}>
+                  UZS
+                </td>
+                <td style={{ border: "1px solid #ccc", padding: "5px" }}>
+                  {filteredSales
+                    .filter((s) => s.currency === "SUM")
+                    .reduce(
+                      (acc, item) =>
+                        acc +
+                        (item.sellingPrice -
+                          item.productId.purchasePrice.value *
+                            usdRateData.rate) *
+                          item.quantity,
+                      0
+                    )
+                    ?.toLocaleString()}
+                </td>
+                <td style={{ border: "1px solid #ccc", padding: "5px" }}>
+                  {filteredSales
+                    .filter((s) => s.currency === "SUM")
+                    .reduce(
+                      (acc, item) => acc + item.sellingPrice * item.quantity,
+                      0
+                    )
+                    ?.toLocaleString()}
+                </td>
+              </tr>
+              <tr
+                style={{
+                  border: "1px solid #000",
+                  padding: "5px",
+                }}
+              >
+                <td style={{ border: "1px solid #ccc", padding: "5px" }}>
+                  KYG
+                </td>
+                <td style={{ border: "1px solid #ccc", padding: "5px" }}>
+                  {filteredSales
+                    .filter((s) => s.currency === "KYG")
+                    .reduce(
+                      (acc, item) =>
+                        acc +
+                        (item.sellingPrice -
+                          item.productId.purchasePrice.value *
+                            usdRateData.kyg) *
+                          item.quantity,
+                      0
+                    )
+                    ?.toLocaleString()}
+                </td>
+                <td style={{ border: "1px solid #ccc", padding: "5px" }}>
+                  {filteredSales
+                    .filter((s) => s.currency === "KYG")
+                    .reduce(
+                      (acc, item) => acc + item.sellingPrice * item.quantity,
+                      0
+                    )
+                    ?.toLocaleString()}
+                </td>
+              </tr>
+            </table>
           </Space>
         </div>
       </div>
 
-      <Table scroll={{ x: "max-content" }} columns={columns} dataSource={filteredSales} rowKey="_id" />
+      <Table
+        scroll={{ x: "max-content" }}
+        columns={columns}
+        dataSource={filteredSales}
+        rowKey="_id"
+      />
     </div>
   );
 };

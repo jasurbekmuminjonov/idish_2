@@ -35,7 +35,6 @@ const partnerSchema = new mongoose.Schema({
         },
       },
     ],
-    default: [],
   },
 });
 module.exports = mongoose.model("ActPartner", partnerSchema);

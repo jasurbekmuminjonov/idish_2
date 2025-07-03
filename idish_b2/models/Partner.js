@@ -2,6 +2,11 @@ const mongoose = require("mongoose");
 
 const partnerSchema = new mongoose.Schema(
   {
+    productId: {
+      type: mongoose.Types.ObjectId,
+      ref: "Product",
+      default: null,
+    },
     name: {
       type: String,
       required: true,

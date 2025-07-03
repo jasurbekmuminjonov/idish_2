@@ -17,8 +17,8 @@ root.render(
       <Provider store={store}>
         <SnackbarProvider>
           <Loading />
-          {/* <Routera /> */}
-          <p>Sayt ishlab chiqilmoqda tez orada ishga tushadi, xatoliklar kelib chiqmasligi uchun shunday qilinmoqda</p>
+          <Routera />
+          {/* <p>Sayt ishlab chiqilmoqda tez orada ishga tushadi, xatoliklar kelib chiqmasligi uchun shunday qilinmoqda</p> */}
         </SnackbarProvider>
       </Provider>
     </ChakraProvider>

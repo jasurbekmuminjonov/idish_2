@@ -10,6 +10,7 @@ import {
   Space,
   Input,
   Select,
+  Button,
 } from "antd";
 import { MdScale } from "react-icons/md";
 import "./partner.css";
@@ -32,12 +33,146 @@ const Partner = () => {
   );
 
   const filtrlanganMahsulotlar = tanlanganHamkor
-    ? hamkorMahsulotlari.filter((p) =>
-        p.partner_number === tanlanganHamkor.partner_number && selectedPartiya
-          ? p.part === selectedPartiya
-          : true
+    ? hamkorMahsulotlari.filter(
+        (p) =>
+          p.partner_number === tanlanganHamkor.partner_number &&
+          (selectedPartiya ? p.part === selectedPartiya : true)
       )
     : [];
+
+  const generatePDF = (partner_number, part) => {
+    const partner = partnersFromApi.find(
+      (p) => p.partner_number === partner_number
+    );
+    if (!partner) return alert("Hamkor topilmadi");
+
+    const mahsulotlar = hamkorMahsulotlari.filter(
+      (p) =>
+        p.partner_number === partner_number && (part ? p.part === part : true)
+    );
+
+    const summaryByCurrency = ["USD", "SUM"].map((currency) => {
+      const filtered = mahsulotlar.filter((p) => p.currency === currency);
+      const boxSum = filtered.reduce((acc, p) => acc + p.box_quantity, 0);
+      const totalKg = filtered.reduce((acc, p) => acc + p.total_kg, 0);
+      const purchaseSum = filtered.reduce(
+        (acc, p) => acc + p.purchasePrice.value * p.quantity,
+        0
+      );
+      const sellingSum = filtered.reduce(
+        (acc, p) => acc + p.sellingPrice.value * p.quantity,
+        0
+      );
+      const profitSum = sellingSum - purchaseSum;
+
+      return {
+        currency,
+        boxSum,
+        totalKg,
+        purchaseSum,
+        sellingSum,
+        profitSum,
+      };
+    });
+
+    const htmlContent = `
+    <html>
+      <head>
+        <title>Mahsulotlar hisoboti</title>
+        <style>
+          body { font-family: Arial; padding: 20px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid #000; padding: 6px; text-align: left; }
+          h2 { margin-bottom: 0; }
+        </style>
+      </head>
+      <body>
+        <h2>Hamkor tovarlari</h2>
+        <p><strong>Ismi:</strong> ${partner.partner_name}</p>
+        <p><strong>Raqam:</strong> ${partner.partner_number}</p>
+        <p><strong>Manzil:</strong> ${partner.partner_address || "-"}</p>
+        <p><strong>Partiya:</strong> ${part || "Barchasi"}</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Valyuta</th>
+              <th>Umumiy karobka soni</th>
+              <th>Umumiy kg</th>
+              <th>Umumiy tan summasi</th>
+              <th>Umumiy sotish summasi</th>
+              <th>Umumiy foyda summasi</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${summaryByCurrency
+              .map(
+                (item) => `
+              <tr>
+                <td>${item.currency}</td>
+                <td>${item.boxSum.toLocaleString()} ta</td>
+                <td>${item.totalKg.toLocaleString()} kg</td>
+                <td>${item.purchaseSum.toLocaleString()}</td>
+                <td>${item.sellingSum.toLocaleString()}</td>
+                <td>${item.profitSum.toLocaleString()}</td>
+              </tr>
+            `
+              )
+              .join("")}
+          </tbody>
+        </table>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Mahsulot</th>
+              <th>Kategoriya</th>
+              <th>Kod</th>
+              <th>O‘lcham</th>
+              <th>Kg</th>
+              <th>Quti</th>
+              <th>Valyuta</th>
+              <th>Tan narx</th>
+              <th>Sotish narx</th>
+              <th>Ombor</th>
+              <th>Um. tan summ</th>
+              <th>Um. sot. summ</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${mahsulotlar
+              .map(
+                (p) => `
+              <tr>
+                <td>${p.name}</td>
+                <td>${p.category}</td>
+                <td>${p.code}</td>
+                <td>${p.size}</td>
+                <td>${p.total_kg?.toFixed(2) || "-"}</td>
+                <td>${p.box_quantity?.toFixed(2) || "-"}</td>
+                <td>${p.currency}</td>
+                <td>${p.purchasePrice?.value || "-"}</td>
+                <td>${p.sellingPrice?.value?.toFixed(2) || "-"}</td>
+                <td>${p.warehouse?.name || "-"}</td>
+                <td>${(p.quantity * p.purchasePrice?.value)?.toFixed(2)}</td>
+                <td>${(p.quantity * p.sellingPrice?.value)?.toFixed(2)}</td>
+              </tr>
+            `
+              )
+              .join("")}
+          </tbody>
+        </table>
+      </body>
+    </html>
+  `;
+
+    const newWindow = window.open("", "_blank");
+    newWindow.document.write(htmlContent);
+    newWindow.document.close();
+    newWindow.focus();
+    newWindow.print();
+    newWindow.close();
+  };
 
   const ustunlar = [
     {
@@ -71,19 +206,12 @@ const Partner = () => {
       key: "total_kg",
       render: (matn) => (matn ? matn?.toFixed(2) : "-"),
     },
-    // { title: "Dona soni", dataIndex: "quantity", key: "quantity" },
     {
       title: "Quti soni",
       dataIndex: "box_quantity",
       key: "box_quantity",
       render: (matn) => (matn ? matn?.toFixed(2) : "-"),
     },
-    // {
-    //   title: "Paket soni",
-    //   key: "package_quantity",
-    //   render: (_, yozuv) =>
-    //     yozuv?.isPackage ? yozuv?.package_quantity?.toFixed(2) : "-",
-    // },
     { title: "Valyuta", dataIndex: "currency", key: "currency" },
     {
       title: "Sotib olish narxi",
@@ -104,7 +232,6 @@ const Partner = () => {
       key: "warehouse",
       render: (matn, yozuv) => yozuv?.warehouse?.name || "-",
     },
-    // { title: "Shtrix kod", dataIndex: "barcode", key: "barcode" },
   ];
 
   const kartaBosish = (hamkor) => {
@@ -205,6 +332,14 @@ const Partner = () => {
                 <Select.Option value={p.part}>{p.part}</Select.Option>
               ))}
             </Select>
+            <Button
+              type="primary"
+              onClick={() =>
+                generatePDF(tanlanganHamkor?.partner_number, selectedPartiya)
+              }
+            >
+              Yuklab olish
+            </Button>
           </Space>
         }
         open={modalKoʻrinadi}
@@ -245,10 +380,7 @@ const Partner = () => {
                 (acc, p) => acc + p.box_quantity,
                 0
               );
-              const totalKg = filtered.reduce(
-                (acc, p) => acc + p.total_kg,
-                0
-              );
+              const totalKg = filtered.reduce((acc, p) => acc + p.total_kg, 0);
               const purchaseSum = filtered.reduce(
                 (acc, p) => acc + p.purchasePrice.value * p.quantity,
                 0

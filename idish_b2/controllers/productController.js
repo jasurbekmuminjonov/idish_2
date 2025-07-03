@@ -26,18 +26,89 @@ const Partner = require("../models/Partner");
 // };
 exports.createProduct = async (req, res) => {
   try {
-    const product = new Product(req.body);
-    const partner = new Partner(req.body);
+    const {
+      name,
+      name_partner,
+      partner_number,
+      partner_address,
+      currency,
+      purchasePrice,
+      warehouse,
+      category,
+      size,
+      code,
+      part,
+      quantity = 0,
+      box_quantity = 0,
+      package_quantity = 0,
+      total_kg = 0,
+    } = req.body;
 
-    await product.save();
-    await partner.save(); // Agar partner ham saqlanishi kerak bo‘lsa
+    // Mos product bor-yo‘qligini tekshiramiz
+    const existingProduct = await Product.findOne({
+      name,
+      name_partner,
+      partner_number,
+      partner_address,
+      currency,
+      "purchasePrice.value": purchasePrice?.value,
+      warehouse,
+      category,
+      size,
+      code,
+      part,
+    });
 
-    res.status(201).json(product);
+    if (existingProduct) {
+      // Eski product yangilanadi
+      existingProduct.quantity =
+        (existingProduct.quantity || 0) + Number(quantity);
+      existingProduct.box_quantity =
+        (existingProduct.box_quantity || 0) + Number(box_quantity);
+      existingProduct.package_quantity =
+        (existingProduct.package_quantity || 0) + Number(package_quantity);
+      existingProduct.total_kg =
+        (existingProduct.total_kg || 0) + Number(total_kg);
+      await existingProduct.save();
+
+      // Mos partnerni ham topamiz
+      const existingPartner = await Partner.findOne({
+        productId: existingProduct._id,
+      });
+
+      if (existingPartner) {
+        existingPartner.quantity =
+          (existingPartner.quantity || 0) + Number(quantity);
+        existingPartner.box_quantity =
+          (existingPartner.box_quantity || 0) + Number(box_quantity);
+        existingPartner.package_quantity =
+          (existingPartner.package_quantity || 0) + Number(package_quantity);
+        existingPartner.total_kg =
+          (existingPartner.total_kg || 0) + Number(total_kg);
+        await existingPartner.save();
+      }
+
+      return res
+        .status(200)
+        .json({ message: "Product updated", product: existingProduct });
+    }
+
+    // Yangi product va partner yaratiladi
+    const newProduct = new Product(req.body);
+    await newProduct.save();
+
+    req.body.productId = newProduct._id;
+    const newPartner = new Partner(req.body);
+    await newPartner.save();
+
+    res
+      .status(201)
+      .json({ message: "Product and Partner created", product: newProduct });
   } catch (error) {
+    console.error(error);
     res.status(400).json({ error: error.message });
   }
 };
-
 
 // Get all products
 exports.getProducts = async (req, res) => {
@@ -84,6 +155,10 @@ exports.updateProduct = async (req, res) => {
     if (!product) {
       return res.status(404).json({ error: "Product not found" });
     }
+    await Partner.findOneAndUpdate({ productId: req.params.id }, req.body, {
+      new: true,
+      runValidators: true,
+    });
     res.status(200).json(product);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -97,6 +172,7 @@ exports.deleteProduct = async (req, res) => {
     if (!product) {
       return res.status(404).json({ error: "Product not found" });
     }
+    await Partner.findOneAndDelete({ productId: req.params.id });
     res.status(200).json({ message: "Product deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });

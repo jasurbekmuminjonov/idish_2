@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Select, Table, Input, Button } from "antd";
+import { Select, Table, Input, Button, Space } from "antd";
 import { useGetClientsQuery } from "../../context/service/client.service";
 import { useGetAllDebtorsQuery } from "../../context/service/debt.service";
 import { useGetProductsPartnerQuery } from "../../context/service/partner.service";
@@ -74,6 +74,35 @@ const ReconciliationAct = () => {
         item.partner_number === selectedPartner && isInDateRange(item.createdAt)
     );
   }, [partnerProducts, selectedPartner, startDate, endDate]);
+
+  const summaryByCurrency = useMemo(() => {
+    const result = {
+      USD: { sales: 0, debt: 0, products: 0 },
+      SUM: { sales: 0, debt: 0, products: 0 },
+      KYG: { sales: 0, debt: 0, products: 0 },
+    };
+
+    filteredSales.forEach((s) => {
+      if (result[s.currency]) {
+        result[s.currency].sales += s.sellingPrice * s.quantity;
+      }
+    });
+
+    filteredDebts.forEach((d) => {
+      if (result[d.currency]) {
+        result[d.currency].debt += d.remainingAmount;
+      }
+    });
+
+    filteredPartnerProducts.forEach((p) => {
+      if (result[p.currency]) {
+        result[p.currency].products +=
+          (p.purchasePrice?.value || 0) * (p.quantity || 0);
+      }
+    });
+
+    return result;
+  }, [filteredSales, filteredDebts, filteredPartnerProducts]);
 
   const quantityText = {
     quantity: "Dona",
@@ -305,67 +334,115 @@ const ReconciliationAct = () => {
   }));
 
   return (
-    <div className="act" style={{ padding: 20 }}>
+    <div className="act" style={{ padding: 20, background: "#fff" }}>
       <div style={{ display: "flex", gap: 20, marginBottom: 20 }}>
-        <Button onClick={() => navigate(-1)}>
-          <FaArrowLeft />
-        </Button>
-        <Select
-          showSearch
-          placeholder="Hamkorni tanlang"
-          style={{ width: 250 }}
-          onFocus={() => setFocused("partner")}
-          // disabled={focused === "client"}
-          value={selectedPartner || undefined}
-          onChange={(val) => {
-            setSelectedPartner(val);
-            setSelectedClient("");
-          }}
-          filterOption={(input, option) =>
-            option.label.toLowerCase().includes(input.toLowerCase())
-          }
-          options={optiondata}
-        />
+        <Space direction="vertical">
+          <Button onClick={() => navigate(-1)}>
+            <FaArrowLeft />
+          </Button>
+          <Button
+            disabled={!selectedClient && !selectedPartner}
+            type="primary"
+            onClick={printPDF}
+          >
+            Chop etish
+          </Button>
+        </Space>
 
-        <Select
-          showSearch
-          placeholder="Mijozni tanlang"
-          style={{ width: 250 }}
-          onFocus={() => setFocused("client")}
-          // disabled={focused === "partner"}
-          value={selectedClient || undefined}
-          onChange={(val) => {
-            setSelectedClient(val);
-            setSelectedPartner("");
-          }}
-          options={clients.map((c) => ({
-            value: c._id,
-            label: c.name,
-          }))}
-          filterOption={(input, option) =>
-            option.label.toLowerCase().includes(input.toLowerCase())
-          }
-        />
+        <Space direction="vertical">
+          <Select
+            showSearch
+            placeholder="Hamkorni tanlang"
+            style={{ width: 200 }}
+            onFocus={() => setFocused("partner")}
+            // disabled={focused === "client"}
+            value={selectedPartner || undefined}
+            onChange={(val) => {
+              setSelectedPartner(val);
+              setSelectedClient("");
+            }}
+            filterOption={(input, option) =>
+              option.label.toLowerCase().includes(input.toLowerCase())
+            }
+            options={optiondata}
+          />
 
-        <Button
-          disabled={!selectedClient && !selectedPartner}
-          type="primary"
-          onClick={printPDF}
-        >
-          Chop etish
-        </Button>
+          <Select
+            showSearch
+            placeholder="Mijozni tanlang"
+            style={{ width: 200 }}
+            onFocus={() => setFocused("client")}
+            // disabled={focused === "partner"}
+            value={selectedClient || undefined}
+            onChange={(val) => {
+              setSelectedClient(val);
+              setSelectedPartner("");
+            }}
+            options={clients.map((c) => ({
+              value: c._id,
+              label: c.name,
+            }))}
+            filterOption={(input, option) =>
+              option.label.toLowerCase().includes(input.toLowerCase())
+            }
+          />
+        </Space>
 
-        <Input
-          type="date"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-        />
-        <Input
-          type="date"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-        />
+        <Space direction="vertical">
+          <Input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+          <Input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
+        </Space>
       </div>
+      <table
+        style={{
+          width: "100%",
+          borderCollapse: "collapse",
+          margin: "20px 0",
+          fontSize: 14,
+          border: "1px solid #ccc",
+        }}
+      >
+        <thead>
+          <tr style={{ background: "#fafafa" }}>
+            <th style={{ border: "1px solid #ccc", padding: 8 }}>Valyuta</th>
+            <th style={{ border: "1px solid #ccc", padding: 8 }}>
+              Umumiy sotuv
+            </th>
+            <th style={{ border: "1px solid #ccc", padding: 8 }}>
+              Umumiy qarz
+            </th>
+            <th style={{ border: "1px solid #ccc", padding: 8 }}>
+              Umumiy tovar (olish narxi)
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {["USD", "SUM", "KYG"].map((currency) => (
+            <tr key={currency}>
+              <td style={{ border: "1px solid #ccc", padding: 8 }}>
+                {currency}
+              </td>
+              <td style={{ border: "1px solid #ccc", padding: 8 }}>
+                {summaryByCurrency[currency].sales.toLocaleString()}
+              </td>
+              <td style={{ border: "1px solid #ccc", padding: 8 }}>
+                {summaryByCurrency[currency].debt.toLocaleString()}
+              </td>
+              <td style={{ border: "1px solid #ccc", padding: 8 }}>
+                {summaryByCurrency[currency].products.toLocaleString()}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
       {/* CLIENT TABLES */}
       {selectedClient && (

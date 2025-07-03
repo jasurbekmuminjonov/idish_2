@@ -8,12 +8,14 @@ export const debtApi = apiSlice.injectEndpoints({
         method: "POST",
         body: debtData,
       }),
+      invalidatesTags: ["Debt"],
     }),
     getDebtsByClient: builder.query({
       query: (clientId) => ({
         url: `/debts/client/${clientId}`,
         method: "GET",
       }),
+      providesTags: ["Debt"],
     }),
     payDebt: builder.mutation({
       query: ({ id, amount, currency, type }) => ({
@@ -21,12 +23,14 @@ export const debtApi = apiSlice.injectEndpoints({
         method: "PUT",
         body: { amount, currency, type },
       }),
+      invalidatesTags: ["Debt"],
     }),
     getAllDebtors: builder.query({
       query: () => ({
         url: "/debts/debtors",
         method: "GET",
       }),
+      providesTags: ["Debt"],
     }),
     getDailyPaymentsByStoreId: builder.query({
       query: ({ date, storeId }) => ({
@@ -34,6 +38,7 @@ export const debtApi = apiSlice.injectEndpoints({
         method: "GET",
         params: { date, storeId },
       }),
+      providesTags: ["Debt"],
     }),
   }),
   overrideExisting: false,
@@ -44,5 +49,5 @@ export const {
   useGetDebtsByClientQuery,
   usePayDebtMutation,
   useGetAllDebtorsQuery,
-  useLazyGetDailyPaymentsByStoreIdQuery
+  useLazyGetDailyPaymentsByStoreIdQuery,
 } = debtApi;

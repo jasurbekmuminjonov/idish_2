@@ -43,50 +43,61 @@ const Debtors = () => {
     {
       title: "Mijoz ismi",
       render: (_, record) => {
-        return record.clientId?.name || partnerProduct.find(p => p.partner_number === record.partnerId)?.name_partner
+        return (
+          record.clientId?.name ||
+          partnerProduct.find((p) => p.partner_number === record.partnerId)
+            ?.name_partner
+        );
       },
     },
     {
       title: "Telefon raqami",
-      render: (_, record) => record.clientId?.phone || partnerProduct.find(p => p.partner_number === record.partnerId)?.partner_number,
+      render: (_, record) =>
+        record.clientId?.phone ||
+        partnerProduct.find((p) => p.partner_number === record.partnerId)
+          ?.partner_number,
     },
     {
       title: "Manzil",
-      render: (_, record) => record.clientId?.address || partnerProduct.find(p => p.partner_number === record.partnerId)?.partner_address,
+      render: (_, record) =>
+        record.clientId?.address ||
+        partnerProduct.find((p) => p.partner_number === record.partnerId)
+          ?.partner_address,
     },
     ...(role === "admin"
       ? [
-        {
-          title: "Tovar nomi",
-          dataIndex: ["productId", "name"],
-          key: "productId.name",
-        },
+          {
+            title: "Tovar nomi",
+            dataIndex: ["productId", "name"],
+            key: "productId.name",
+          },
 
-        {
-          title: "Sotish narxi",
-          dataIndex: "sellingPrice",
-          key: "sellingPrice",
-          render: (value) => (value ? `${value?.toFixed(2)}` : "0.00"),
-        },
-        {
-          title: "Valyuta",
-          dataIndex: "currency",
-          key: "currency",
-        },
-        { title: "Soni", dataIndex: "quantity", key: "quantity" },
-        {
-          title: "Umumiy summa",
-          dataIndex: "totalAmount",
-          key: "totalAmount",
-          render: (text) => text.toFixed(2),
-        },
-      ]
+          {
+            title: "Sotish narxi",
+            dataIndex: "sellingPrice",
+            key: "sellingPrice",
+            render: (value) => (value ? `${value?.toFixed(2)}` : "0.00"),
+          },
+
+          { title: "Soni", dataIndex: "quantity", key: "quantity" },
+          {
+            title: "Umumiy summa",
+            dataIndex: "totalAmount",
+            key: "totalAmount",
+            render: (text) => text.toFixed(2),
+          },
+        ]
       : []),
     {
       title: "Qoldiq summa",
       dataIndex: "remainingAmount",
       key: "remainingAmount",
       render: (text) => text?.toFixed(2),
+    },
+    {
+      title: "Valyuta",
+      dataIndex: "currency",
+      key: "currency",
     },
     {
       title: "Qarz muddati",
@@ -185,8 +196,8 @@ const Debtors = () => {
         <Select
           style={{ width: "100%", marginTop: "12px" }}
           type="text"
-          placeholder="To'lov valyutasini tanlang"
-          value={selectedCurrency}
+          placeholder="To'lov usulini tanlang"
+          value={paymentType}
           onChange={(value) => setPaymentType(value)}
         >
           <Select.Option value="naqt">Naqt</Select.Option>
