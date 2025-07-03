@@ -250,7 +250,6 @@ exports.rejectTransportion = async (req, res) => {
           .status(404)
           .json({ message: `Mahsulot topilmadi: ${product_id._id}` });
       }
-      console.log(product);
 
       if (unit === "box_quantity") {
         product.box_quantity += quantity;

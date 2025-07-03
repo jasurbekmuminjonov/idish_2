@@ -6,6 +6,7 @@ exports.createStore = async (req, res) => {
     const {
       store_name,
       store_login,
+      store_phone,
       store_password,
       store_address,
       w_name,
@@ -27,6 +28,7 @@ exports.createStore = async (req, res) => {
       login: store_login,
       password: hashedstore,
       address: store_address,
+      phone: store_phone,
     });
     return res.json({ message: "Do'kon va ombor yaratildi" });
   } catch (err) {

@@ -121,10 +121,8 @@ export const Routera = memo(() => {
     };
 
     const newSale = (data) => {
-      console.log(data);
       let { newSale, selectedWarehouse, sender } = data;
       let hodimId = localStorage.getItem("_id");
-      console.log(hodimId, selectedWarehouse);
       if (hodimId !== selectedWarehouse) return;
       let getNewSales = JSON.parse(localStorage.getItem("newSales")) || [];
 

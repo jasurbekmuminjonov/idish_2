@@ -62,7 +62,6 @@ const Transportion = () => {
   };
 
   const updateQuantity = (productId, value) => {
-    console.log(value);
 
     setBasket((prev) =>
       prev.map((item) => {

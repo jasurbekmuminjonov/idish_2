@@ -73,7 +73,13 @@ const Client = () => {
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: 16,
+        }}
+      >
         <h2>Klientlar</h2>
         <Button type="primary" onClick={showModal}>
           Klient qo‘shish
@@ -91,14 +97,16 @@ const Client = () => {
       )}
 
       <Modal
-        title={editingClientId ? "Klientni tahrirlash" : "Yangi klient qo‘shish"}
+        title={
+          editingClientId ? "Klientni tahrirlash" : "Yangi klient qo‘shish"
+        }
         open={isModalOpen}
         onOk={handleSubmit}
         onCancel={() => setIsModalOpen(false)}
         okText={editingClientId ? "Yangilash" : "Qo‘shish"}
         cancelText="Bekor qilish"
       >
-        <Form form={form} layout="vertical">
+        <Form autoComplete="off" form={form} layout="vertical">
           <Form.Item
             label="Ism"
             name="name"
@@ -109,10 +117,44 @@ const Client = () => {
           <Form.Item
             label="Telefon"
             name="phone"
-            rules={[{ required: true, message: "Iltimos, telefon kiriting" }]}
+            rules={[
+              { required: true, message: "Iltimos, telefon kiriting" },
+              {
+                validator: (_, value) => {
+                  if (!value) return Promise.resolve();
+
+                  // Telefonni faqat raqamlarga ajratamiz
+                  const cleanedInput = value.replace(/\D/g, "");
+
+                  // 5 ta ketma-ket bir xil raqam bormi?
+                  if (/(\d)\1{6,}/.test(cleanedInput)) {
+                    return Promise.reject(
+                      new Error(
+                        "5 ta ketma-ket bir xil raqam bo'lishi mumkin emas"
+                      )
+                    );
+                  }
+
+                  const isDuplicate = clients.some(
+                    (client) =>
+                      client.phone.replace(/\D/g, "") === cleanedInput &&
+                      client._id !== editingClientId // yangilashda o‘zini inkor qilamiz
+                  );
+
+                  if (isDuplicate) {
+                    return Promise.reject(
+                      new Error("Bu raqam bilan mijoz allaqachon mavjud")
+                    );
+                  }
+
+                  return Promise.resolve();
+                },
+              },
+            ]}
           >
             <Input />
           </Form.Item>
+
           <Form.Item
             label="Manzil"
             name="address"
@@ -127,37 +169,6 @@ const Client = () => {
 };
 
 export default Client;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // import React, { useEffect, useState } from "react";
 // import { useGetSalesHistoryQuery } from "../../context/service/sales.service";
@@ -468,8 +479,3 @@ export default Client;
 // };
 
 // export default Sales;
-
-
-
-
-

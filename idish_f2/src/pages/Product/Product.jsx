@@ -88,6 +88,9 @@ const Product = () => {
   const [createPartner] = useCreateActPartnerMutation();
   const [editPartner] = useUpdateActPartnerMutation();
   const [editingPartner, setEditingPartner] = useState(null);
+  const [selectedPartner, setSelectedPartner] = useState(null);
+  const [isNewPartner, setIsNewPartner] = useState(false);
+  const [partError, setPartError] = useState(null);
 
   async function handleAddPartner(values) {
     try {
@@ -260,9 +263,12 @@ const Product = () => {
 
   const onFinish = async (values) => {
     try {
-      const partnerData = partnersFromApi.find(
-        (p) => p.partner_number === localStorage.getItem("selectedPartner")
+      const partnerData = await partnersFromApi.find(
+        (p) =>
+          p.partner_number.toLowerCase() ===
+          localStorage.getItem("selectedPartner").toLowerCase()
       );
+
       values.name_partner = partnerData.partner_name;
       values.partner_number = partnerData.partner_number;
       values.partner_address = partnerData.partner_address;
@@ -272,7 +278,7 @@ const Product = () => {
       }
       if (!editingProduct) {
         const newBarcode = generateBarcode();
-        setCurrentBarcode(newBarcode);
+        // setCurrentBarcode(newBarcode);
         values.barcode = newBarcode;
         values.isPackage = isPackage;
       }
@@ -313,7 +319,7 @@ const Product = () => {
       form.resetFields();
       setEditingProduct("");
       setEditingSource("");
-      setModalVisible(false);
+      // setModalVisible(false);
       setImageUrl("");
     } catch (error) {
       if (
@@ -529,20 +535,121 @@ const Product = () => {
 
   const filteredProducts = allProducts.filter((product) => {
     const name = (product.name || "").toLowerCase();
+    const code = (product.code || "").toLowerCase();
+    const category = (product.category || "").toLowerCase();
+    const size = (product.size || "").toLowerCase();
     const barcode = (product.barcode || "").toLowerCase();
     const searchNameLower = searchName.toLowerCase();
     const searchBarcodeLower = searchBarcode.toLowerCase();
 
     return (
-      (searchName ? name.includes(searchNameLower) : true) &&
-      (searchBarcode ? barcode.includes(searchBarcodeLower) : true)
+      (searchName ? name.includes(searchNameLower) : true) ||
+      (searchName ? code.includes(searchNameLower) : true) ||
+      (searchName ? category.includes(searchNameLower) : true) ||
+      (searchName ? size.includes(searchNameLower) : true)
+      // (searchBarcode ? barcode.includes(searchBarcodeLower) : true)
     );
   });
+  console.log(filteredProducts);
+
+  const handlePartnerChange = (value) => {
+    if (value === "new") {
+      setIsNewPartner(true);
+      setSelectedPartner(null);
+      partnerForm.setFieldsValue({
+        partner_number: "",
+        partner_address: "",
+        part: "",
+      });
+    } else {
+      const partner = partnersFromApi.find(
+        (p) => p.partner_name.toLowerCase() === value.toLowerCase()
+      );
+      if (partner) {
+        setSelectedPartner(partner);
+        setIsNewPartner(false);
+        partnerForm.setFieldsValue({
+          partner_number: partner.partner_number,
+          partner_address: partner.partner_address,
+          part: "",
+        });
+      }
+    }
+  };
+
+  const validatePart = (_, value) => {
+    if (!value || !selectedPartner) return Promise.resolve();
+
+    const inputPart = value.toLowerCase();
+    const existingParts = selectedPartner.parts || [];
+
+    const isDuplicate = existingParts.some(
+      (p) => p.part?.toLowerCase() === inputPart
+    );
+
+    return isDuplicate
+      ? Promise.reject(new Error("Bu partiya avval saqlangan"))
+      : Promise.resolve();
+  };
+
+  async function handlePartnerFinish(values) {
+    try {
+      // Agar partner_name "new" bo‘lsa, manual_partner_name ni olish
+      let finalValues = { ...values };
+
+      if (values.partner_name === "new") {
+        const manualName = partnerForm.getFieldValue("manual_partner_name");
+        if (!manualName) {
+          return message.error("Yangi hamkor ismini kiriting");
+        }
+        finalValues.partner_name = manualName;
+      }
+
+      const existPartner = partnersFromApi.find(
+        (p) =>
+          p.partner_number.toLowerCase() ===
+          finalValues.partner_number.toLowerCase()
+      );
+
+      if (existPartner) {
+        await editPartner({
+          id: existPartner._id,
+          body: {
+            parts: [...existPartner.parts, { part: finalValues.part }],
+          },
+        });
+      } else {
+        await createPartner({
+          ...finalValues,
+          parts: [{ part: finalValues.part }],
+        });
+      }
+
+      localStorage.setItem("selectedPartner", finalValues.partner_number);
+      localStorage.setItem("selectedPartiya", finalValues.part);
+      partnerForm.resetFields();
+      setParnerModal(false);
+      setModalVisible(true);
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
   return (
     <div className="product-container">
-      <div className="page_header">
-        <Space>
+      <div
+        className="page_header"
+        style={{
+          display: "flex",
+          alignItems: "start",
+          justifyContent: "start",
+          gap: "15px",
+        }}
+      >
+        <Space
+          direction="vertical"
+          style={{ alignItems: "start", justifyContent: "start" }}
+        >
           {localStorage.getItem("role") === "admin" && (
             <Button
               disabled={
@@ -552,6 +659,7 @@ const Product = () => {
               type="primary"
               onClick={handleAddProduct}
               size="small"
+              style={{ width: "150px" }}
             >
               Tovar qo'shish
             </Button>
@@ -563,45 +671,161 @@ const Product = () => {
             size="small"
             style={{ width: 150 }}
           />
-          <Input
+        </Space>
+        {/* <Input
             placeholder="Shtrix kod"
             value={searchBarcode}
             onChange={(e) => setSearchBarcode(e.target.value)}
             size="small"
             style={{ width: 150 }}
-          />
-          <Button onClick={() => setPartnerFormModal(true)} type="primary">
+          /> */}
+        {/* <Button onClick={() => setPartnerFormModal(true)} type="primary">
             Hamkor qo'shish
-          </Button>
-          <Button onClick={() => setParnerModal(true)} type="primary">
-            Hamkorlar
-          </Button>
-          <Space style={{ alignItems: "start" }} direction="vertical">
-            <p>
-              <strong>Tanlangan hamkor:</strong>{" "}
-              {partnersFromApi?.find(
-                (p) =>
-                  p.partner_number === localStorage.getItem("selectedPartner")
-              )?.partner_name || ""}
-            </p>
-            <p>
-              <strong>Tanlangan partiya:</strong>{" "}
-              {localStorage.getItem("selectedPartiya") || ""}
-            </p>
-          </Space>
-        </Space>
-        <div className="stats">
-          <p>
-            Umumiy dona:{" "}
-            {allProducts?.reduce((a, b) => a + (b.quantity || 0), 0)}
-          </p>
-          <p>
-            Umumiy Karobka:{" "}
-            {allProducts
-              ?.reduce((a, b) => a + (b.box_quantity || 0), 0)
-              ?.toFixed(2)}
-          </p>
-        </div>
+          </Button> */}
+        {localStorage.getItem("role") === "admin" && (
+          <>
+            <Space style={{ alignItems: "start" }} direction="vertical">
+              <Button
+                style={{ width: "147px" }}
+                onClick={() => setParnerModal(true)}
+                type="primary"
+              >
+                Hamkorlar
+              </Button>
+              <p style={{ fontSize: "10px" }}>
+                <strong>Hamkor:</strong>{" "}
+                {partnersFromApi?.find(
+                  (p) =>
+                    p.partner_number === localStorage.getItem("selectedPartner")
+                )?.partner_name || ""}
+              </p>
+              <p style={{ fontSize: "10px" }}>
+                <strong>Partiya:</strong>{" "}
+                {localStorage.getItem("selectedPartiya") || ""}
+              </p>
+              <Button
+                disabled={
+                  !localStorage.getItem("selectedPartner") ||
+                  !localStorage.getItem("selectedPartiya")
+                }
+                onClick={async () => {
+                  try {
+                    if (!window.confirm("Partiyani tugatishni tasdiqlaysizmi"))
+                      return;
+
+                    const selectedPartner =
+                      localStorage.getItem("selectedPartner");
+                    const selectedPartiya =
+                      localStorage.getItem("selectedPartiya");
+
+                    const partnerObj = partnersFromApi.find(
+                      (p) =>
+                        p.partner_number.toLowerCase() ===
+                        selectedPartner.toLowerCase()
+                    );
+
+                    if (!partnerObj) {
+                      alert("Tanlangan partner topilmadi");
+                      return;
+                    }
+
+                    // Yangi parts array yaratamiz, ichida kerakli part.status = "inactive" bo‘ladi
+                    const updatedParts = partnerObj.parts.map((p) =>
+                      p.part === selectedPartiya
+                        ? { ...p, status: "inactive" }
+                        : p
+                    );
+
+                    await editPartner({
+                      id: partnerObj._id,
+                      body: { parts: updatedParts },
+                    });
+
+                    localStorage.removeItem("selectedPartner");
+                    localStorage.removeItem("selectedPartiya");
+                  } catch (err) {
+                    console.log(err);
+                    alert("Xatolik yuz berdi");
+                  }
+                }}
+              >
+                Partiyani tugatish
+              </Button>
+            </Space>
+
+            <table style={{ border: "1px solid #000", padding: "5px" }}>
+              <thead>
+                <tr style={{ border: "1px solid #000", padding: "5px" }}>
+                  <th style={{ border: "1px solid #000", padding: "5px" }}>
+                    Umumiy karobka soni
+                  </th>
+                  <th style={{ border: "1px solid #000", padding: "5px" }}>
+                    Umumiy kg
+                  </th>
+                  <th style={{ border: "1px solid #000", padding: "5px" }}>
+                    Valyuta
+                  </th>
+                  <th style={{ border: "1px solid #000", padding: "5px" }}>
+                    Umumiy tan summasi
+                  </th>
+                  <th style={{ border: "1px solid #000", padding: "5px" }}>
+                    Umumiy sotish summasi
+                  </th>
+                  <th style={{ border: "1px solid #000", padding: "5px" }}>
+                    Umumiy foyda summasi
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {["USD", "SUM"].map((currency) => {
+                  const filtered = filteredProducts.filter(
+                    (p) => p.currency === currency
+                  );
+                  const boxSum = filtered.reduce(
+                    (acc, p) => acc + p.box_quantity,
+                    0
+                  );
+                  const totalKg = filtered.reduce(
+                    (acc, p) => acc + p.total_kg,
+                    0
+                  );
+                  const purchaseSum = filtered.reduce(
+                    (acc, p) => acc + p.purchasePrice.value * p.quantity,
+                    0
+                  );
+                  const sellingSum = filtered.reduce(
+                    (acc, p) => acc + p.sellingPrice.value * p.quantity,
+                    0
+                  );
+                  const profitSum = sellingSum - purchaseSum;
+
+                  return (
+                    <tr key={currency}>
+                      <td style={{ border: "1px solid #000", padding: "5px" }}>
+                        {boxSum?.toLocaleString()} ta
+                      </td>
+                      <td style={{ border: "1px solid #000", padding: "5px" }}>
+                        {totalKg?.toLocaleString()} kg
+                      </td>
+                      <td style={{ border: "1px solid #000", padding: "5px" }}>
+                        {currency}
+                      </td>
+                      <td style={{ border: "1px solid #000", padding: "5px" }}>
+                        {purchaseSum?.toLocaleString()}
+                      </td>
+                      <td style={{ border: "1px solid #000", padding: "5px" }}>
+                        {sellingSum?.toLocaleString()}
+                      </td>
+                      <td style={{ border: "1px solid #000", padding: "5px" }}>
+                        {profitSum?.toLocaleString()}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </>
+        )}
       </div>
       <Table
         className="product-table"
@@ -621,8 +845,8 @@ const Product = () => {
         pagination={false}
         scroll={{ x: "max-content" }}
         rowClassName={(record) => {
-          if (record.quantity < 30) return "row-danger";
-          if (record.quantity >= 30 && record.quantity <= 50)
+          if (record.box_quantity < 10) return "row-danger";
+          if (record.box_quantity >= 10 && record.box_quantity <= 30)
             return "row-warning";
           return "";
         }}
@@ -649,9 +873,9 @@ const Product = () => {
           >
             <AutoComplete
               placeholder="Tovar nomi"
-              options={allProducts.map((product) => ({
-                value: product.name,
-              }))}
+              options={Array.from(
+                new Set(allProducts.map((product) => product.name))
+              ).map((name) => ({ value: name }))}
               filterOption={(inputValue, option) =>
                 option.value.toLowerCase().includes(inputValue.toLowerCase())
               }
@@ -712,8 +936,25 @@ const Product = () => {
           <Form.Item label="Umumiy vazn" name="total_kg">
             <Input placeholder="Umumiy vazn (kg)" type="number" />
           </Form.Item>
-          <Form.Item label="Dona" name="quantity">
-            <Input placeholder="Dona miqdori" type="number" />
+          <div className="product-switch">
+            <span>Karobka → Dona</span>
+            <Switch
+              checked={isPackage}
+              onChange={(checked) => setIsPackage(checked)}
+            />
+            <span>Karobka → Pachka → Dona</span>
+          </div>
+          <Form.Item label="Karobka" name="box_quantity">
+            <Input placeholder="Karobka miqdori" type="number" />
+          </Form.Item>
+          <Form.Item
+            label={`1 karobkadagi ${isPackage ? "pachka" : "dona"}`}
+            name="package_quantity_per_box"
+          >
+            <Input
+              placeholder={`1 karobkadagi ${isPackage ? "pachka" : "dona"}`}
+              type="number"
+            />
           </Form.Item>
           <Form.Item label="Pachka" name="package_quantity">
             <Input
@@ -729,26 +970,10 @@ const Product = () => {
               type="number"
             />
           </Form.Item>
-          <Form.Item label="Karobka" name="box_quantity">
-            <Input placeholder="Karobka miqdori" type="number" />
+          <Form.Item label="Dona" name="quantity">
+            <Input placeholder="Dona miqdori" type="number" />
           </Form.Item>
-          <Form.Item
-            label={`1 karobkadagi ${isPackage ? "pachka" : "dona"}`}
-            name="package_quantity_per_box"
-          >
-            <Input
-              placeholder={`1 karobkadagi ${isPackage ? "pachka" : "dona"}`}
-              type="number"
-            />
-          </Form.Item>
-          <div className="product-switch">
-            <span>Karobka → Dona</span>
-            <Switch
-              checked={isPackage}
-              onChange={(checked) => setIsPackage(checked)}
-            />
-            <span>Karobka → Pachka → Dona</span>
-          </div>
+
           <Form.Item label="Valyuta" name="currency">
             <Select placeholder="Valyuta tanlash">
               <Option value="">Keyin kiritish</Option>
@@ -775,7 +1000,17 @@ const Product = () => {
             </Select>
           </Form.Item>
           <Form.Item label="Kategoriya" name="category">
-            <Input placeholder="Kategoriya" />
+            <AutoComplete
+              placeholder="Kategoriya"
+              options={Array.from(
+                new Set(allProducts.map((product) => product.category))
+              ).map((category) => ({ value: category }))}
+              filterOption={(inputValue, option) =>
+                option.value.toLowerCase().includes(inputValue.toLowerCase())
+              }
+            >
+              <Input />
+            </AutoComplete>
           </Form.Item>
           {/* <Form.Item label="Partiya " name="part">
             <Input placeholder="Partiya" />
@@ -823,7 +1058,7 @@ const Product = () => {
           <div className="no-image-placeholder">Rasm yo'q</div>
         )}
       </Modal>
-      <Modal
+      {/* <Modal
         open={partnerFormModal}
         onCancel={() => {
           setPartnerFormModal(false);
@@ -894,15 +1129,14 @@ const Product = () => {
             </Button>
           </Form.Item>
         </Form>
-      </Modal>
-
+      </Modal> */}
       <Modal
         open={partnerModal}
         footer={null}
         title="Hamkorlar"
         onCancel={() => setParnerModal(false)}
       >
-        <Row gutter={[16, 16]}>
+        {/* <Row gutter={[16, 16]}>
           {partnersFromApi.map((partner) => {
             const selectedPartner = localStorage.getItem("selectedPartner");
             const selectedPartiya = localStorage.getItem("selectedPartiya");
@@ -974,7 +1208,75 @@ const Product = () => {
               </Col>
             );
           })}
-        </Row>
+        </Row> */}
+
+        <Form
+          layout="vertical"
+          form={partnerForm}
+          onFinish={handlePartnerFinish}
+        >
+          <Form.Item
+            name="partner_name"
+            label="Hamkor ismi"
+            rules={[
+              { required: true, message: "Hamkor ismi tanlanishi kerak" },
+            ]}
+          >
+            <Select
+              showSearch
+              placeholder="Hamkor tanlang"
+              onChange={handlePartnerChange}
+              filterOption={(input, option) =>
+                option.children.toLowerCase().includes(input.toLowerCase())
+              }
+            >
+              <Select.Option value="new">➕ Yangi hamkor</Select.Option>
+              {partnersFromApi.map((partner) => (
+                <Select.Option
+                  key={partner.partner_name}
+                  value={partner.partner_name}
+                >
+                  {partner.partner_name}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="manual_partner_name"
+            label="Yangi hamkor ismi"
+            rules={[
+              { required: true, message: "Yangi hamkor ismini kiriting" },
+            ]}
+          >
+            <Input disabled={!isNewPartner && !selectedPartner} />
+          </Form.Item>
+
+          <Form.Item name="partner_number" label="Hamkor raqami">
+            <Input disabled={!isNewPartner && !selectedPartner} />
+          </Form.Item>
+
+          <Form.Item name="partner_address" label="Hamkor manzili">
+            <Input disabled={!isNewPartner && !selectedPartner} />
+          </Form.Item>
+
+          <Form.Item
+            name="part"
+            label="Partiya"
+            rules={[
+              { required: true, message: "Partiya nomi kiritilishi kerak" },
+              { validator: validatePart },
+            ]}
+          >
+            <Input disabled={!isNewPartner && !selectedPartner} />
+          </Form.Item>
+
+          <Form.Item>
+            <Button htmlType="submit" type="primary">
+              Saqlash
+            </Button>
+          </Form.Item>
+        </Form>
       </Modal>
 
       <div style={{ display: "none" }}>

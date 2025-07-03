@@ -81,7 +81,6 @@ const Daily = () => {
     ])
   );
 
-  console.log(paymentData);
 
   return (
     <div style={{ padding: "20px" }}>

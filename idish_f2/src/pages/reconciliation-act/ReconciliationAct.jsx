@@ -6,6 +6,8 @@ import { useGetProductsPartnerQuery } from "../../context/service/partner.servic
 import { useGetSalesHistoryQuery } from "../../context/service/sales.service";
 import dayjs from "dayjs";
 import { useGetActPartnersQuery } from "../../context/service/act-partner.service";
+import { FaArrowLeft } from "react-icons/fa6";
+import { useNavigate } from "react-router-dom";
 
 const ReconciliationAct = () => {
   const { data: partnerProducts = [] } = useGetProductsPartnerQuery();
@@ -14,6 +16,7 @@ const ReconciliationAct = () => {
   const { data: clients = [] } = useGetClientsQuery();
   const { data: partnersFromApi = [], isLoading: partnersLoading } =
     useGetActPartnersQuery();
+  const navigate = useNavigate();
 
   const [selectedPartner, setSelectedPartner] = useState("");
   const [selectedClient, setSelectedClient] = useState("");
@@ -304,6 +307,9 @@ const ReconciliationAct = () => {
   return (
     <div className="act" style={{ padding: 20 }}>
       <div style={{ display: "flex", gap: 20, marginBottom: 20 }}>
+        <Button onClick={() => navigate(-1)}>
+          <FaArrowLeft />
+        </Button>
         <Select
           showSearch
           placeholder="Hamkorni tanlang"

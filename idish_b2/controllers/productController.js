@@ -3,27 +3,41 @@ const mongoose = require("mongoose");
 const Partner = require("../models/Partner");
 
 // Create a new product
+// exports.createProduct = async (req, res) => {
+//   const session = await mongoose.startSession();
+//   session.startTransaction();
+//   try {
+//     const product = new Product(req.body);
+//     const partner = new Partner(req.body);
+
+//     await product.save({ session });
+//     // Agar partner ham saqlash kerak bo'lsa, quyidagisini ochiq qoldiring:
+//     await partner.save({ session });
+
+//     await session.commitTransaction();
+//     session.endSession();
+
+//     res.status(201).json(product);
+//   } catch (error) {
+//     await session.abortTransaction();
+//     session.endSession();
+//     res.status(400).json({ error: error.message });
+//   }
+// };
 exports.createProduct = async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
   try {
     const product = new Product(req.body);
     const partner = new Partner(req.body);
 
-    await product.save({ session });
-    // Agar partner ham saqlash kerak bo'lsa, quyidagisini ochiq qoldiring:
-    await partner.save({ session });
-
-    await session.commitTransaction();
-    session.endSession();
+    await product.save();
+    await partner.save(); // Agar partner ham saqlanishi kerak bo‘lsa
 
     res.status(201).json(product);
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
     res.status(400).json({ error: error.message });
   }
 };
+
 
 // Get all products
 exports.getProducts = async (req, res) => {

@@ -80,7 +80,7 @@ export default function Ombor() {
       name: warehouse.name,
       address: warehouse.address,
       login: warehouse.login,
-      password: ''
+      password: "",
     });
   };
 
@@ -94,7 +94,7 @@ export default function Ombor() {
       .validateFields()
       .then(async (values) => {
         if (!values.password) {
-          delete values.password
+          delete values.password;
         }
         try {
           await updateWarehouse({
@@ -186,17 +186,32 @@ export default function Ombor() {
       key: "name",
     },
     {
-      title: "Soni",
-      dataIndex: "quantity",
-      key: "quantity",
+      title: "Kategoriya",
+      dataIndex: "category",
+      key: "category",
     },
     {
-      title: "Birlik",
-      dataIndex: "unit",
-      key: "unit",
+      title: "Kod",
+      dataIndex: "code",
+      key: "code",
     },
     {
-      title: "Sotib Olish Narxi",
+      title: "O'lcham",
+      dataIndex: "size",
+      key: "size",
+    },
+    {
+      title: "Karobka soni",
+      dataIndex: "box_quantity",
+      key: "box_quantity",
+    },
+    {
+      title: "Umumiy kg",
+      dataIndex: "total_kg",
+      key: "total_kg",
+    },
+    {
+      title: "Tan Narxi",
       dataIndex: "purchasePrice",
       key: "purchasePrice",
       render: (text, record) =>
@@ -209,16 +224,16 @@ export default function Ombor() {
       render: (text, record) =>
         `${record.sellingPrice.value?.toFixed(2)} ${record.currency}`,
     },
-    {
-      title: "Kategoriya",
-      dataIndex: "category",
-      key: "category",
-    },
-    {
-      title: "Shtrix Kod",
-      dataIndex: "barcode",
-      key: "barcode",
-    },
+    // {
+    //   title: "Kategoriya",
+    //   dataIndex: "category",
+    //   key: "category",
+    // },
+    // {
+    //   title: "Shtrix Kod",
+    //   dataIndex: "barcode",
+    //   key: "barcode",
+    // },
   ];
 
   // Фильтрация продуктов по названию и штрих-коду
@@ -226,12 +241,22 @@ export default function Ombor() {
     const matchesName = product.name
       .toLowerCase()
       .includes(searchName.toLowerCase());
+    const matchesCategory = product.category
+      .toLowerCase()
+      .includes(searchName.toLowerCase());
+    const matchesCode = product.code
+      .toLowerCase()
+      .includes(searchName.toLowerCase());
+    const matchesSize = product.size
+      .toLowerCase()
+      .includes(searchName.toLowerCase());
     const matchesBarcode = product.barcode
       ?.toLowerCase()
       .includes(searchBarcode.toLowerCase());
     return (
-      (searchName ? matchesName : true) &&
-      (searchBarcode ? matchesBarcode : true)
+      (searchName
+        ? matchesName || matchesCategory || matchesCode || matchesSize
+        : true) && (searchBarcode ? matchesBarcode : true)
     );
   });
 
@@ -252,7 +277,12 @@ export default function Ombor() {
         onOk={handleAddOk}
         onCancel={handleAddCancel}
       >
-        <Form form={form} layout="vertical" name="ombor_form">
+        <Form
+          autoComplete="off"
+          form={form}
+          layout="vertical"
+          name="ombor_form"
+        >
           <Form.Item
             name="name"
             label="Ombor Nomi"
@@ -274,18 +304,14 @@ export default function Ombor() {
           <Form.Item
             name="login"
             label="Login"
-            rules={[
-              { required: true, message: "Iltimos, loginni kiriting!" },
-            ]}
+            rules={[{ required: true, message: "Iltimos, loginni kiriting!" }]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             name="password"
             label="Parol"
-            rules={[
-              { required: true, message: "Iltimos, parolni kiriting!" },
-            ]}
+            rules={[{ required: true, message: "Iltimos, parolni kiriting!" }]}
           >
             <Input />
           </Form.Item>
@@ -324,16 +350,11 @@ export default function Ombor() {
           <Form.Item
             name="login"
             label="Login"
-            rules={[
-              { required: true, message: "Iltimos, loginni kiriting!" },
-            ]}
+            rules={[{ required: true, message: "Iltimos, loginni kiriting!" }]}
           >
             <Input />
           </Form.Item>
-          <Form.Item
-            name="password"
-            label="Parol"
-          >
+          <Form.Item name="password" label="Parol">
             <Input />
           </Form.Item>
         </Form>
@@ -345,7 +366,7 @@ export default function Ombor() {
         footer={null}
         width="80%"
       >
-        <Space style={{ marginBottom: 16 }}>
+        <Space style={{ marginBottom: 16 }} direction="vertical">
           <Input
             placeholder="Mahsulot nomini kiriting"
             value={searchName}
@@ -358,6 +379,77 @@ export default function Ombor() {
             onChange={(e) => setSearchBarcode(e.target.value)}
             style={{ width: 200 }}
           />
+          <table style={{ border: "1px solid #000", padding: "5px" }}>
+            <thead>
+              <tr style={{ border: "1px solid #000", padding: "5px" }}>
+                <th style={{ border: "1px solid #000", padding: "5px" }}>
+                  Umumiy karobka soni
+                </th>
+                <th style={{ border: "1px solid #000", padding: "5px" }}>
+                  Umumiy kg
+                </th>
+                <th style={{ border: "1px solid #000", padding: "5px" }}>
+                  Valyuta
+                </th>
+                <th style={{ border: "1px solid #000", padding: "5px" }}>
+                  Umumiy tan summasi
+                </th>
+                <th style={{ border: "1px solid #000", padding: "5px" }}>
+                  Umumiy sotish summasi
+                </th>
+                <th style={{ border: "1px solid #000", padding: "5px" }}>
+                  Umumiy foyda summasi
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {["USD", "SUM"].map((currency) => {
+                const filtered = filteredProducts.filter(
+                  (p) => p.currency === currency
+                );
+                const boxSum = filtered.reduce(
+                  (acc, p) => acc + p.box_quantity,
+                  0
+                );
+                const totalKg = filtered.reduce(
+                  (acc, p) => acc + p.total_kg,
+                  0
+                );
+                const purchaseSum = filtered.reduce(
+                  (acc, p) => acc + p.purchasePrice.value * p.quantity,
+                  0
+                );
+                const sellingSum = filtered.reduce(
+                  (acc, p) => acc + p.sellingPrice.value * p.quantity,
+                  0
+                );
+                const profitSum = sellingSum - purchaseSum;
+
+                return (
+                  <tr key={currency}>
+                    <td style={{ border: "1px solid #000", padding: "5px" }}>
+                      {boxSum?.toLocaleString()} ta
+                    </td>
+                    <td style={{ border: "1px solid #000", padding: "5px" }}>
+                      {totalKg?.toLocaleString()} kg
+                    </td>
+                    <td style={{ border: "1px solid #000", padding: "5px" }}>
+                      {currency}
+                    </td>
+                    <td style={{ border: "1px solid #000", padding: "5px" }}>
+                      {purchaseSum?.toLocaleString()}
+                    </td>
+                    <td style={{ border: "1px solid #000", padding: "5px" }}>
+                      {sellingSum?.toLocaleString()}
+                    </td>
+                    <td style={{ border: "1px solid #000", padding: "5px" }}>
+                      {profitSum?.toLocaleString()}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </Space>
         <Table
           columns={productColumns}

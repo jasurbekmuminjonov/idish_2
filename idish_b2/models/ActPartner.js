@@ -21,7 +21,20 @@ const partnerSchema = new mongoose.Schema({
     default: Date.now,
   },
   parts: {
-    type: [String],
+    type: [
+      {
+        part: String,
+        date: {
+          type: Date,
+          default: Date.now,
+        },
+        status: {
+          type: String,
+          enum: ["active", "inactive"],
+          default: "active",
+        },
+      },
+    ],
     default: [],
   },
 });

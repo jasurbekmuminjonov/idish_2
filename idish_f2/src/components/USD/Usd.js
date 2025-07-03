@@ -41,7 +41,7 @@ export default function Usd() {
         value={usdRate}
         onChange={(e) => setUsdRate(e.target.value)}
         type="number"
-        readOnly={role === "warehouse"}
+        readOnly={role === "warehouse" || role === "store"}
       />
       <p>KYG</p>
       <Input
@@ -49,12 +49,13 @@ export default function Usd() {
         value={kyg}
         onChange={(e) => setKyg(e.target.value)}
         type="number"
-        readOnly={role === "warehouse"}
+        readOnly={role === "warehouse" || role === "store"}
       />
       <Button
         style={{ marginLeft: 20 }}
         type="primary"
         onClick={handleUsdRateChange}
+        disabled={role === "warehouse" || role === "store"}
       >
         Saqlash
       </Button>

@@ -43,7 +43,6 @@ const Debtors = () => {
     {
       title: "Mijoz ismi",
       render: (_, record) => {
-        console.log(record);
         return record.clientId?.name || partnerProduct.find(p => p.partner_number === record.partnerId)?.name_partner
       },
     },

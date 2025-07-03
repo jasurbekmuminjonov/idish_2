@@ -60,7 +60,7 @@ const Brak = () => {
   return (
     <div className="brak-page">
       <h1>Brak Mahsulotlar</h1>
-      <Form onFinish={onFinish} layout="inline">
+      <Form autoComplete="off" onFinish={onFinish} layout="inline">
         <Form.Item
           name="productId"
           label="Mahsulot"
@@ -88,7 +88,13 @@ const Brak = () => {
           name="unit"
           rules={[{ required: true, message: "O'lchov birlikni kiriting" }]}
         >
-          <Select style={{ width: "150px" }} required onChange={(value) => setSelectedUnit(value)} value={selectedUnit} placeholder="Tanlang">
+          <Select
+            style={{ width: "150px" }}
+            required
+            onChange={(value) => setSelectedUnit(value)}
+            value={selectedUnit}
+            placeholder="Tanlang"
+          >
             <Select.Option value="quantity">Dona</Select.Option>
             <Select.Option value="package_quantity">Pachka</Select.Option>
             <Select.Option value="box_quantity">Karobka</Select.Option>

@@ -103,7 +103,7 @@ exports.updateUser = async (req, res) => {
     user.name = name || user.name;
     user.login = login || user.login;
     if (password) {
-      user.password = password;
+      user.password = await bcrypt.hash(password, 10);
     }
     user.role = role || user.role;
     user.success = success || user.success;

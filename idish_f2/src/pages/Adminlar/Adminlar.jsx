@@ -22,6 +22,7 @@ export default function Adminlar() {
   const [editingAdmin, setEditingAdmin] = useState(null);
   const [signUpAsAdmin] = useSignUpAsAdminMutation();
   const { data: admins, isLoading, refetch } = useGetUsersQuery();
+  
   const [deleteAdmin] = useDeleteAdminMutation();
   const [updateAdmin] = useUpdateAdminMutation();
   const [form] = Form.useForm();
@@ -276,7 +277,7 @@ export default function Adminlar() {
               form.setFieldsValue({
                 name: record.name,
                 login: record.login,
-                password: record.password,
+                password: "",
                 role: record.role,
                 success: Object.keys(record.success).filter(
                   (key) => record.success[key]
@@ -298,7 +299,7 @@ export default function Adminlar() {
   ];
 
   return (
-    <div style={{ overflowX: 'auto' }}>
+    <div style={{ overflowX: "auto" }}>
       <Button
         type="primary"
         icon={<UserAddOutlined />}
@@ -315,7 +316,13 @@ export default function Adminlar() {
         footer={null}
         style={{ marginTop: "50px" }}
       >
-        <Form layout="vertical" initialValues={{ role: "admin" }} onFinish={handleFinish} form={form}>
+        <Form
+          autoComplete="off"
+          layout="vertical"
+          initialValues={{ role: "admin" }}
+          onFinish={handleFinish}
+          form={form}
+        >
           <Form.Item
             label="Ism"
             name="name"
@@ -340,7 +347,6 @@ export default function Adminlar() {
           <Form.Item
             label="Role"
             name="role"
-
             rules={[{ required: true, message: "Roleni kiriting!" }]}
           >
             <Input disabled placeholder="Role" />
@@ -360,7 +366,12 @@ export default function Adminlar() {
         footer={null}
         style={{ marginTop: "50MORpx" }}
       >
-        <Form layout="vertical" onFinish={handleEditFinish} form={form}>
+        <Form
+          autoComplete="off"
+          layout="vertical"
+          onFinish={handleEditFinish}
+          form={form}
+        >
           <Form.Item
             label="Ism"
             name="name"

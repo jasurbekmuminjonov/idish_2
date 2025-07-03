@@ -142,7 +142,7 @@ export default function Hodimlar() {
         okText="Saqlash"
         cancelText="Bekor qilish"
       >
-        <Form layout="vertical" form={form}>
+        <Form autoComplete="off" layout="vertical" form={form}>
           <Form.Item
             name="name"
             label="Ismi"

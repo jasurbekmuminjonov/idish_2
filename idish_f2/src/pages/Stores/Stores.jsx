@@ -169,6 +169,11 @@ export default function Stores() {
       key: "address",
     },
     {
+      title: "Tel raqam",
+      dataIndex: "phone",
+      key: "phone",
+    },
+    {
       title: "Login",
       dataIndex: "login",
       key: "address",
@@ -289,7 +294,12 @@ export default function Stores() {
         onOk={handleAddOk}
         onCancel={handleAddCancel}
       >
-        <Form form={form} layout="vertical" name="ombor_form">
+        <Form
+          autoComplete="off"
+          form={form}
+          layout="vertical"
+          name="ombor_form"
+        >
           <Row gutter={16}>
             <Col span={editingStore ? 24 : 12}>
               <Form.Item
@@ -309,6 +319,15 @@ export default function Stores() {
                 label="Joylashuvi"
                 rules={[
                   { required: true, message: "Iltimos, joylashuvni kiriting!" },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                name="store_phone"
+                label="Telefon Raqami"
+                rules={[
+                  { required: true, message: "Iltimos, tel raqamni kiriting!" },
                 ]}
               >
                 <Input />
@@ -344,7 +363,7 @@ export default function Stores() {
                 >
                   <Select>
                     {warehouses.map((warehouse) => (
-                      <Select.Option key={warehouse._id} value={warehouse._id}>
+                      <Select.Option key={warehouse.name} value={warehouse._id}>
                         {warehouse.name}
                       </Select.Option>
                     ))}

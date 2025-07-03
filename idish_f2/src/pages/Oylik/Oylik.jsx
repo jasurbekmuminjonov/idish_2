@@ -180,7 +180,7 @@ export default function Oylik() {
           marginBottom: 16,
           display: "flex",
           justifyContent: "space-between",
-          overflowX: "auto"
+          overflowX: "auto",
         }}
       >
         <h2>Hodimlarga oylik berish</h2>
@@ -209,7 +209,7 @@ export default function Oylik() {
         okText="Berish"
         cancelText="Bekor qilish"
       >
-        <Form form={form} layout="vertical">
+        <Form autoComplete="off" form={form} layout="vertical">
           <Form.Item
             name="amount"
             label="To‘lov miqdori (so'm)"

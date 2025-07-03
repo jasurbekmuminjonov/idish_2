@@ -75,35 +75,53 @@ export default function Promo() {
     ];
 
     return (
-        <div>
-            <Button type="primary" onClick={handleAddPromo} style={{ marginBottom: 16 }}>
-                Promokod qo'shish
-            </Button>
-            <Table columns={columns} dataSource={promos} rowKey="_id" />
-            <Modal
-                title={currentPromo ? "Promokodni tahrirlash" : "Promokod qo'shish"}
-                open={modalVisible}
-                onCancel={handleCancel}
-                footer={null}
+      <div>
+        <Button
+          type="primary"
+          onClick={handleAddPromo}
+          style={{ marginBottom: 16 }}
+        >
+          Promokod qo'shish
+        </Button>
+        <Table columns={columns} dataSource={promos} rowKey="_id" />
+        <Modal
+          title={currentPromo ? "Promokodni tahrirlash" : "Promokod qo'shish"}
+          open={modalVisible}
+          onCancel={handleCancel}
+          footer={null}
+        >
+          <Form
+            autoComplete="off"
+            form={form}
+            onFinish={onFinish}
+            layout="vertical"
+          >
+            <Form.Item
+              name="code"
+              rules={[{ required: true, message: "Promokodni kiriting" }]}
             >
-                <Form form={form} onFinish={onFinish} layout="vertical">
-                    <Form.Item name="code" rules={[{ required: true, message: "Promokodni kiriting" }]}>
-                        <Input placeholder="Promokod" />
-                    </Form.Item>
-                    <Form.Item name="percent" rules={[{ required: true, message: "Chegirmani kiriting" }]}>
-                        <Input placeholder="Chegirma foizi" type="number" />
-                    </Form.Item>
-                    <Form.Item name="type" rules={[{ required: true, message: "Chegirma turini kiriting" }]}>
-                        <Select placeholde="Promokod turi">
-                            <Select.Option value="percent">Foiz</Select.Option>
-                            <Select.Option value="amount">Summa</Select.Option>
-                        </Select>
-                    </Form.Item>
-                    <Button type="primary" htmlType="submit">
-                        {currentPromo ? "Yangilash" : "Qo'shish"}
-                    </Button>
-                </Form>
-            </Modal>
-        </div>
+              <Input placeholder="Promokod" />
+            </Form.Item>
+            <Form.Item
+              name="percent"
+              rules={[{ required: true, message: "Chegirmani kiriting" }]}
+            >
+              <Input placeholder="Chegirma foizi" type="number" />
+            </Form.Item>
+            <Form.Item
+              name="type"
+              rules={[{ required: true, message: "Chegirma turini kiriting" }]}
+            >
+              <Select placeholde="Promokod turi">
+                <Select.Option value="percent">Foiz</Select.Option>
+                <Select.Option value="amount">Summa</Select.Option>
+              </Select>
+            </Form.Item>
+            <Button type="primary" htmlType="submit">
+              {currentPromo ? "Yangilash" : "Qo'shish"}
+            </Button>
+          </Form>
+        </Modal>
+      </div>
     );
 }

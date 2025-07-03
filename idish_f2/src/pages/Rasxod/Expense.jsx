@@ -157,7 +157,6 @@ const Expense = () => {
       <div className="page_header">
         <h1>Rasxodlar</h1>
         <div className="header_actions">
-
           <Select
             placeholder="Kategoriya tanlang"
             allowClear
@@ -166,15 +165,22 @@ const Expense = () => {
           >
             <Select.Option value="">Barchasi</Select.Option>
             {categories.map((category, index) => (
-              <Option key={index} value={category}>{category}</Option>
+              <Option key={index} value={category}>
+                {category}
+              </Option>
             ))}
           </Select>
-          <DatePicker.RangePicker placeholder={["Dan", "Gacha"]} onChange={handleDateFilterChange} />
+          <DatePicker.RangePicker
+            placeholder={["Dan", "Gacha"]}
+            onChange={handleDateFilterChange}
+          />
         </div>
       </div>
-      <Button type="primary" icon={<PlusOutlined />} onClick={showModal}
+      <Button
+        type="primary"
+        icon={<PlusOutlined />}
+        onClick={showModal}
         style={{ marginBottom: "10px", marginTop: "10px" }}
-
       >
         Rasxod qo'shish
       </Button>
@@ -191,7 +197,12 @@ const Expense = () => {
         onCancel={handleCancel}
         footer={null}
       >
-        <Form form={form} onFinish={handleAdd} layout="vertical">
+        <Form
+          autoComplete="off"
+          form={form}
+          onFinish={handleAdd}
+          layout="vertical"
+        >
           <Form.Item name="amount" label="Miqdor" rules={[{ required: true }]}>
             <Input type="number" />
           </Form.Item>
@@ -252,7 +263,12 @@ const Expense = () => {
         onCancel={handleEditCancel}
         footer={null}
       >
-        <Form form={editForm} onFinish={handleUpdate} layout="vertical">
+        <Form
+          autoComplete="off"
+          form={editForm}
+          onFinish={handleUpdate}
+          layout="vertical"
+        >
           <Form.Item name="amount" label="Miqdor" rules={[{ required: true }]}>
             <Input type="number" />
           </Form.Item>

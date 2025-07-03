@@ -46,7 +46,7 @@ export default function EditProductModal({ visible, onCancel, product }) {
       onCancel={onCancel}
       onOk={handleOk}
     >
-      <Form form={form} layout="vertical" name="edit_product_form">
+      <Form autoComplete="off" form={form} layout="vertical" name="edit_product_form">
         <Form.Item
           name="name"
           rules={[
