@@ -553,7 +553,6 @@ const Product = () => {
       // (searchBarcode ? barcode.includes(searchBarcodeLower) : true)
     );
   });
-  console.log(filteredProducts);
 
   const handlePartnerChange = (value) => {
     if (value === "new") {

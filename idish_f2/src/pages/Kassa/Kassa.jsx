@@ -84,7 +84,6 @@ const Kassa = () => {
   const uniquePartners = Array.from(
     new Map(combinedPartners.map((p) => [p.id, p])).values()
   );
-  console.log(debtors);
 
   useEffect(() => {
     const uniqueCategories = [
