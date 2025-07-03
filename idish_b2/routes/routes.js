@@ -31,7 +31,11 @@ const {
   getSalesHistory,
   getClientHistory,
 } = require("../controllers/saleController");
-const { createClient, getClients, updateClient } = require("../controllers/clientController");
+const {
+  createClient,
+  getClients,
+  updateClient,
+} = require("../controllers/clientController");
 const {
   createDebt,
   getDebtsByClient,
@@ -85,7 +89,12 @@ const {
   getPaymentsByEmployee,
   deleteSalaryPayment,
 } = require("../controllers/salaryPaymentController");
-const { createStore, getStores, editStore, deleteStore } = require("../controllers/storeController");
+const {
+  createStore,
+  getStores,
+  editStore,
+  deleteStore,
+} = require("../controllers/storeController");
 const {
   getSentTransportions,
   getGotTransportions,
@@ -142,7 +151,6 @@ router.post("/sales/sell", auth, sellProduct);
 router.get("/sales/history", auth, getSalesHistory);
 router.get("/clients/:clientId/history", auth, getClientHistory);
 
-
 // Debt routes
 router.post("/debts", auth, createDebt);
 router.get("/debts/client/:clientId", auth, getDebtsByClient);
@@ -183,7 +191,7 @@ router.get("/actpartner", auth, getActPartner);
 router.get("/actpartner/:id", auth, getActPartnerById);
 router.get("/actpartner/warehouse/:id", auth, getActPartnerByWarehouse);
 router.put("/actpartner/:id", auth, updateActPartnerById);
-router.delete("/actpartner/:id", auth, deleteActPartnerById);
+router.post("/actpartner", auth, deleteActPartnerById);
 
 // 🔐 Hodimlar marshrutlari
 router.post("/employees", auth, createEmployee); // Hodim yaratish

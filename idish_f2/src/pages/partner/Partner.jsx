@@ -10,16 +10,22 @@ import {
   Space,
   Input,
   Select,
+  message,
+  Button,
 } from "antd";
 import { MdScale } from "react-icons/md";
 import "./partner.css";
-import { useGetActPartnersQuery } from "../../context/service/act-partner.service";
-
+import {
+  useGetActPartnersQuery,
+  useDeleteActPartnerMutation,
+} from "../../context/service/act-partner.service";
+import { DeleteOutlined, EyeOutlined } from "@ant-design/icons";
 const { Title, Text } = Typography;
 
 const Partner = () => {
   const { data: hamkorMahsulotlari = [] } = useGetProductsPartnerQuery();
   const { data: partnersFromApi = [] } = useGetActPartnersQuery();
+  const [deleteActPartner] = useDeleteActPartnerMutation();
   const [tanlanganHamkor, setTanlanganHamkor] = useState(null);
   const [modalKoʻrinadi, setModalKoʻrinadi] = useState(false);
   const [searchName, setSearchName] = useState("");
@@ -117,7 +123,19 @@ const Partner = () => {
     setTanlanganHamkor(null);
   };
 
-  console.log(filtrlanganMahsulotlar);
+  const deleteHamkor = async (e, hamkor) => {
+    try {
+      let res = await deleteActPartner(hamkor);
+      if (res.error) {
+        message.error(res.error.data.error);
+        return;
+      }
+      message.success("Hamkor oʻchirildi");
+    } catch (err) {
+      console.log(err);
+      message.error("Hamkor oʻchirilmadi");
+    }
+  };
 
   return (
     <div style={{ padding: "24px", background: "#f0f2f5", overflowX: "auto" }}>
@@ -170,7 +188,6 @@ const Partner = () => {
             <Col xs={24} sm={12} md={8} lg={6} key={indeks}>
               <Card
                 hoverable
-                onClick={() => kartaBosish(hamkor)}
                 style={{
                   background: "#fff",
                   border: `1px solid ${
@@ -181,7 +198,17 @@ const Partner = () => {
                   boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                 }}
                 headStyle={{ background: "#001529", color: "#fff" }}
-                title={hamkor.partner_name}
+                title={
+                  <div
+                    style={{ display: "flex", justifyContent: "space-between" }}
+                  >
+                    {/* <Button> */}
+                    <EyeOutlined onClick={() => kartaBosish(hamkor)} />
+                    {/* </Button> */}
+                    <p> {hamkor.partner_name} </p>
+                    <DeleteOutlined onClick={(e) => deleteHamkor(e, hamkor)} />
+                  </div>
+                }
               >
                 <Text>Raqam: {hamkor.partner_number}</Text>
               </Card>
@@ -245,10 +272,7 @@ const Partner = () => {
                 (acc, p) => acc + p.box_quantity,
                 0
               );
-              const totalKg = filtered.reduce(
-                (acc, p) => acc + p.total_kg,
-                0
-              );
+              const totalKg = filtered.reduce((acc, p) => acc + p.total_kg, 0);
               const purchaseSum = filtered.reduce(
                 (acc, p) => acc + p.purchasePrice.value * p.quantity,
                 0
