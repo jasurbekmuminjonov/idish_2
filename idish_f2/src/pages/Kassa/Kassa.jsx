@@ -25,6 +25,7 @@ import moment from "moment";
 import html2pdf from "html2pdf.js";
 import yodgor_abdullaev from "../../assets/yodgor_abdullaev.svg";
 import zolotayaroza77 from "../../assets/zolotayaroza77.svg";
+import { useGetStoreProductsQuery } from "../../context/service/store.service";
 
 const { Option } = Select;
 
@@ -39,7 +40,7 @@ const Kassa = () => {
   const [createDebt] = useCreateDebtMutation();
   const [addExpense] = useAddExpenseMutation();
   const [sellProduct] = useSellProductMutation();
-  const { data: storelar } = useGetStoresQuery();
+  const { data: storelar } = useGetStoreProductsQuery();
   const [categories, setCategories] = useState([]);
   const [form] = Form.useForm();
   const [categoryForm] = Form.useForm();

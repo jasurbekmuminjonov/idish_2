@@ -67,6 +67,7 @@ const {
   updateReport,
   getReport,
   deleteReport,
+  getAllReports,
 } = require("../controllers/reportController");
 const {
   createActPartner,
@@ -181,6 +182,7 @@ router.delete("/expenses/:id", auth, deleteExpense);
 // Report routes
 router.post("/reports/add", auth, createReport);
 router.get("/reports", auth, getReports);
+router.get("/all/reports", auth, getAllReports);
 router.get("/reports/:id", auth, getReport);
 router.put("/reports/:id", auth, updateReport);
 router.delete("/reports/:id", auth, deleteReport);

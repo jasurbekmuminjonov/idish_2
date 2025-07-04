@@ -13,7 +13,7 @@ const reportSchema = new mongoose.Schema(
           },
           clientId: {
                type: String,
-               required: false, // Добавляем clientId
+               required: false,
           },
           clientName: {
                type: String,

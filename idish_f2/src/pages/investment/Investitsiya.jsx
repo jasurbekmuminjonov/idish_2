@@ -67,6 +67,9 @@ const WarehouseCard = ({ ombor, usdRate, sales, index }) => {
     const totalPurchase = products
       .reduce((sum, p) => sum + p.quantity * p.purchasePrice.value, 0)
       ?.toFixed(2);
+    const totalKg = products
+      .reduce((sum, p) => sum + p.total_kg, 0)
+      ?.toFixed(2);
     const totalSale = products
       .reduce((sum, p) => sum + p.quantity * p.sellingPrice.value, 0)
       ?.toFixed(2);
@@ -98,6 +101,7 @@ const WarehouseCard = ({ ombor, usdRate, sales, index }) => {
       totalPurchase,
       totalProfit,
       latestDate,
+      totalKg
     };
   };
 
@@ -159,6 +163,16 @@ const WarehouseCard = ({ ombor, usdRate, sales, index }) => {
               </strong>{" "}
               <span className="invest-quantity">
                 {Number(stats.totalQuantity).toLocaleString()} karobka
+              </span>
+            </p>
+          </div>
+          <div className="invest-stat-item">
+            <p>
+              <strong>
+                <ShoppingCartOutlined /> Jami (mavjud):
+              </strong>{" "}
+              <span className="invest-quantity">
+                {Number(stats.totalKg).toLocaleString()} kg
               </span>
             </p>
           </div>
