@@ -62,7 +62,6 @@ const Transportion = () => {
   };
 
   const updateQuantity = (productId, value) => {
-
     setBasket((prev) =>
       prev.map((item) => {
         if (item._id !== productId) return item;
@@ -130,6 +129,9 @@ const Transportion = () => {
 
   const productColumns = [
     { title: "Nomi", dataIndex: "name" },
+    { title: "Kategoriya", dataIndex: "category" },
+    { title: "O'lcham", dataIndex: "size" },
+    { title: "Kod", dataIndex: "code" },
     { title: "Dona soni", dataIndex: "quantity" },
     {
       title: "Pachka soni",
@@ -165,6 +167,9 @@ const Transportion = () => {
   };
   const basketColumns = [
     { title: "Nomi", dataIndex: "name" },
+    { title: "Kategoriya", dataIndex: "category" },
+    { title: "O'lcham", dataIndex: "size" },
+    { title: "Kod", dataIndex: "code" },
     {
       title: "Miqdor",
       dataIndex: "quantity",

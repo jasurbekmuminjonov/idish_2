@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Button,
   Select,
@@ -80,6 +80,45 @@ export default function ReportAdd() {
       : selectedClient?._id,
     { skip: !selectedPartner && !selectedClient }
   );
+
+  const productReport = React.useMemo(() => {
+    if (!selectedPartner || !partnerProducts.length) return [];
+
+    const filteredProducts = partnerProducts.filter(
+      (p) => p.partner_number === selectedPartner.partner_number
+    );
+
+    const inactiveParts =
+      selectedPartner.parts?.filter((p) => p.status === "inactive") || [];
+
+    const report = inactiveParts.map((part) => {
+      const filteredAndPartUnitedProducts = filteredProducts.filter(
+        (p) => p.part === part.part
+      );
+
+      if (filteredAndPartUnitedProducts.length === 0) return null;
+
+      return {
+        partnerName: selectedPartner.partner_name,
+        type: "payment",
+        amount: filteredAndPartUnitedProducts.reduce(
+          (acc, p) => acc + (p.quantity || 0) * (p.purchasePrice?.value || 0),
+          0
+        ),
+        currency: "USD",
+        comment: `Partiya ${part.part}`,
+        date: filteredAndPartUnitedProducts[0].createdAt,
+        createdBy: localStorage.getItem("_id"),
+      };
+    });
+
+    // 4. null qiymatlarni chiqarib yuborish
+    return report.filter(Boolean);
+  }, [selectedPartner, partnerProducts]);
+
+  console.log(partnerProducts);
+  console.log(selectedPartner);
+  console.log(reportsData);
 
   const [createReport] = useCreateReportMutation();
   const [updateReport] = useUpdateReportMutation();
@@ -272,14 +311,14 @@ export default function ReportAdd() {
   };
 
   const generatePDF = () => {
-    if (!reportsData.length) {
+    if (!reportsData.concat(productReport).length) {
       message.warning("Chop etish uchun ma'lumotlar yo'q!");
       return;
     }
 
     const printWindow = window.open("", "", "width=600,height=600");
 
-    const tableRows = reportsData
+    const tableRows = reportsData.concat(productReport)
       .map((item) => {
         const typeText =
           item.type === "debt"
@@ -568,10 +607,10 @@ export default function ReportAdd() {
               <p>
                 USD:{" "}
                 {(
-                  reportsData
+                  reportsData.concat(productReport)
                     .filter((r) => r.currency === "USD" && r.type === "payment")
                     .reduce((acc, i) => acc + i.amount, 0) -
-                  reportsData
+                  reportsData.concat(productReport)
                     .filter((r) => r.currency === "USD" && r.type === "debt")
                     .reduce((acc, i) => acc + i.amount, 0)
                 )?.toLocaleString()}
@@ -579,10 +618,10 @@ export default function ReportAdd() {
               <p>
                 UZS:{" "}
                 {(
-                  reportsData
+                  reportsData.concat(productReport)
                     .filter((r) => r.currency === "SUM" && r.type === "payment")
                     .reduce((acc, i) => acc + i.amount, 0) -
-                  reportsData
+                  reportsData.concat(productReport)
                     .filter((r) => r.currency === "SUM" && r.type === "debt")
                     .reduce((acc, i) => acc + i.amount, 0)
                 )?.toLocaleString()}
@@ -591,7 +630,7 @@ export default function ReportAdd() {
                 type="primary"
                 icon={<PrinterOutlined />}
                 onClick={generatePDF}
-                disabled={reportsData.length === 0}
+                disabled={reportsData.concat(productReport).length === 0}
               >
                 Chop etish
               </Button>
@@ -600,7 +639,7 @@ export default function ReportAdd() {
         >
           <Table
             columns={columns}
-            dataSource={reportsData}
+            dataSource={reportsData.concat(productReport)}
             rowKey="_id"
             loading={isLoading}
             pagination={{ pageSize: 5 }}

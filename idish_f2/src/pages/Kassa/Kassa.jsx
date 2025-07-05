@@ -26,6 +26,7 @@ import html2pdf from "html2pdf.js";
 import yodgor_abdullaev from "../../assets/yodgor_abdullaev.svg";
 import zolotayaroza77 from "../../assets/zolotayaroza77.svg";
 import { useGetStoreProductsQuery } from "../../context/service/store.service";
+import { useGetStoresQuery } from "../../context/service/ombor.service";
 
 const { Option } = Select;
 
@@ -40,7 +41,7 @@ const Kassa = () => {
   const [createDebt] = useCreateDebtMutation();
   const [addExpense] = useAddExpenseMutation();
   const [sellProduct] = useSellProductMutation();
-  const { data: storelar } = useGetStoreProductsQuery();
+  const { data: storelar } = useGetStoresQuery();
   const [categories, setCategories] = useState([]);
   const [form] = Form.useForm();
   const [categoryForm] = Form.useForm();
@@ -157,6 +158,7 @@ const Kassa = () => {
     }
     return price;
   };
+  console.log(storelar);
 
   const formatNumber = (num) => {
     return Number(num?.toFixed(2)).toLocaleString();

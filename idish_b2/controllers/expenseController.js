@@ -44,9 +44,9 @@ const updateExpense = async (req, res) => {
       return res.status(404).json({ message: "Expense not found." });
     }
 
-    if (expense.userId.toString() !== req.user._id.toString()) {
-      return res.status(401).json({ message: "Not authorized." });
-    }
+    // if (expense.userId.toString() !== req.user._id.toString()) {
+    //   return res.status(401).json({ message: "Not authorized." });
+    // }
 
     expense.amount = amount || expense.amount;
     expense.date = date || expense.date;
@@ -71,9 +71,9 @@ const deleteExpense = async (req, res) => {
       return res.status(404).json({ message: "Expense not found." });
     }
 
-    if (expense.userId.toString() !== req.user._id.toString()) {
-      return res.status(400).json({ message: "Not authorized." });
-    }
+    // if (expense.userId.toString() !== req.user._id.toString()) {
+    //   return res.status(400).json({ message: "Not authorized." });
+    // }
 
     await expense.remove();
     res.status(200).json({ message: "Expense removed." });

@@ -104,10 +104,10 @@ const Brak = () => {
     setSearched(
       braks.filter(
         (brak) =>
-          brak.productId.name
+          brak.productId?.name
             .toLowerCase()
             .includes(searchText.toLowerCase()) ||
-          brak.productId.code.toLowerCase().includes(searchText.toLowerCase())
+          brak.productId?.code.toLowerCase().includes(searchText.toLowerCase())
       )
     );
   };

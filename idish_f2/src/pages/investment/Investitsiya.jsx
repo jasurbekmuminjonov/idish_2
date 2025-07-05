@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Card, Space, Divider } from "antd";
 import { useGetWarehousesQuery } from "../../context/service/ombor.service";
 import { useGetProductsByWarehouseQuery } from "../../context/service/product.service";
@@ -15,7 +15,10 @@ import {
   RiseOutlined,
   HomeOutlined,
 } from "@ant-design/icons";
-import "./investment.css"; // Yangi fayl nomi
+import "./investment.css";
+import { useGetAllReportsQuery } from "../../context/service/report.service";
+import { useGetProductsPartnerQuery } from "../../context/service/partner.service";
+import { useGetActPartnersQuery } from "../../context/service/act-partner.service";
 
 const cardGradients = [
   "linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%)",
@@ -25,9 +28,11 @@ const cardGradients = [
   "linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%)",
 ];
 
-// Komponent uchun ombor kartasi
 const WarehouseCard = ({ ombor, usdRate, sales, index }) => {
-  const { data: mahsulotlar = [] } = useGetProductsByWarehouseQuery(ombor._id);
+  const { data: mahsulotlar = [] } = useGetProductsByWarehouseQuery(ombor?._id);
+  const { data: products = [], isLoading: productsLoading } =
+    useGetProductsQuery();
+  const { data: usdRateData, isLoading: usdLoading } = useGetUsdRateQuery();
 
   const calculateStats = (products, warehouseSales) => {
     const purchaseUSD = products.reduce((sum, product) => {
@@ -101,12 +106,12 @@ const WarehouseCard = ({ ombor, usdRate, sales, index }) => {
       totalPurchase,
       totalProfit,
       latestDate,
-      totalKg
+      totalKg,
     };
   };
 
   const warehouseSales = sales.filter(
-    (sale) => sale?.productId?.warehouse?._id === ombor._id
+    (sale) => sale?.productId?.warehouse?._id === ombor?._id
   );
   const stats =
     mahsulotlar.length > 0 || warehouseSales.length > 0
@@ -120,13 +125,69 @@ const WarehouseCard = ({ ombor, usdRate, sales, index }) => {
     boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
   };
 
+  function calculateNetProfitByWarehouseId(warehouseId) {
+    if (!usdRateData?.rate || !usdRateData?.kyg) return 0;
+
+    const usdRate = usdRateData.rate;
+    const kygRate = usdRateData.kyg;
+
+    let totalProfit = 0;
+
+    const filteredSales = sales.filter(
+      (sale) => sale.warehouseId?._id === warehouseId
+    );
+
+    for (const sale of filteredSales) {
+      const product = products.find((p) => p?._id === sale.productId?._id);
+      if (!product) continue;
+
+      const {
+        purchasePrice,
+        quantity_per_package,
+        package_quantity_per_box,
+        isPackage,
+      } = product;
+      const tanNarx = purchasePrice?.value || 0;
+
+      let realQuantity = sale.quantity;
+
+      if (isPackage) {
+        if (sale.unit === "package") {
+          realQuantity *= quantity_per_package || 1;
+        } else if (sale.unit === "box") {
+          realQuantity *=
+            (quantity_per_package || 1) * (package_quantity_per_box || 1);
+        }
+      } else {
+        if (sale.unit === "box") {
+          realQuantity *= package_quantity_per_box || 1;
+        }
+      }
+
+      let sellingPriceInUSD = sale.sellingPrice;
+
+      if (sale.currency === "SUM") {
+        sellingPriceInUSD = sale.sellingPrice / usdRate;
+      } else if (sale.currency === "KYG") {
+        sellingPriceInUSD = sale.sellingPrice / kygRate;
+      }
+
+      const profitPerUnit = sellingPriceInUSD - tanNarx;
+      const totalSaleProfit = profitPerUnit * realQuantity;
+
+      totalProfit += totalSaleProfit;
+    }
+
+    return totalProfit.toFixed(2);
+  }
+
   return (
     <Card
-      key={ombor._id}
+      key={ombor?._id}
       title={ombor.name}
       className="invest-warehouse-card"
       style={cardStyle}
-      headStyle={{ borderBottom: "none" }} // Оставляем только минимальный headStyle
+      headStyle={{ borderBottom: "none" }}
       extra={<Space />}
     >
       <p className="invest-warehouse-address">
@@ -143,18 +204,6 @@ const WarehouseCard = ({ ombor, usdRate, sales, index }) => {
               <span className="invest-date">{stats.latestDate}</span>
             </p>
           </div>
-          {/* <Divider style={{ margin: "10px 0", borderColor: "#e8e8e8" }} />
-                         <div className="invest-stat-item">
-                              <p><strong><DollarOutlined /> Xarajat:</strong></p>
-                              <p><span className="invest-purchase">{stats.purchaseUZS.toLocaleString("uz-UZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} UZS</span></p>
-                              <p><span className="invest-purchase">{stats.purchaseUSD?.toFixed(2)} $</span></p>
-                         </div>
-                         <Divider style={{ margin: "10px 0", borderColor: "#e8e8e8" }} />
-                         <div className="invest-stat-item">
-                              <p><strong><RiseOutlined /> Foyda:</strong></p>
-                              <p><span className="invest-profit">{stats.profitUZS.toLocaleString("uz-UZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} UZS</span></p>
-                              <p><span className="invest-profit">{stats.profitUSD?.toFixed(2)} $</span></p>
-                         </div> */}
           <Divider style={{ margin: "10px 0", borderColor: "#e8e8e8" }} />
           <div className="invest-stat-item">
             <p>
@@ -202,7 +251,10 @@ const WarehouseCard = ({ ombor, usdRate, sales, index }) => {
                 <ShoppingCartOutlined /> Jami foyda:
               </strong>{" "}
               <span className="invest-quantity">
-                {Number(stats.totalProfit).toLocaleString()} USD
+                {Number(
+                  calculateNetProfitByWarehouseId(ombor?._id)
+                ).toLocaleString()}{" "}
+                USD
               </span>
             </p>
           </div>
@@ -216,10 +268,68 @@ const WarehouseCard = ({ ombor, usdRate, sales, index }) => {
 
 // Umumiy statistika uchun komponent
 const SummaryCard = ({ expenses, debtors, products, sales, usdRate }) => {
+  const { data: usdRateData, isLoading: usdLoading } = useGetUsdRateQuery();
+  const { data: reports } = useGetAllReportsQuery();
+  const { data: partnerProducts = [] } = useGetProductsPartnerQuery();
+  // const { data: expenses = [] } = useGetExpensesQuery();
+  const { data: partnersFromApi = [], isLoading: partnersLoading } =
+    useGetActPartnersQuery();
   const totalExpensesUZS = expenses.reduce(
     (total, item) => total + (Number(item.amount) || 0),
     0
   );
+  console.log(usdRate);
+
+  function calculateTotalNetProfitUSD() {
+    if (!usdRateData?.rate || !usdRateData?.kyg) return 0;
+
+    const kygRate = usdRateData.kyg;
+    const usdRate = usdRateData.kyg;
+
+    let totalProfit = 0;
+
+    for (const sale of sales) {
+      const product = products.find((p) => p._id === sale.productId?._id);
+      if (!product) continue;
+
+      const {
+        purchasePrice,
+        quantity_per_package,
+        package_quantity_per_box,
+        isPackage,
+      } = product;
+      // realQuantity hisoblash
+      let realQuantity = sale.quantity;
+      if (isPackage) {
+        if (sale.unit === "package") {
+          realQuantity *= quantity_per_package || 1;
+        } else if (sale.unit === "box") {
+          realQuantity *=
+            (quantity_per_package || 1) * (package_quantity_per_box || 1);
+        }
+      } else {
+        if (sale.unit === "box") {
+          realQuantity *= package_quantity_per_box || 1;
+        }
+      }
+
+      let sellingPriceUSD = sale.sellingPrice;
+      if (sale.currency === "SUM") {
+        sellingPriceUSD = sale.sellingPrice / usdRate;
+      } else if (sale.currency === "KYG") {
+        sellingPriceUSD = sale.sellingPrice / kygRate;
+      }
+
+      // Foyda hisoblash
+      const profitPerUnit = sellingPriceUSD;
+      const totalSaleProfit = profitPerUnit * realQuantity;
+
+      totalProfit += totalSaleProfit;
+    }
+
+    return totalProfit.toFixed(2); // USD formatida qaytariladi
+  }
+
   const totalExpensesUSD = totalExpensesUZS / usdRate;
 
   const totalDebtUZS = debtors.reduce((total, b) => {
@@ -243,6 +353,20 @@ const SummaryCard = ({ expenses, debtors, products, sales, usdRate }) => {
     return total + quantity * (sellingPrice - purchasePrice);
   }, 0);
   const totalSalesProfitUZS = totalSalesProfitUSD * usdRate;
+
+  const productReport = useMemo(() => {
+    if (!partnerProducts?.length) return null;
+
+    return {
+      amount: partnerProducts.reduce(
+        (acc, p) => acc + (p.quantity || 0) * (p.purchasePrice?.value || 0),
+        0
+      ),
+      currency: "USD",
+      date: partnerProducts[0]?.createdAt || null,
+      type: "payment",
+    };
+  }, [partnerProducts]);
 
   return (
     <Card
@@ -303,7 +427,7 @@ const SummaryCard = ({ expenses, debtors, products, sales, usdRate }) => {
               <ShoppingCartOutlined /> Umumiy mahsulotlar tan narxi:
             </strong>
           </p>
-          <p>
+          {/* <p>
             <span className="invest-purchase">
               {totalPurchaseUZS.toLocaleString("uz-UZ", {
                 minimumFractionDigits: 2,
@@ -311,7 +435,7 @@ const SummaryCard = ({ expenses, debtors, products, sales, usdRate }) => {
               })}{" "}
               so'm
             </span>
-          </p>
+          </p> */}
           <p>
             <span className="invest-purchase">
               {totalPurchaseUSD?.toFixed(2)} $
@@ -324,10 +448,10 @@ const SummaryCard = ({ expenses, debtors, products, sales, usdRate }) => {
         <div className="invest-stat-item">
           <p>
             <strong>
-              <RiseOutlined /> Sotuvning sof daromadi:
+              <RiseOutlined /> Sof daromad:
             </strong>
           </p>
-          <p>
+          {/* <p>
             <span className="invest-profit">
               {totalSalesProfitUZS.toLocaleString("uz-UZ", {
                 minimumFractionDigits: 2,
@@ -335,10 +459,28 @@ const SummaryCard = ({ expenses, debtors, products, sales, usdRate }) => {
               })}{" "}
               so'm
             </span>
-          </p>
+          </p> */}
           <p>
             <span className="invest-profit">
-              {totalSalesProfitUSD?.toFixed(2)} $
+              {(
+                calculateTotalNetProfitUSD() -
+                reports
+                  ?.concat(productReport)
+                  ?.filter((r) => r?.type === "payment")
+                  .reduce(
+                    (acc, item) =>
+                      acc +
+                      (item.currency === "SUM"
+                        ? item.amount / usdRateData.rate
+                        : item.amount),
+                    0
+                  ) -
+                expenses.reduce(
+                  (acc, item) => acc + item.amount / usdRateData.rate,
+                  0
+                )
+              )?.toFixed()}{" "}
+              $
             </span>
           </p>
         </div>
@@ -347,18 +489,18 @@ const SummaryCard = ({ expenses, debtors, products, sales, usdRate }) => {
   );
 };
 
-// Asosiy komponent
 export default function Investitsiya() {
   const { data: omborlar = [] } = useGetWarehousesQuery();
   const { data: usdRateData, isLoading: usdLoading } = useGetUsdRateQuery();
   const { data: sales = [], isLoading: salesLoading } =
     useGetSalesHistoryQuery();
-  const { data: debtors = [], isLoading: debtorsLoading } =
-    useGetAllDebtorsQuery();
   const { data: products = [], isLoading: productsLoading } =
     useGetProductsQuery();
+  const { data: debtors = [], isLoading: debtorsLoading } =
+    useGetAllDebtorsQuery();
   const { data: expenses = [], isLoading: expensesLoading } =
     useGetExpensesQuery();
+  console.log(sales);
 
   const usdRate = usdRateData?.rate || 12960;
 
@@ -375,10 +517,16 @@ export default function Investitsiya() {
   return (
     <div className="invest-container">
       <div className="invest-warehouse-cards">
-        {/* <SummaryCard expenses={expenses} debtors={debtors} products={products} sales={sales} usdRate={usdRate} /> */}
+        <SummaryCard
+          expenses={expenses}
+          debtors={debtors}
+          products={products}
+          sales={sales}
+          usdRate={usdRate}
+        />
         {omborlar.map((ombor, index) => (
           <WarehouseCard
-            key={ombor._id}
+            key={ombor?._id}
             ombor={ombor}
             usdRate={usdRate}
             sales={sales}

@@ -134,62 +134,12 @@ const ReconciliationAct = () => {
       }));
   }, [reports, selectedClient, selectedPartner, startDate, endDate]);
 
-  console.log(filteredAstatkaDebts);
-  console.log(filteredAstatkaPayments);
-  console.log(reports);
-  console.log(debts);
-
   const filteredPartnerProducts = useMemo(() => {
     return partnerProducts.filter(
       (item) =>
         item.partner_number === selectedPartner && isInDateRange(item.createdAt)
     );
   }, [partnerProducts, selectedPartner, startDate, endDate]);
-
-  const summaryByCurrency = useMemo(() => {
-    const result = {
-      USD: { sales: 0, balance: 0, debt: 0, products: 0 },
-      SUM: { sales: 0, balance: 0, debt: 0, products: 0 },
-      KYG: { sales: 0, balance: 0, debt: 0, products: 0 },
-    };
-
-    const allDebts = filteredDebts.concat(filteredAstatkaDebts);
-    allDebts.forEach((d) => {
-      if (result[d.currency]) {
-        result[d.currency].debt += d.remainingAmount;
-      }
-    });
-
-    filteredSales.forEach((s) => {
-      if (result[s.currency]) {
-        result[s.currency].sales += s.sellingPrice * s.quantity;
-      }
-    });
-
-    filteredAstatkaPayments.forEach((p) => {
-      if (result[p.currency]) {
-        result[p.currency].balance += p.amount;
-      }
-    });
-
-    filteredDebts.concat(filteredAstatkaDebts).forEach((d) => {
-      if (result[d.currency]) {
-        result[d.currency].debt += d.remainingAmount;
-      }
-    });
-
-    filteredPartnerProducts.forEach((p) => {
-      if (result[p.currency]) {
-        result[p.currency].products +=
-          (p.purchasePrice?.value || 0) * (p.quantity || 0);
-      }
-    });
-    Object.keys(result).forEach((currency) => {
-      result[currency].balance -= result[currency].debt;
-    });
-
-    return result;
-  }, [filteredSales, filteredDebts, filteredPartnerProducts]);
 
   const quantityText = {
     quantity: "Dona",
@@ -225,6 +175,7 @@ const ReconciliationAct = () => {
 
     const calcBalance = (currency) => {
       const payments = filteredAstatkaPayments
+        .concat(productReport)
         .filter((p) => p.currency === currency)
         .reduce((sum, p) => sum + p.amount, 0);
 
@@ -242,7 +193,7 @@ const ReconciliationAct = () => {
             )
         : 0;
 
-      return (payments - debts - products).toFixed(2);
+      return (payments - debts).toFixed(2);
     };
 
     content += `
@@ -464,6 +415,99 @@ const ReconciliationAct = () => {
     value: partner.partner_number,
   }));
 
+  const productReport = useMemo(() => {
+    if (!selectedPartner || !partnerProducts.length) return [];
+
+    const filteredProducts = partnerProducts.filter(
+      (p) => p.partner_number === selectedPartner && isInDateRange(p.createdAt)
+    );
+
+    const inactiveParts =
+      partnersFromApi
+        .find((p) => p.partner_number === selectedPartner)
+        .parts?.filter((p) => p.status === "inactive") || [];
+
+    const report = inactiveParts.map((part) => {
+      const filteredAndPartUnitedProducts = filteredProducts.filter(
+        (p) => p.part === part.part
+      );
+
+      if (filteredAndPartUnitedProducts.length === 0) return null;
+
+      return {
+        partnerId: selectedPartner,
+        amount: filteredAndPartUnitedProducts.reduce(
+          (acc, p) => acc + (p.quantity || 0) * (p.purchasePrice?.value || 0),
+          0
+        ),
+        // remainingAmount: filteredAndPartUnitedProducts.reduce(
+        //   (acc, p) => acc + (p.quantity || 0) * (p.purchasePrice?.value || 0),
+        //   0
+        // ),
+        currency: "USD",
+        date: filteredAndPartUnitedProducts[0].createdAt,
+      };
+    });
+
+    return report.filter(Boolean);
+  }, [selectedPartner, partnerProducts]);
+
+  const summaryByCurrency = useMemo(() => {
+    const result = {
+      USD: { sales: 0, balance: 0, debt: 0, products: 0 },
+      SUM: { sales: 0, balance: 0, debt: 0, products: 0 },
+      KYG: { sales: 0, balance: 0, debt: 0, products: 0 },
+    };
+
+    const allDebts = filteredDebts.concat(filteredAstatkaDebts);
+    // allDebts.forEach((d) => {
+    //   if (result[d.currency]) {
+    //     result[d.currency].debt += d.remainingAmount;
+    //   }
+    // });
+
+    filteredSales.forEach((s) => {
+      if (result[s.currency]) {
+        result[s.currency].sales += s.sellingPrice * s.quantity;
+      }
+    });
+
+    filteredAstatkaPayments.forEach((p) => {
+      if (result[p.currency]) {
+        result[p.currency].balance += p.amount;
+      }
+    });
+
+    productReport.forEach((p) => {
+      if (result[p.currency]) {
+        result[p.currency].balance += p.amount;
+      }
+    });
+
+    filteredDebts.concat(filteredAstatkaDebts).forEach((d) => {
+      if (result[d.currency]) {
+        result[d.currency].debt += d.remainingAmount;
+      }
+    });
+
+    // filteredDebts.concat(filteredAstatkaDebts).forEach((d) => {
+    //   if (result[d.currency]) {
+    //     result[d.currency].balance -= d.remainingAmount;
+    //   }
+    // });
+
+    filteredPartnerProducts.forEach((p) => {
+      if (result[p.currency]) {
+        result[p.currency].products +=
+          (p.purchasePrice?.value || 0) * (p.quantity || 0);
+      }
+    });
+    Object.keys(result).forEach((currency) => {
+      result[currency].balance -= result[currency].debt;
+    });
+
+    return result;
+  }, [filteredSales, filteredDebts, filteredPartnerProducts]);
   return (
     <div className="act" style={{ padding: 20, background: "#fff" }}>
       <div style={{ display: "flex", gap: 20, marginBottom: 20 }}>
@@ -725,7 +769,7 @@ const ReconciliationAct = () => {
             style={{ marginTop: 20 }}
           />
           <Table
-            dataSource={filteredAstatkaPayments}
+            dataSource={filteredAstatkaPayments.concat(productReport)}
             rowKey="_id"
             title={() => "To'lovlar"}
             pagination={false}
