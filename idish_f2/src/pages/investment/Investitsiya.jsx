@@ -278,13 +278,12 @@ const SummaryCard = ({ expenses, debtors, products, sales, usdRate }) => {
     (total, item) => total + (Number(item.amount) || 0),
     0
   );
-  console.log(usdRate);
 
   function calculateTotalNetProfitUSD() {
     if (!usdRateData?.rate || !usdRateData?.kyg) return 0;
 
     const kygRate = usdRateData.kyg;
-    const usdRate = usdRateData.kyg;
+    const usdRate = usdRateData.rate;
 
     let totalProfit = 0;
 
@@ -320,15 +319,17 @@ const SummaryCard = ({ expenses, debtors, products, sales, usdRate }) => {
         sellingPriceUSD = sale.sellingPrice / kygRate;
       }
 
-      // Foyda hisoblash
-      const profitPerUnit = sellingPriceUSD;
+      const profitPerUnit =
+        sellingPriceUSD - sale.productId.purchasePrice.value;
       const totalSaleProfit = profitPerUnit * realQuantity;
 
       totalProfit += totalSaleProfit;
     }
 
-    return totalProfit.toFixed(2); // USD formatida qaytariladi
+    return totalProfit.toFixed(2);
   }
+
+  console.log(calculateTotalNetProfitUSD());
 
   const totalExpensesUSD = totalExpensesUZS / usdRate;
 
@@ -464,17 +465,6 @@ const SummaryCard = ({ expenses, debtors, products, sales, usdRate }) => {
             <span className="invest-profit">
               {(
                 calculateTotalNetProfitUSD() -
-                reports
-                  ?.concat(productReport)
-                  ?.filter((r) => r?.type === "payment")
-                  .reduce(
-                    (acc, item) =>
-                      acc +
-                      (item.currency === "SUM"
-                        ? item.amount / usdRateData.rate
-                        : item.amount),
-                    0
-                  ) -
                 expenses.reduce(
                   (acc, item) => acc + item.amount / usdRateData.rate,
                   0
@@ -500,7 +490,6 @@ export default function Investitsiya() {
     useGetAllDebtorsQuery();
   const { data: expenses = [], isLoading: expensesLoading } =
     useGetExpensesQuery();
-  console.log(sales);
 
   const usdRate = usdRateData?.rate || 12960;
 

@@ -2,6 +2,7 @@ const Debt = require("../models/Debt");
 const Rate = require("../models/usdModel");
 const Sale = require("../models/Sale");
 const Product = require("../models/Product");
+const Client = require("../models/Client")
 const moment = require("moment");
 
 exports.createDebt = async (req, res) => {
@@ -134,7 +135,7 @@ exports.payDebt = async (req, res) => {
     } else {
       debt.remainingAmount -= amount;
     }
-
+    const client = debt.clientId ? await Client.findById(debt.clientId) : null;
     if (debt.remainingAmount <= 0) {
       debt.status = "paid";
       debt.remainingAmount = 0;
@@ -143,7 +144,9 @@ exports.payDebt = async (req, res) => {
         clientId: debt.clientId,
         productId: debt.productId,
         quantity: debt.quantity,
+        clientAddress: client?.address || "Unknown",
         unit: debt.unit,
+        storeId,
         sellingPrice: debt.sellingPrice,
         warehouseId: debt.warehouseId,
         totalAmount: debt.totalAmount,

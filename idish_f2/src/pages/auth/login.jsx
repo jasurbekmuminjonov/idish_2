@@ -31,7 +31,8 @@ const Login = memo(() => {
       localStorage.setItem("_id", res.data._id);
 
       window.location.reload();
-      navigate("/");
+      // navigate("/");
+      window.location.href = "/";
     } catch (error) {
       console.error("API xatosi:", error.response?.data || error.message);
     }
