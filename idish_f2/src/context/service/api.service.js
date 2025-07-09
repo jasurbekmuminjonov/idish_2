@@ -1,12 +1,10 @@
 // context/service/api.service.js
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-// Настройка базового запроса для RTK Query
 const baseQuery = fetchBaseQuery({
   // baseUrl: "http://localhost:8080/api",
   baseUrl: `https://idish25.richman.uz/api`,
 
-  // Добавление токена авторизации в заголовки запроса
   prepareHeaders: (headers, { getState }) => {
     const token = localStorage.getItem("access_token");
     if (token) {
