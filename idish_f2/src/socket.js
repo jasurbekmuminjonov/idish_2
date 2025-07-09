@@ -1,6 +1,6 @@
 import io from "socket.io-client";
 
-const SOCKET_URL = `https://idish.richman.uz`;
+const SOCKET_URL = `https://idish25.richman.uz`;
 // const SOCKET_URL = `http://localhost:8080`;
 const socket = io(SOCKET_URL, { transports: ["websocket"] });
 

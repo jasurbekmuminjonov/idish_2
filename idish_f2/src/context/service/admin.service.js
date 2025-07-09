@@ -6,7 +6,7 @@ const baseQuery = fetchBaseQuery({
   // baseUrl: "https://lola-crm-server.vercel.app/api",
   // baseUrl: "https://zapchast-test-bekent.vercel.app/api",
 
-  baseUrl: 'https://idish.richman.uz/api', 
+  baseUrl: `https://idish25.richman.uz/api`, 
   // baseUrl: "http://localhost:8080/api",
 
 

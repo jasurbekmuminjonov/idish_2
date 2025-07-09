@@ -13,7 +13,7 @@ const Login = memo(() => {
     try {
       const res = await axios.post(
         // "http://localhost:8080/api/users/login",
-        "https://idish.richman.uz/api/users/login",
+        `https://idish25.richman.uz/api/users/login`,
 
         value
       );
