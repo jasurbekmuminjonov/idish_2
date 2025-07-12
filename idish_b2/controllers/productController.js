@@ -113,7 +113,22 @@ exports.createProduct = async (req, res) => {
 // Get all products
 exports.getProducts = async (req, res) => {
   try {
-    const products = await Product.find().populate("warehouse");
+    const { search } = req.query;
+
+    let query = {};
+
+    if (search) {
+      query = {
+        $or: [
+          { name: { $regex: search, $options: "i" } },
+          { category: { $regex: search, $options: "i" } },
+          { size: { $regex: search, $options: "i" } },
+          { code: { $regex: search, $options: "i" } },
+        ],
+      };
+    }
+
+    const products = await Product.find(query).populate("warehouse");
     res.status(200).json(products);
   } catch (error) {
     res.status(500).json({ error: error.message });

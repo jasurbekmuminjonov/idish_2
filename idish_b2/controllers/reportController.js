@@ -95,7 +95,10 @@ exports.getAllReports = async (req, res) => {
     return res.json(reports);
   } catch (err) {
     console.log(err.message);
-    return response.error(res, "Serverda xatolik", 500);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
   }
 };
 // @desc    Get single report
