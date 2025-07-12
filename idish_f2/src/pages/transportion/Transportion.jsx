@@ -54,7 +54,7 @@ const Transportion = () => {
   }, []);
 
   const handleAddToBasket = (product) => {
-    if (!basket.find((item) => item._id === product._id)) {
+    if (!basket.find((item) => item?._id === product?._id)) {
       setBasket([...basket, { ...product, quantity: 1, unit: "quantity" }]);
     } else {
       message.warning("Bu mahsulot allaqachon qo‘shilgan");
@@ -64,7 +64,7 @@ const Transportion = () => {
   const updateQuantity = (productId, value) => {
     setBasket((prev) =>
       prev.map((item) => {
-        if (item._id !== productId) return item;
+        if (item?._id !== productId) return item;
         return {
           ...item,
           quantity: value,
@@ -75,7 +75,7 @@ const Transportion = () => {
 
   const handleCreateTransportion = async () => {
     for (let item of basket) {
-      const product = products.find((p) => p._id === item._id);
+      const product = products.find((p) => p?._id === item?._id);
       if (!product) {
         return message.error(`Mahsulot topilmadi: ${item.name}`);
       }
@@ -112,7 +112,7 @@ const Transportion = () => {
       from_warehouse: fromWarehouse,
       to_warehouse: toWarehouse,
       products: basket.map((item) => ({
-        product_id: item._id,
+        product_id: item?._id,
         quantity: item.quantity,
         unit: item.unit,
       })),
@@ -161,7 +161,7 @@ const Transportion = () => {
   const updateUnit = (productId, value) => {
     setBasket((prev) =>
       prev.map((item) =>
-        item._id === productId ? { ...item, unit: value } : item
+        item?._id === productId ? { ...item, unit: value } : item
       )
     );
   };
@@ -179,7 +179,7 @@ const Transportion = () => {
             value={record.quantity}
             type="number"
             min={1}
-            onChange={(val) => updateQuantity(record._id, val)}
+            onChange={(val) => updateQuantity(record?._id, val)}
           />
         );
       },
@@ -189,7 +189,7 @@ const Transportion = () => {
       render: (_, item) => (
         <Select
           value={item.unit}
-          onChange={(val) => updateUnit(item._id, val)}
+          onChange={(val) => updateUnit(item?._id, val)}
           style={{ width: "200px" }}
           defaultValue={"quantity"}
         >
@@ -257,12 +257,12 @@ const Transportion = () => {
       render: (_, item) => (
         <div style={{ display: "flex", gap: "10px" }}>
           <Button
-            onClick={() => acceptData(item._id)}
+            onClick={() => acceptData(item?._id)}
             icon={<CheckOutlined />}
             type="primary"
           />
           <Button
-            onClick={() => cencelData(item._id)}
+            onClick={() => cencelData(item?._id)}
             icon={<CloseOutlined />}
             danger
           />
@@ -316,7 +316,7 @@ const Transportion = () => {
               onChange={(val) => setFromWarehouse(val)}
             >
               {warehouses.map((wh) => (
-                <Option key={wh._id} value={wh._id}>
+                <Option key={wh?._id} value={wh?._id}>
                   {wh.name}
                 </Option>
               ))}
@@ -371,7 +371,7 @@ const Transportion = () => {
                   rowKey="_id"
                   columns={productColumns}
                   dataSource={products.filter(
-                    (p) => p.warehouse._id === fromWarehouse
+                    (p) => p.warehouse?._id === fromWarehouse
                   )}
                   pagination={false}
                 />
@@ -390,9 +390,9 @@ const Transportion = () => {
                 onChange={(val) => setToWarehouse(val)}
               >
                 {warehouses
-                  .filter((wh) => wh._id !== fromWarehouse)
+                  .filter((wh) => wh?._id !== fromWarehouse)
                   .map((wh) => (
-                    <Option key={wh._id} value={wh._id}>
+                    <Option key={wh?._id} value={wh?._id}>
                       {wh.name}
                     </Option>
                   ))}
