@@ -2,20 +2,19 @@ const mongoose = require("mongoose");
 
 const partnerSchema = new mongoose.Schema(
   {
-    productId: {
-      type: mongoose.Types.ObjectId,
-      ref: "Product",
-      default: null,
-    },
     name: {
       type: String,
       required: true,
     },
     name_partner: {
       type: String,
-      required: true,
+      default: "",
     },
     partner_number: {
+      type: String,
+      default: "",
+    },
+    partner_address: {
       type: String,
       default: "",
     },
@@ -84,28 +83,33 @@ const partnerSchema = new mongoose.Schema(
     warehouse: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Warehouse",
-      required: true,
+      required: false,
+      default: null,
     },
     category: {
       type: String,
-      required: true,
+      required: false,
     },
     size: {
       type: String,
-      required: true,
+      required: false,
     },
     code: {
       type: String,
-      required: true,
+      required: false,
     },
     barcode: {
       type: String,
-      unique: true,
       required: true,
     },
     part: {
       type: String,
       required: false,
+    },
+    productId: {
+      type: mongoose.Types.ObjectId,
+      ref: "Product",
+      default: null,
     },
   },
   {

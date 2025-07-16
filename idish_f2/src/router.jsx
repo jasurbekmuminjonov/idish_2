@@ -1,78 +1,4 @@
-// import React, { memo, useEffect } from "react";
-// import { Routes, Route } from "react-router-dom";
-// import Layout from "./layout/layout";
-// import Login from "./pages/auth/login";
-// import Home from "./pages/Home/Home";
-// import Kassa from "./pages/Kassa/Kassa";
-// import Debtors from "./pages/Debt/Debtors";
-// import socket from "./socket";
-// import smsAudio from "./assets/sms.mp3";
-// import { notification } from "antd";
-// export const Routera = memo(() => {
-//   const role = localStorage.getItem("role");
-//   const token = localStorage.getItem("access_token") || null;
 
-//   useEffect(() => {
-//     if (role === "admin") {
-//       const handleUpdateOrder = (data) => {
-//         notification.open({
-//           message: "Yangi o'tkazma",
-//           description: "o'tkazma qabul qiling yoki bekor qiling",
-//           duration: 0, // Faqat X bosilganda yopiladi
-//           placement: "topRight",
-//           style: { background: "green", color: "white" },
-//         });
-//         const audio = new Audio(smsAudio);
-//         audio.play();
-//       };
-
-//       const newSale = (data) => {
-//         console.log(data);
-
-//         notification.open({
-//           message: "Yangi Sotuv",
-//           description: "mahsulotni tayyorlang",
-//           duration: 0,
-//           placement: "topRight",
-//           style: { background: "green", color: "white" },
-//         });
-//         const audio = new Audio(smsAudio);
-//         audio.play();
-//       };
-
-//       socket.on("newTransportion", handleUpdateOrder);
-//       socket.on("newSale", newSale);
-
-//       return () => {
-//         socket.off("newTransportion", handleUpdateOrder);
-//         socket.off("newSale", newSale);
-//       };
-//     }
-//   }, []);
-
-//   return (
-//     <>
-//       {token ? (
-//         <Routes>
-//           <Route path="/" element={<Layout />}>
-//             <Route
-//               index
-//               element={
-//                 role === "admin" || role === "warehouse" ? <Home /> : <Kassa />
-//               }
-//             />
-//             <Route path="/debtors" element={<Debtors />} />
-//             <Route path="*" element={<h1>Page Not Found</h1>} />
-//           </Route>
-//         </Routes>
-//       ) : (
-//         <Login />
-//       )}
-//     </>
-//   );
-// });
-
-// export default Routera;
 
 import React, { memo, useEffect, useRef } from "react";
 import { Routes, Route } from "react-router-dom";
@@ -90,14 +16,11 @@ export const Routera = memo(() => {
   const role = localStorage.getItem("role");
   const token = localStorage.getItem("access_token") || null;
   const audioRef = useRef(null);
-  // const { data: sentTransportions, refetch } = useGetSentTransportionsQuery();
 
-
-  // Foydalanuvchi birinchi interaction qilganda audio-ni "aktiv" qilish
   useEffect(() => {
     const enableAudio = () => {
       if (audioRef.current) {
-        audioRef.current.play().catch(() => { });
+        audioRef.current.play().catch(() => {});
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
       }
@@ -117,7 +40,7 @@ export const Routera = memo(() => {
         placement: "topRight",
         style: { background: "white", color: "white" },
       });
-      if (audioRef.current) audioRef.current.play().catch(() => { });
+      if (audioRef.current) audioRef.current.play().catch(() => {});
     };
 
     const newSale = (data) => {
@@ -152,7 +75,7 @@ export const Routera = memo(() => {
         placement: "topRight",
         style: { background: "white", color: "white" },
       });
-      if (audioRef.current) audioRef.current.play().catch(() => { });
+      if (audioRef.current) audioRef.current.play().catch(() => {});
     };
 
     socket.on("newTransportion", handleUpdateOrder);

@@ -4,10 +4,10 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 const baseQuery = fetchBaseQuery({
   // baseUrl: "https://lola-crm-server.vercel.app/api",
   // baseUrl: "https://lola-crm-server.vercel.app/api",
-  baseUrl: "https://kwmkqg1t-8081.euw.devtunnels.ms/api",
+  // baseUrl: "https://kwmkqg1t-8081.euw.devtunnels.ms/api",
 
   // baseUrl: `https://idish25.richman.uz/api`, 
-  // baseUrl: "http://localhost:8080/api",
+  baseUrl: "http://localhost:8080/api",
 
 
   prepareHeaders: (headers, { getState }) => {

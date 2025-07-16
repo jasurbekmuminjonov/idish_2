@@ -333,12 +333,20 @@ const SummaryCard = ({ expenses, debtors, products, sales, usdRate }) => {
 
   const totalExpensesUSD = totalExpensesUZS / usdRate;
 
-  const totalDebtUZS = debtors.reduce((total, b) => {
-    const quantity = Number(b.quantity) || 0;
-    const sellingPrice = Number(b.sellingPrice) || 0;
-    return total + quantity * sellingPrice;
-  }, 0);
-  const totalDebtUSD = totalDebtUZS / usdRate;
+  const totalDebtUZS = debtors
+    .filter((item) => item.currency === "SUM")
+    .reduce((total, b) => {
+      const quantity = Number(b.quantity) || 0;
+      const sellingPrice = Number(b.sellingPrice) || 0;
+      return total + b?.remainingAmount;
+    }, 0);
+  const totalDebtUSD = debtors
+    .filter((item) => item.currency === "USD")
+    .reduce((total, b) => {
+      const quantity = Number(b.quantity) || 0;
+      const sellingPrice = Number(b.sellingPrice) || 0;
+      return total + b?.remainingAmount;
+    }, 0);
 
   const totalPurchaseUSD = products.reduce((total, item) => {
     const quantity = Number(item.quantity) || 0;

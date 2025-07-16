@@ -2,9 +2,9 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 const baseQuery = fetchBaseQuery({
-  // baseUrl: "http://localhost:8080/api",
+  baseUrl: "http://localhost:8080/api",
   // baseUrl: `https://idish25.richman.uz/api`,
-  baseUrl: `https://kwmkqg1t-8081.euw.devtunnels.ms/api`,
+  // baseUrl: `https://kwmkqg1t-8081.euw.devtunnels.ms/api`,
 
   prepareHeaders: (headers, { getState }) => {
     const token = localStorage.getItem("access_token");
