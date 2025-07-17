@@ -2,10 +2,10 @@ const UsdModel = require("../models/usdModel");
 
 exports.createRate = async (req, res) => {
   try {
-    const { rate, kyg } = req.body;
+    const { rate, kgs } = req.body;
     const usd = await UsdModel.findOneAndUpdate(
       {},
-      { rate, kyg },
+      { rate, kgs },
       { upsert: true, new: true }
     );
     if (!usd) return res.status(404).json({ message: "Usd kurumu bulunamadı" });
@@ -18,11 +18,11 @@ exports.createRate = async (req, res) => {
 
 exports.updateRate = async (req, res) => {
   try {
-    const { rate, kyg } = req.body;
+    const { rate, kgs } = req.body;
 
     const usd = await UsdModel.findOneAndUpdate(
       {},
-      { rate, kyg },
+      { rate, kgs },
       { new: true }
     );
     if (!usd) return res.status(404).json({ message: "Usd kurumu bulunamadı" });

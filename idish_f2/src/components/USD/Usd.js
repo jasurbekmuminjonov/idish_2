@@ -11,17 +11,17 @@ export default function Usd() {
     useGetUsdRateQuery();
   const [updateUsdRate] = useUpdateUsdRateMutation();
   const [usdRate, setUsdRate] = useState(usdRateData?.rate || 1);
-  const [kyg, setKyg] = useState(usdRateData?.kyg || 1);
+  const [kgs, setKyg] = useState(usdRateData?.kgs || 1);
   useEffect(() => {
     if (usdRateData) {
       setUsdRate(usdRateData.rate);
-      setKyg(usdRateData.kyg);
+      setKyg(usdRateData.kgs);
     }
   }, [usdRateData]);
 
   const handleUsdRateChange = async () => {
     try {
-      await updateUsdRate({ rate: +usdRate, kyg: +kyg }).unwrap();
+      await updateUsdRate({ rate: +usdRate, kgs: +kgs }).unwrap();
       message.success("USD kursi muvaffaqiyatli yangilandi!");
     } catch (error) {
       message.error("Xatolik yuz berdi. Iltimos qayta urinib ko'ring.");
@@ -43,10 +43,10 @@ export default function Usd() {
         type="number"
         readOnly={role === "warehouse" || role === "store"}
       />
-      <p>KYG</p>
+      <p>KGS</p>
       <Input
         placeholder="Bugungi USD kursini kiriting"
-        value={kyg}
+        value={kgs}
         onChange={(e) => setKyg(e.target.value)}
         type="number"
         readOnly={role === "warehouse" || role === "store"}

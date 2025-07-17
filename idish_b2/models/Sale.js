@@ -17,7 +17,7 @@ const saleSchema = new mongoose.Schema(
     },
     currency: {
       type: String,
-      enum: ["USD", "SUM", "KYG"],
+      enum: ["USD", "SUM", "KGS"],
       required: true,
     },
     productId: {

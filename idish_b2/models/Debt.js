@@ -64,7 +64,7 @@ const debtSchema = new mongoose.Schema(
     currency: {
       type: String,
       required: true,
-      enum: ["USD", "SUM", "KYG"],
+      enum: ["USD", "SUM", "KGS"],
     },
     paymentHistory: {
       type: [
@@ -77,7 +77,7 @@ const debtSchema = new mongoose.Schema(
           currency: {
             type: String,
             required: true,
-            enum: ["USD", "SUM", "KYG"],
+            enum: ["USD", "SUM", "KGS"],
           },
           storeId: {
             type: mongoose.Schema.Types.ObjectId,

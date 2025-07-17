@@ -150,22 +150,21 @@ const Kassa = () => {
     if (fromCurrency === "SUM" && toCurrency === "USD") {
       return price / rate;
     }
-    if (fromCurrency === "USD" && toCurrency === "KYG") {
-      return price * usdRate?.kyg;
+    if (fromCurrency === "USD" && toCurrency === "KGS") {
+      return price * usdRate?.kgs;
     }
-    if (fromCurrency === "KYG" && toCurrency === "USD") {
-      return price / usdRate?.kyg;
+    if (fromCurrency === "KGS" && toCurrency === "USD") {
+      return price / usdRate?.kgs;
     }
     return price;
   };
-  console.log(storelar);
 
   const formatNumber = (num) => {
     return Number(num?.toFixed(2)).toLocaleString();
   };
 
   const generatePDF = () => {
-    const { totalUSD, totalSUM, totalKYG } = basket.reduce(
+    const { totalUSD, totalSUM, totalKGS } = basket.reduce(
       (acc, item) => {
         const promo = promos.find((p) => p._id === paymentDiscount);
         const totalPrice =
@@ -190,12 +189,18 @@ const Kassa = () => {
         } else if (item.currency === "SUM") {
           acc.totalSUM += discountedPrice;
         } else {
-          acc.totalKYG += discountedPrice;
+          acc.totalKGS += discountedPrice;
         }
         return acc;
       },
-      { totalUSD: 0, totalSUM: 0, totalKYG: 0 }
+      { totalUSD: 0, totalSUM: 0, totalKGS: 0 }
     );
+
+    const statusTexts = {
+      quantity: "штук",
+      box_quantity: "каробка",
+      package_quantity: "пачка",
+    };
 
     const formValues = sellForm.getFieldsValue();
 
@@ -275,17 +280,9 @@ const Kassa = () => {
           <td style="padding: 8px;">${item.name || "Noma'lum mahsulot"}</td>
           <td style="padding: 8px;">${item.size || "-"}</td>
           <td style="padding: 8px;">${item.code || "-"}</td>
-          <td style="padding: 8px;">${
-            selectedUnit === "quantity"
-              ? item.quantity
-              : selectedUnit === "package_quantity"
-              ? item.quantity * item.quantity_per_package
-              : selectedUnit === "box_quantity"
-              ? item.quantity *
-                item.quantity_per_package *
-                item.package_quantity_per_box
-              : null
-          }</td>
+         <td style="padding: 8px;">${
+           item.quantity + " " + statusTexts[item.unit]
+         }</td>
           <td style="padding: 8px;">${formatNumber(
             item.sellingPrice.value
           )}</td>
@@ -294,7 +291,7 @@ const Kassa = () => {
               ? "Доллар"
               : item.currency === "SUM"
               ? "Сум"
-              : "KYG"
+              : "KGS"
           }</td>
           <td style="padding: 8px;">${
             promo
@@ -314,7 +311,9 @@ const Kassa = () => {
             <h2 style="margin: 0; font-size: 18px; color: #1a73e8;">${moment().format(
               "DD.MM.YYYY, HH:mm:ss"
             )} счет-фактура</h2>
-            <span style="font-size: 16px; color: #555;">Счет-фактура</span>
+            <span style="font-size: 16px; color: #555;">${
+              paymentType === "credit" ? "Долг" : "Продажa"
+            }</span>
           </div>
           <div style="display: flex; width: 100%; margin-bottom: 20px;">
             <div style="display: flex; flex-direction: column; gap: 10px; width: 50%;">
@@ -363,14 +362,16 @@ const Kassa = () => {
             <b style="color: #333;">Сумовая часть общей суммы платежа составляет: ${formatNumber(
               totalSUM
             )} сyм</b></b><br/>
-            <b style="color: #333;">KYG часть общей суммы платежа составляет: ${formatNumber(
-              totalKYG
-            )} KYG</b></b><br/>
+            <b style="color: #333;">KGS часть общей суммы платежа составляет: ${formatNumber(
+              totalKGS
+            )} KGS</b></b><br/>
             ${
               paymentType === "credit"
                 ? `<b style="color: #333;">Оставшийся долг: ${formatNumber(
                     totalQarz
-                  )}</b>`
+                  )}</b> <br/>
+                  <b style="color: #333;">Срок погашения задолженности: ${dueDate}</b>
+                  `
                 : ""
             }
           </div>
@@ -398,7 +399,9 @@ const Kassa = () => {
           <td style="padding: 8px;">${item.productId.name}</td>
           <td style="padding: 8px;">${item.productId.size}</td>
           <td style="padding: 8px;">${item.productId.code}</td>
-          <td style="padding: 8px;">${item.quantity}</td>
+          <td style="padding: 8px;">${
+            item.quantity + " " + statusTexts[item.unit]
+          }</td>
           <td style="padding: 8px;">${item.sellingPrice?.toLocaleString()}</td>
           <td style="padding: 8px;">${item.currency}</td>
           <td style="padding: 8px;">${item.totalAmount?.toLocaleString()}</td>
@@ -412,11 +415,11 @@ const Kassa = () => {
           </table>
           <div style="display: flex; justify-content: space-around; margin-top: 20px; border-top: 1px solid #e0e0e0; padding-top: 20px;">
             <div style="text-align: center;">
-              <img src="${yodgor_abdullaev}" style="width: 100px; height: 100px; border-radius: 10px; background: white; padding: 10px;" />
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://t.me/YODGOR_ABDULLAEV" style="width: 100px; height: 100px; border-radius: 10px; background: white; padding: 10px;" />
               <p style="margin: 5px 0; font-size: 12px; color: #000;">@YODGOR_ABDULLAEV</p>
             </div>
             <div style="text-align: center;">
-              <img src="${zolotayaroza77}" style="width: 100px; height: 100px; border-radius: 10px; background: white; padding: 10px;" />
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://t.me/ZOLOTAYAROZA77" style="width: 100px; height: 100px; border-radius: 10px; background: white; padding: 10px;" />
               <p style="margin: 5px 0; font-size: 12px; color: #000;">@ZOLOTAYAROZA77</p>
             </div>
           </div>
@@ -513,7 +516,7 @@ const Kassa = () => {
           usdRate?.rate
         );
         return `${formatNumber(convertedPrice)} ${
-          currency === "SUM" ? "сум" : currency === "USD" ? "$" : "KYG"
+          currency === "SUM" ? "сум" : currency === "USD" ? "$" : "KGS"
         }`;
       },
     },
@@ -530,6 +533,7 @@ const Kassa = () => {
                 {
                   ...record,
                   quantity: 1,
+                  unit: "quantity",
                   currency: currency,
                   originalPrice: {
                     value: price,
@@ -687,7 +691,7 @@ const Kassa = () => {
         >
           <Option value="USD">USD</Option>
           <Option value="SUM">SUM</Option>
-          <Option value="KYG">KYG</Option>
+          <Option value="KGS">KGS</Option>
         </Select>
       ),
     },
@@ -701,7 +705,17 @@ const Kassa = () => {
         <Select
           style={{ width: "100px" }}
           required
-          onChange={(value) => setSelectedUnit(value)}
+          onChange={(value) => {
+            setSelectedUnit(value);
+            setBasket(
+              basket.map((item) => {
+                if (item._id === record._id) {
+                  return { ...item, unit: value };
+                }
+                return item;
+              })
+            );
+          }}
           value={selectedUnit}
           placeholder="Tanlang"
         >
@@ -990,7 +1004,7 @@ const Kassa = () => {
           >
             <Option value="SUM">SUM</Option>
             <Option value="USD">USD</Option>
-            <Option value="KYG">KYG</Option>
+            <Option value="KGS">KGS</Option>
           </Select>
           <Button
             style={{ justifySelf: "end", display: "flex" }}
@@ -1048,7 +1062,7 @@ const Kassa = () => {
           />
           <p style={{ color: "white" }}>
             Umumiy to'lov SUM:{" "}
-            {currency === "KYG"
+            {currency === "KGS"
               ? "-"
               : formatNumber(
                   basket.reduce((acc, item) => {
@@ -1111,14 +1125,14 @@ const Kassa = () => {
                     ? discountedPrice
                     : item.currency === "SUM"
                     ? convertPrice(discountedPrice, "SUM", "USD", usdRate?.rate)
-                    : convertPrice(discountedPrice, "KYG", "USD", usdRate?.kyg))
+                    : convertPrice(discountedPrice, "KGS", "USD", usdRate?.kgs))
                 );
               }, 0)
             )}{" "}
             $
           </p>
           <p style={{ color: "white" }}>
-            Umumiy to'lov KYG:{" "}
+            Umumiy to'lov KGS:{" "}
             {formatNumber(
               basket.reduce((acc, item) => {
                 const totalPrice =
@@ -1140,13 +1154,13 @@ const Kassa = () => {
                   : totalPrice;
                 return (
                   acc +
-                  (item.currency === "KYG"
+                  (item.currency === "KGS"
                     ? discountedPrice
-                    : convertPrice(discountedPrice, "KYG", "USD", usdRate?.kyg))
+                    : convertPrice(discountedPrice, "KGS", "USD", usdRate?.kgs))
                 );
               }, 0)
             )}{" "}
-            KYG
+            KGS
           </p>
         </div>
       )}

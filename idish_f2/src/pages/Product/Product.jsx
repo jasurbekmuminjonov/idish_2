@@ -92,6 +92,8 @@ const Product = () => {
   const [isNewPartner, setIsNewPartner] = useState(false);
   const [partError, setPartError] = useState(null);
 
+  const [productState, setProductsState] = useState("all");
+
   async function handleAddPartner(values) {
     try {
       if (!editingPartner) {
@@ -650,7 +652,10 @@ const Product = () => {
       >
         <Space
           direction="vertical"
-          style={{ alignItems: "start", justifyContent: "start" }}
+          style={{
+            alignItems: "start",
+            justifyContent: "start",
+          }}
         >
           {localStorage.getItem("role") === "admin" && (
             <>
@@ -734,13 +739,24 @@ const Product = () => {
               </Button>
             </>
           )}
-          <Input
-            placeholder="Tovar nomi"
-            value={searchName}
-            onChange={(e) => setSearchName(e.target.value)}
-            size="small"
-            style={{ width: 150 }}
-          />
+          <div style={{ display: "flex", gap: "10px" }}>
+            <Input
+              placeholder="Tovar nomi"
+              value={searchName}
+              onChange={(e) => setSearchName(e.target.value)}
+              size="small"
+              style={{ width: 150 }}
+            />
+            <Select
+              style={{ width: 150 }}
+              size="small"
+              value={productState}
+              onChange={(value) => setProductsState(value)}
+            >
+              <Option value="all">Hammasi</Option>
+              <Option value="not_active">Tugagan</Option>
+            </Select>
+          </div>
         </Space>
 
         {localStorage.getItem("role") === "admin" && (
@@ -825,10 +841,16 @@ const Product = () => {
         dataSource={
           localStorage.getItem("role") === "warehouse"
             ? filteredProducts
+                ?.filter((p) =>
+                  productState === "all" ? p.quantity > 0 : p.quantity === 0
+                )
                 .filter((p) => p.warehouse._id === localStorage.getItem("_id"))
                 .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
                 .sort((a, b) => a.box_quantity - b.box_quantity)
             : filteredProducts
+                ?.filter((p) =>
+                  productState === "all" ? p.quantity > 0 : p.quantity === 0
+                )
                 .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
                 .sort((a, b) => a.box_quantity - b.box_quantity)
         }
@@ -1250,7 +1272,8 @@ key={key}
                   if (value === "new")
                     return Promise.reject("“new” nomi ishlatilmasligi kerak");
                   const exists = partnersFromApi.some(
-                    (p) => p.partner_name?.toLowerCase() === value?.toLowerCase()
+                    (p) =>
+                      p.partner_name?.toLowerCase() === value?.toLowerCase()
                   );
                   if (exists)
                     return Promise.reject(
