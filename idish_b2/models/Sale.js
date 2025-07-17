@@ -25,6 +25,12 @@ const saleSchema = new mongoose.Schema(
       ref: "Product",
       required: true,
     },
+    promokodId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Promo",
+      required: false,
+      default: null,
+    },
     discount: {
       type: Number,
       required: true,

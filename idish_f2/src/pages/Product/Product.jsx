@@ -58,7 +58,7 @@ const Product = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [imageModalVisible, setImageModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
-  const [editingProduct, setEditingProduct] = useState("");
+  const [editingProduct, setEditingProduct] = useState(null);
   const [editingSource, setEditingSource] = useState("");
   const { data: products = [], isLoading: productsLoading } =
     useGetProductsQuery();
@@ -213,10 +213,6 @@ const Product = () => {
     ).values()
   );
 
-  const unikalManzillar = Array.from(
-    new Set(barchaMahsulotlar.map((p) => p.hamkor_manzili).filter(Boolean))
-  );
-
   const handleUpload = async (file) => {
     const formData = new FormData();
     formData.append("image", file);
@@ -264,22 +260,24 @@ const Product = () => {
 
   const onFinish = async (values) => {
     try {
-      const partnerData = await partnersFromApi.find(
-        (p) =>
-          p.partner_number?.toLowerCase() ===
-          localStorage.getItem("selectedPartner")?.toLowerCase()
-      );
+      // ✅ Yangi mahsulot qo‘shish paytida partner ma'lumotlarini olish
+      if (!editingProduct) {
+        const partnerData = await partnersFromApi.find(
+          (p) =>
+            p.partner_number?.toLowerCase() ===
+            localStorage.getItem("selectedPartner")?.toLowerCase()
+        );
 
-      values.name_partner = partnerData.partner_name;
-      values.partner_number = partnerData.partner_number;
-      values.partner_address = partnerData.partner_address;
-      values.part = localStorage.getItem("selectedPartiya");
+        values.name_partner = partnerData.partner_name;
+        values.partner_number = partnerData.partner_number;
+        values.partner_address = partnerData.partner_address;
+        values.part = localStorage.getItem("selectedPartiya");
+      }
       if (localStorage.getItem("role") === "warehouse") {
         values.warehouse = localStorage.getItem("_id");
       }
       if (!editingProduct) {
         const newBarcode = generateBarcode();
-        // setCurrentBarcode(newBarcode);
         values.barcode = newBarcode;
         values.isPackage = isPackage;
       }
@@ -302,13 +300,13 @@ const Product = () => {
       if (editingProduct) {
         if (editingSource === "product") {
           await editProduct({
-            id: editingProduct,
+            id: editingProduct._id,
             data: values,
           }).unwrap();
           message.success("Mahsulot muvaffaqiyatli tahrirlandi!");
         } else if (editingSource === "partner") {
           await editProductPartner({
-            id: editingProduct,
+            id: editingProduct._id,
             data: values,
           }).unwrap();
           message.success("Mahsulot muvaffaqiyatli tahrirlandi!");
@@ -320,7 +318,6 @@ const Product = () => {
       form.resetFields();
       setEditingProduct("");
       setEditingSource("");
-      // setModalVisible(false);
       setImageUrl("");
     } catch (error) {
       if (
@@ -491,7 +488,7 @@ const Product = () => {
                   type="link"
                   size="small"
                   onClick={() => {
-                    setEditingProduct(record._id);
+                    setEditingProduct(record);
                     setEditingSource(record.source);
                     form.setFieldsValue({
                       ...record,
@@ -1250,7 +1247,8 @@ key={key}
                   if (value === "new")
                     return Promise.reject("“new” nomi ishlatilmasligi kerak");
                   const exists = partnersFromApi.some(
-                    (p) => p.partner_name?.toLowerCase() === value?.toLowerCase()
+                    (p) =>
+                      p.partner_name?.toLowerCase() === value?.toLowerCase()
                   );
                   if (exists)
                     return Promise.reject(

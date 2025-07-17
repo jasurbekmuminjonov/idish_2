@@ -19,6 +19,7 @@ import "./investment.css";
 import { useGetAllReportsQuery } from "../../context/service/report.service";
 import { useGetProductsPartnerQuery } from "../../context/service/partner.service";
 import { useGetActPartnersQuery } from "../../context/service/act-partner.service";
+import moment from "moment";
 
 const cardGradients = [
   "linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%)",
@@ -274,10 +275,32 @@ const SummaryCard = ({ expenses, debtors, products, sales, usdRate }) => {
   // const { data: expenses = [] } = useGetExpensesQuery();
   const { data: partnersFromApi = [], isLoading: partnersLoading } =
     useGetActPartnersQuery();
+  console.log(expenses);
+
   const totalExpensesUZS = expenses.reduce(
     (total, item) => total + (Number(item.amount) || 0),
     0
   );
+  const currentMonth = moment().month(); // 0-based: yanvar = 0, dekabr = 11
+  const currentYear = moment().year();
+  console.log(currentMonth);
+  console.log(currentYear);
+
+  const monthlyExpensesUZS = expenses
+    .filter(
+      (item) =>
+        moment(item.date).month() === currentMonth &&
+        moment(item.date).year() === currentYear
+    )
+    .reduce((total, item) => total + (Number(item.amount) || 0), 0);
+  console.log(reports);
+
+  const allAstatkaQarzUzs = reports
+    ?.filter((item) => item.currency === "SUM" && item.type === "debt")
+    .reduce((acc, item) => acc + item.amount, 0);
+  const allAstatkaQarzUsd = reports
+    ?.filter((item) => item.currency === "USD" && item.type === "debt")
+    .reduce((acc, item) => acc + item.amount, 0);
 
   function calculateTotalNetProfitUSD() {
     if (!usdRateData?.rate || !usdRateData?.kyg) return 0;
@@ -353,6 +376,10 @@ const SummaryCard = ({ expenses, debtors, products, sales, usdRate }) => {
     const purchaseValue = Number(item.purchasePrice?.value) || 0;
     return total + purchaseValue * quantity;
   }, 0);
+  const totalProductBox = products.reduce(
+    (total, item) => total + (item.warehouse ? item.box_quantity : 0),
+    0
+  );
   const totalPurchaseUZS = totalPurchaseUSD * usdRate;
 
   const totalSalesProfitUSD = sales.reduce((total, b) => {
@@ -384,26 +411,106 @@ const SummaryCard = ({ expenses, debtors, products, sales, usdRate }) => {
       headStyle={{ borderBottom: "none" }} // Оставляем только минимальный headStyle
     >
       <div className="invest-warehouse-stats">
+        <div
+          className="invest-stat-item"
+          style={{ display: "flex", justifyContent: "space-between" }}
+        >
+          <div>
+            <p>
+              <strong>Umumiy xarajat:</strong>
+            </p>
+            <p>
+              <span className="invest-purchase">
+                {totalExpensesUZS.toLocaleString("uz-UZ", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}{" "}
+                so'm
+              </span>
+            </p>
+          </div>
+          <div>
+            <p>
+              <strong>Oylik xarajat:</strong>
+            </p>
+            <p>
+              <span className="invest-purchase">
+                {monthlyExpensesUZS.toLocaleString("uz-UZ", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}{" "}
+                so'm
+              </span>
+            </p>
+          </div>
+        </div>
+        <Divider
+          style={{ margin: "10px 0", borderColor: "rgba(255, 255, 255, 0.2)" }}
+        />
         <div className="invest-stat-item">
-          <p>
-            <strong>
-              <DollarOutlined /> Umumiy xarajat:
-            </strong>
-          </p>
-          <p>
-            <span className="invest-purchase">
-              {totalExpensesUZS.toLocaleString("uz-UZ", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}{" "}
-              so'm
-            </span>
-          </p>
-          <p>
-            <span className="invest-purchase">
-              {totalExpensesUSD?.toFixed(2)} $
-            </span>
-          </p>
+          <div>
+            <p>
+              <strong>Umumiy nasiya:</strong>
+            </p>
+            <Space>
+              <p>
+                <span className="invest-debt">
+                  {totalDebtUZS.toLocaleString("uz-UZ", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}{" "}
+                  so'm
+                </span>
+              </p>
+              <p>
+                <span className="invest-debt">
+                  {totalDebtUSD?.toFixed(2)} $
+                </span>
+              </p>
+            </Space>
+          </div>
+          <div>
+            <p>
+              <strong>Umumiy ast. qarz:</strong>
+            </p>
+            <Space>
+              <p>
+                <span className="invest-debt">
+                  {allAstatkaQarzUzs?.toLocaleString("uz-UZ", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}{" "}
+                  so'm
+                </span>
+              </p>
+              <p>
+                <span className="invest-debt">
+                  {allAstatkaQarzUsd?.toFixed(2)} $
+                </span>
+              </p>
+            </Space>
+          </div>
+          <div>
+            <p>
+              <strong>Jami:</strong>
+            </p>
+            <Space>
+              <p>
+                <span className="invest-debt">
+                  {(allAstatkaQarzUzs + totalDebtUZS)?.toLocaleString("uz-UZ", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}{" "}
+                  so'm
+                </span>
+              </p>
+              <p>
+                <span className="invest-debt">
+                  {(allAstatkaQarzUsd + totalDebtUSD)?.toFixed(2)} $
+                </span>
+              </p>
+            </Space>
+          </div>
         </div>
         <Divider
           style={{ margin: "10px 0", borderColor: "rgba(255, 255, 255, 0.2)" }}
@@ -411,29 +518,7 @@ const SummaryCard = ({ expenses, debtors, products, sales, usdRate }) => {
         <div className="invest-stat-item">
           <p>
             <strong>
-              <CreditCardOutlined /> Umumiy nasiya:
-            </strong>
-          </p>
-          <p>
-            <span className="invest-debt">
-              {totalDebtUZS.toLocaleString("uz-UZ", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}{" "}
-              so'm
-            </span>
-          </p>
-          <p>
-            <span className="invest-debt">{totalDebtUSD?.toFixed(2)} $</span>
-          </p>
-        </div>
-        <Divider
-          style={{ margin: "10px 0", borderColor: "rgba(255, 255, 255, 0.2)" }}
-        />
-        <div className="invest-stat-item">
-          <p>
-            <strong>
-              <ShoppingCartOutlined /> Umumiy mahsulotlar tan narxi:
+              <ShoppingCartOutlined /> Umumiy mahsulotlar:
             </strong>
           </p>
           {/* <p>
@@ -448,6 +533,11 @@ const SummaryCard = ({ expenses, debtors, products, sales, usdRate }) => {
           <p>
             <span className="invest-purchase">
               {totalPurchaseUSD?.toFixed(2)} $
+            </span>
+          </p>
+          <p>
+            <span className="invest-purchase">
+              {totalProductBox?.toFixed(2)} karobka
             </span>
           </p>
         </div>

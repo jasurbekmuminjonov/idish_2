@@ -16,6 +16,7 @@ const sellProduct = async (req, res) => {
     paymentMethod,
     unit,
     senderId,
+    promokodId = null,
   } = req.body;
 
   const { id } = req.user;
@@ -30,11 +31,12 @@ const sellProduct = async (req, res) => {
   }
 
   if (
-    ((!clientId && !partnerId) ||
-      !productId ||
-      !quantity ||
-      !warehouseId ||
-      !paymentMethod || !senderId)
+    (!clientId && !partnerId) ||
+    !productId ||
+    !quantity ||
+    !warehouseId ||
+    !paymentMethod ||
+    !senderId
   ) {
     return res.status(400).json({
       message: "Sotuv uchun kerkali ma'lumotlar to'liq emas",
@@ -61,22 +63,22 @@ const sellProduct = async (req, res) => {
       (
         (unit === "box_quantity"
           ? quantity /
-          product.package_quantity_per_box /
-          (product.isPackage ? product.quantity_per_package : 1)
+            product.package_quantity_per_box /
+            (product.isPackage ? product.quantity_per_package : 1)
           : unit === "package_quantity"
-            ? product.isPackage
-              ? quantity / product.quantity_per_package
-              : 0
-            : unit === "quantity"
-              ? quantity
-              : 0) *
+          ? product.isPackage
+            ? quantity / product.quantity_per_package
+            : 0
+          : unit === "quantity"
+          ? quantity
+          : 0) *
         (unit === "quantity"
           ? product.kg_per_quantity
           : unit === "package_quantity"
-            ? product.isPackage
-              ? product.kg_per_package
-              : 0
-            : product.kg_per_box)
+          ? product.isPackage
+            ? product.kg_per_package
+            : 0
+          : product.kg_per_box)
       ).toFixed(2)
     );
 
@@ -99,6 +101,7 @@ const sellProduct = async (req, res) => {
       currency,
       discount,
       storeId: id,
+      promokodId,
     });
 
     await newSale.save();
@@ -106,7 +109,11 @@ const sellProduct = async (req, res) => {
     let result = await Sale.findById(newSale._id).populate("productId");
 
     let sender = await Store.findById(senderId);
-    io.emit("newSale", { newSale: result, selectedWarehouse: warehouseId, sender });
+    io.emit("newSale", {
+      newSale: result,
+      selectedWarehouse: warehouseId,
+      sender,
+    });
     res.status(201).json(newSale);
   } catch (error) {
     res.status(500).json({ message: error.message });

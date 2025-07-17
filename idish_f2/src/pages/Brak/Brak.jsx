@@ -6,6 +6,7 @@ import {
 } from "../../context/service/brak.service";
 import { Table, Form, Input, Button, Select } from "antd";
 import moment from "moment";
+import { useGetProductsQuery } from "../../context/service/product.service";
 
 const { Option } = Select;
 
@@ -14,10 +15,18 @@ const Brak = () => {
     useGetBrakHistoryQuery();
   const [addBrak] = useAddBrakMutation();
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchCode, setSearchCode] = useState("");
+  const { data: allProducts = [], isLoading: productsLoading } =
+    useGetProductsQuery();
+
   const { data: products = [], isLoading: isLoadingProducts } =
     useSearchProductsQuery(searchTerm, {
       skip: !searchTerm,
     });
+
+  const uniqueCodes = Array.from(
+    new Set(allProducts.map((product) => product.code))
+  ).filter(Boolean);
 
   const [selectedUnit, setSelectedUnit] = useState("quantity");
 
@@ -115,6 +124,7 @@ const Brak = () => {
   useEffect(() => {
     handleSearch();
   }, [braks, searchText]);
+  console.log(searchCode);
 
   return (
     <div className="brak-page">
@@ -136,12 +146,34 @@ const Brak = () => {
             onSearch={(value) => setSearchTerm(value)}
             loading={isLoadingProducts}
             filterOption={false}
-            style={{ width: 400 }}
+            style={{ width: 250 }}
           >
-            {products.map((product) => (
-              <Option key={product._id} value={product._id}>
-                {product.name} - o'lcham: {product.size}
-              </Option>
+            {products
+              .filter((p) => (searchCode ? p.code === searchCode : true))
+              .map((product) => (
+                <Option key={product._id} value={product._id}>
+                  {product.name} - o'lcham: {product.size}
+                </Option>
+              ))}
+          </Select>
+          <br />
+          <br />
+          <Select
+            showSearch
+            allowClear
+            placeholder="Kod bo‘yicha qidirish"
+            style={{ width: 250 }}
+            value={searchCode}
+            onChange={(value) => setSearchCode(value)}
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children?.toLowerCase().includes(input?.toLowerCase())
+            }
+          >
+            {uniqueCodes.map((code) => (
+              <Select.Option key={code} value={code}>
+                {code}
+              </Select.Option>
             ))}
           </Select>
         </Form.Item>

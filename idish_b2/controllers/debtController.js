@@ -2,90 +2,400 @@ const Debt = require("../models/Debt");
 const Rate = require("../models/usdModel");
 const Sale = require("../models/Sale");
 const Product = require("../models/Product");
-const Client = require("../models/Client")
+const Client = require("../models/Client");
 const moment = require("moment");
 
+// exports.createDebt = async (req, res) => {
+//   const {
+//     clientId,
+//     partnerId,
+//     productId,
+//     quantity,
+//     currency,
+//     totalAmount,
+//     paymentMethod,
+//     unit,
+//     sellingPrice,
+//     warehouseId,
+//     discount,
+//     dueDate,
+//     paymentHistory,
+//   } = req.body;
+
+//   if (!productId || !quantity || !totalAmount || !warehouseId) {
+//     return res.status(400).json({ message: "All fields are required." });
+//   }
+
+//   try {
+//     const rateObj = await Rate.findOne();
+//     const product = await Product.findById(productId);
+//     product.box_quantity -= (
+//       quantity /
+//       product.package_quantity_per_box /
+//       product.quantity_per_package
+//     ).toFixed(2);
+//     if (product.isPackage) {
+//       product.package_quantity -= quantity / product.quantity_per_package;
+//     }
+//     product.quantity -= quantity;
+//     product.total_kg -= parseFloat(
+//       (
+//         (unit === "box_quantity"
+//           ? quantity /
+//             product.package_quantity_per_box /
+//             (product.isPackage ? product.quantity_per_package : 1)
+//           : unit === "package_quantity"
+//           ? product.isPackage
+//             ? quantity / product.quantity_per_package
+//             : 0
+//           : unit === "quantity"
+//           ? quantity
+//           : 0) *
+//         (unit === "quantity"
+//           ? product.kg_per_quantity
+//           : unit === "package_quantity"
+//           ? product.isPackage
+//             ? product.kg_per_package
+//             : 0
+//           : product.kg_per_box)
+//       ).toFixed(2)
+//     );
+
+//     await product.save();
+//     const newDebt = new Debt({
+//       clientId,
+//       partnerId,
+//       productId,
+//       quantity,
+//       unit,
+//       sellingPrice,
+//       warehouseId,
+//       totalAmount,
+//       currency,
+//       discount,
+//       paymentMethod,
+//       dueDate,
+//       paymentHistory: paymentHistory || [],
+//       remainingAmount: req.body.initialPayment
+//         ? totalAmount - req.body.initialPayment
+//         : totalAmount,
+//     });
+//     await newDebt.save();
+//     res.status(201).json(newDebt);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
+// exports.createDebt = async (req, res) => {
+//   try {
+//     const {
+//       clientId,
+//       partnerId,
+//       products,
+//       dueDate,
+//       paymentHistory = [],
+//     } = req.body;
+
+//     if (!products || !Array.isArray(products) || products.length === 0) {
+//       return res.status(400).json({ message: "Mahsulotlar majburiy" });
+//     }
+
+//     const rateObj = await Rate.findOne();
+//     if (!rateObj) {
+//       return res.status(400).json({ message: "Valyuta kurslari topilmadi" });
+//     }
+
+//     let totalAmountUSD = 0;
+
+//     for (const item of products) {
+//       const {
+//         productId,
+//         warehouseId,
+//         quantity,
+//         discount,
+//         sellingPrice,
+//         unit,
+//         currency,
+//       } = item;
+
+//       if (
+//         !productId ||
+//         !quantity ||
+//         !sellingPrice ||
+//         !warehouseId ||
+//         !currency ||
+//         !unit
+//       ) {
+//         return res
+//           .status(400)
+//           .json({ message: "Barcha maydonlar to'ldirilishi kerak" });
+//       }
+
+//       const product = await Product.findById(productId);
+//       if (!product) {
+//         return res
+//           .status(404)
+//           .json({ message: `Mahsulot topilmadi: ${productId}` });
+//       }
+
+//       product.box_quantity -= (
+//         quantity /
+//         product.package_quantity_per_box /
+//         product.quantity_per_package
+//       ).toFixed(2);
+
+//       if (product.isPackage) {
+//         product.package_quantity -= quantity / product.quantity_per_package;
+//       }
+
+//       product.quantity -= quantity;
+
+//       product.total_kg -= parseFloat(
+//         (
+//           (unit === "box_quantity"
+//             ? quantity /
+//               product.package_quantity_per_box /
+//               (product.isPackage ? product.quantity_per_package : 1)
+//             : unit === "package_quantity"
+//             ? product.isPackage
+//               ? quantity / product.quantity_per_package
+//               : 0
+//             : unit === "quantity"
+//             ? quantity
+//             : 0) *
+//           (unit === "quantity"
+//             ? product.kg_per_quantity
+//             : unit === "package_quantity"
+//             ? product.isPackage
+//               ? product.kg_per_package
+//               : 0
+//             : product.kg_per_box)
+//         ).toFixed(2)
+//       );
+
+//       await product.save();
+
+//       let convertedPrice = sellingPrice * quantity;
+//       if (currency === "SUM") {
+//         convertedPrice = convertedPrice / rateObj.rate;
+//       } else if (currency === "KYG") {
+//         convertedPrice = convertedPrice / rateObj.kyg;
+//       }
+//       totalAmountUSD += convertedPrice;
+//     }
+
+//     let remainingAmount = totalAmountUSD;
+
+//     if (paymentHistory.length > 0) {
+//       const { amount, currency } = paymentHistory[0];
+
+//       let paidUSD = amount;
+//       if (currency === "SUM") {
+//         paidUSD = amount / rateObj.rate;
+//       } else if (currency === "KYG") {
+//         paidUSD = amount / rateObj.kyg;
+//       }
+
+//       remainingAmount = parseFloat((totalAmountUSD - paidUSD).toFixed(2));
+//     }
+
+//     const newDebt = new Debt({
+//       clientId,
+//       partnerId,
+//       products,
+//       dueDate,
+//       totalAmount: parseFloat(totalAmountUSD.toFixed(2)),
+//       remainingAmount,
+//       paymentHistory,
+//       paymentMethod: "credit",
+//     });
+
+//     await newDebt.save();
+
+//     res.status(201).json(newDebt);
+//   } catch (error) {
+//     console.error("createDebt error:", error);
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
 exports.createDebt = async (req, res) => {
-  const {
-    clientId,
-    partnerId,
-    productId,
-    quantity,
-    currency,
-    totalAmount,
-    paymentMethod,
-    unit,
-    sellingPrice,
-    warehouseId,
-    discount,
-    dueDate,
-    paymentHistory,
-  } = req.body;
-
-  // if (!clientId) {
-  //   req.body.clientId = req.body.partnerId;
-  // }
-
-  if (!productId || !quantity || !totalAmount || !warehouseId) {
-    return res.status(400).json({ message: "All fields are required." });
-  }
-
   try {
-    const product = await Product.findById(productId);
-    product.box_quantity -= (
-      quantity /
-      product.package_quantity_per_box /
-      product.quantity_per_package
-    ).toFixed(2);
-    if (product.isPackage) {
-      product.package_quantity -= quantity / product.quantity_per_package;
-    }
-    product.quantity -= quantity;
-    product.total_kg -= parseFloat(
-      (
-        (unit === "box_quantity"
-          ? quantity /
-            product.package_quantity_per_box /
-            (product.isPackage ? product.quantity_per_package : 1)
-          : unit === "package_quantity"
-          ? product.isPackage
-            ? quantity / product.quantity_per_package
-            : 0
-          : unit === "quantity"
-          ? quantity
-          : 0) *
-        (unit === "quantity"
-          ? product.kg_per_quantity
-          : unit === "package_quantity"
-          ? product.isPackage
-            ? product.kg_per_package
-            : 0
-          : product.kg_per_box)
-      ).toFixed(2)
-    );
+    const {
+      clientId,
+      partnerId,
+      products,
+      dueDate,
+      paymentHistory = [],
+      promokodId,
+    } = req.body;
 
-    await product.save();
+    if (!products || !Array.isArray(products) || products.length === 0) {
+      return res.status(400).json({ message: "Mahsulotlar kerak" });
+    }
+
+    const rateObj = await Rate.findOne();
+    if (!rateObj) {
+      return res.status(400).json({ message: "Kurslar topilmadi" });
+    }
+
+    let totalAmount = 0;
+    let totalDiscount = 0;
+    const preparedProducts = [];
+
+    for (const item of products) {
+      const {
+        productId,
+        warehouseId,
+        quantity,
+        discount,
+        sellingPrice,
+        unit,
+        currency,
+        promokodId: productPromoId,
+      } = item;
+
+      if (
+        !productId ||
+        !quantity ||
+        !sellingPrice ||
+        !warehouseId ||
+        !currency ||
+        !unit
+      ) {
+        return res
+          .status(400)
+          .json({ message: "Barcha maydonlar to‘ldirilishi kerak" });
+      }
+
+      const product = await Product.findById(productId);
+      if (!product)
+        return res
+          .status(404)
+          .json({ message: `Mahsulot topilmadi: ${productId}` });
+
+      product.box_quantity -= (
+        quantity /
+        product.package_quantity_per_box /
+        product.quantity_per_package
+      ).toFixed(2);
+
+      if (product.isPackage) {
+        product.package_quantity -= quantity / product.quantity_per_package;
+      }
+
+      product.quantity -= quantity;
+
+      product.total_kg -= parseFloat(
+        (
+          (unit === "box_quantity"
+            ? quantity /
+              product.package_quantity_per_box /
+              (product.isPackage ? product.quantity_per_package : 1)
+            : unit === "package_quantity"
+            ? product.isPackage
+              ? quantity / product.quantity_per_package
+              : 0
+            : unit === "quantity"
+            ? quantity
+            : 0) *
+          (unit === "quantity"
+            ? product.kg_per_quantity
+            : unit === "package_quantity"
+            ? product.isPackage
+              ? product.kg_per_package
+              : 0
+            : product.kg_per_box)
+        ).toFixed(2)
+      );
+
+      await product.save();
+
+      let productTotal = quantity * sellingPrice;
+      let productDiscount = 0;
+
+      let convertedPrice = productTotal;
+      if (currency === "SUM") convertedPrice /= rateObj.rate;
+      else if (currency === "KYG") convertedPrice /= rateObj.kyg;
+
+      if (productPromoId) {
+        const promo = await Promo.findById(productPromoId);
+        if (promo && promo.promo_type === "product") {
+          if (promo.type === "percent") {
+            productDiscount = (convertedPrice * promo.percent) / 100;
+            convertedPrice = convertedPrice - productDiscount;
+          } else if (promo.type === "amount") {
+            productDiscount = promo.amount;
+            convertedPrice = convertedPrice - productDiscount;
+          }
+        }
+      }
+
+      totalAmount += convertedPrice;
+      totalDiscount += productDiscount;
+
+      preparedProducts.push({
+        productId,
+        warehouseId,
+        quantity,
+        discount,
+        unit,
+        sellingPrice,
+        currency,
+        promokodId: productPromoId || null,
+        totalAmount: parseFloat(convertedPrice.toFixed(2)),
+        totalDiscount: parseFloat(productDiscount.toFixed(2)),
+      });
+    }
+
+    if (promokodId) {
+      const overallPromo = await Promo.findById(promokodId);
+      if (overallPromo && overallPromo.promo_type === "overall") {
+        if (overallPromo.type === "percent") {
+          const promoDiscount = (totalAmount * overallPromo.percent) / 100;
+          totalAmount -= promoDiscount;
+          totalDiscount += promoDiscount;
+        } else if (overallPromo.type === "amount") {
+          const promoDiscount =
+            overallPromo.currency === "SUM"
+              ? overallPromo.amount / rateObj.rate
+              : overallPromo.currency === "KYG"
+              ? overallPromo.amount / rateObj.kyg
+              : overallPromo.amount;
+          totalAmount -= promoDiscount;
+          totalDiscount += promoDiscount;
+        }
+      }
+    }
+
+    let remainingAmount = totalAmount;
+    if (paymentHistory.length > 0) {
+      const { amount, currency } = paymentHistory[0];
+      let paid = amount;
+      if (currency === "SUM") paid /= rateObj.rate;
+      else if (currency === "KYG") paid /= rateObj.kyg;
+      remainingAmount = totalAmount - paid;
+    }
+
     const newDebt = new Debt({
       clientId,
       partnerId,
-      productId,
-      quantity,
-      unit,
-      sellingPrice,
-      warehouseId,
-      totalAmount,
-      currency,
-      discount,
-      paymentMethod,
+      products: preparedProducts,
       dueDate,
-      paymentHistory: paymentHistory || [],
-      remainingAmount: req.body.initialPayment
-        ? totalAmount - req.body.initialPayment
-        : totalAmount,
+      promokodId: promokodId || null,
+      totalAmount: parseFloat(totalAmount.toFixed(2)),
+      totalDiscount: parseFloat(totalDiscount.toFixed(2)),
+      remainingAmount: parseFloat(remainingAmount.toFixed(2)),
+      paymentHistory,
+      paymentMethod: "credit",
     });
+
     await newDebt.save();
+
     res.status(201).json(newDebt);
   } catch (error) {
+    console.error("createDebt error:", error);
     res.status(500).json({ message: error.message });
   }
 };

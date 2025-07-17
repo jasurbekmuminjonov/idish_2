@@ -22,7 +22,7 @@ export default function Adminlar() {
   const [editingAdmin, setEditingAdmin] = useState(null);
   const [signUpAsAdmin] = useSignUpAsAdminMutation();
   const { data: admins, isLoading, refetch } = useGetUsersQuery();
-  
+
   const [deleteAdmin] = useDeleteAdminMutation();
   const [updateAdmin] = useUpdateAdminMutation();
   const [form] = Form.useForm();
@@ -84,10 +84,11 @@ export default function Adminlar() {
 
     const permissions = {
       home: success.includes("home"),
+      daily: success.includes("daily"),
       statistika: success.includes("statistika"),
       admin: success.includes("admin"),
       ombor: success.includes("ombor"),
-      kassa: success.includes("kassa"),
+      stores: success.includes("stores"),
       product: success.includes("product"),
       partner: success.includes("partner"),
       client: success.includes("client"),
@@ -98,6 +99,10 @@ export default function Adminlar() {
       expense: success.includes("expense"),
       report: success.includes("report"),
       "report-add": success.includes("report-add"),
+      hodimlar: success.includes("hodimlar"),
+      oylik: success.includes("oylik"),
+      transportions: success.includes("transportions"),
+      unfinished: success.includes("unfinished"), // ✅ agar qo‘shgan bo‘lsangiz
     };
 
     const payload = {

@@ -25,7 +25,6 @@ import moment from "moment";
 import html2pdf from "html2pdf.js";
 import yodgor_abdullaev from "../../assets/yodgor_abdullaev.svg";
 import zolotayaroza77 from "../../assets/zolotayaroza77.svg";
-import { useGetStoreProductsQuery } from "../../context/service/store.service";
 import { useGetStoresQuery } from "../../context/service/ombor.service";
 
 const { Option } = Select;
@@ -920,6 +919,7 @@ const Kassa = () => {
               ...(partnerId && { partnerId }),
               productId: item._id,
               unit: selectedUnit,
+              promokodId: paymentDiscount,
               currency: item.currency,
               discount: paymentDiscount ? promo.percent : 0,
               quantity,
