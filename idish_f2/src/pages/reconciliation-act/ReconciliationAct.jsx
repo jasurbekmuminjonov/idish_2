@@ -226,7 +226,7 @@ const ReconciliationAct = () => {
 
       // SALES
       content += `<h2>Продажи</h2><table><thead><tr>
-    <th>Продукт</th><th>Количество</th><th>Единство</th><th>Цена</th><th>Валюта</th><th>Общий</th>
+    <th>Продукт</th><th>Количество</th><th>размер</th><th>koд</th><th>Единство</th><th>Цена</th><th>Валюта</th><th>Общий</th>
   </tr></thead><tbody>`;
 
       let salesUSD = 0,
@@ -242,8 +242,10 @@ const ReconciliationAct = () => {
         content += `<tr>
       <td>${item.productId?.name}</td>
       <td>${item.quantity}</td>
+      <td>${item.productId?.size}</td>
+      <td>${item.productId?.code}</td>
       <td>${quantityText[item.unit] || item.unit}</td>
-      <td>${item.sellingPrice}</td>
+      <td>${item.sellingPrice?.toFixed(2)}</td>
       <td>${item.currency}</td>
       <td>${total.toFixed(2)}</td>
     </tr>`;
@@ -275,10 +277,10 @@ const ReconciliationAct = () => {
       <td>${item.productId?.name}</td>
       <td>${item.quantity}</td>
       <td>${quantityText[item.unit] || item.unit}</td>
-      <td>${item.sellingPrice}</td>
+      <td>${item.sellingPrice?.toFixed(2)}</td>
       <td>${item.currency}</td>
-      <td>${item.totalAmount}</td>
-      <td>${item.remainingAmount}</td>
+      <td>${item.totalAmount?.toFixed(2)}</td>
+      <td>${item.remainingAmount?.toFixed(2)}</td>
     </tr>`;
       });
 
@@ -300,7 +302,7 @@ const ReconciliationAct = () => {
 
       // SALES
       content += `<h2>Продажи</h2><table><thead><tr>
-    <th>Продукт</th><th>Количество</th><th>Единство</th><th>Цена</th><th>Валюта</th><th>Общий</th>
+    <th>Продукт</th><th>Количество</th><th>размер</th><th>koд</th><th>Единство</th><th>Цена</th><th>Валюта</th><th>Общий</th>
   </tr></thead><tbody>`;
 
       let salesUSD = 0,
@@ -316,6 +318,8 @@ const ReconciliationAct = () => {
         content += `<tr>
       <td>${item.productId?.name}</td>
       <td>${item.quantity}</td>
+      <td>${item.productId?.size}</td>
+      <td>${item.productId?.code}</td>
       <td>${quantityText[item.unit] || item.unit}</td>
       <td>${item.sellingPrice}</td>
       <td>${item.currency}</td>
@@ -609,7 +613,7 @@ const ReconciliationAct = () => {
           </tr>
         </thead>
         <tbody>
-          {["USD", "SUM", "KGS"].map((currency) => (
+          {["USD", "SUM", "KGS"].map((currency, item) => (
             <tr key={currency}>
               <td style={{ border: "1px solid #ccc", padding: 8 }}>
                 {currency}
@@ -625,6 +629,19 @@ const ReconciliationAct = () => {
               </td>
               <td style={{ border: "1px solid #ccc", padding: 8 }}>
                 {summaryByCurrency[currency].products.toLocaleString()}
+              </td>
+              <td style={{ border: "1px solid #ccc", padding: 8 }}>
+                {item === 0
+                  ? filteredSales
+                      ?.filter((a) => a.unit === "quantity")
+                      .reduce((acc, sale) => acc + sale.quantity, 0)
+                  : item === 1
+                  ? filteredSales
+                      ?.filter((a) => a.unit === "package_quantity")
+                      .reduce((acc, sale) => acc + sale.quantity, 0)
+                  : filteredSales
+                      ?.filter((a) => a.unit === "box_quantity")
+                      .reduce((acc, sale) => acc + sale.quantity, 0)}
               </td>
             </tr>
           ))}
@@ -649,11 +666,15 @@ const ReconciliationAct = () => {
                 dataIndex: "unit",
                 render: (unit) => quantityText[unit] || unit,
               },
-              { title: "Narx", dataIndex: "sellingPrice" },
+              {
+                title: "Narx",
+                dataIndex: "sellingPrice",
+                render: (n) => n?.toLocaleString(),
+              },
               {
                 title: "Jami",
-                render: (_, row) =>
-                  (row.quantity * row.sellingPrice).toLocaleString(),
+                // render: (_, row) =>(row.quantity * row.sellingPrice).toLocaleString(),
+                render: (_, row) => row.totalAmount?.toLocaleString(),
               },
             ]}
           />
