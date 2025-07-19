@@ -275,16 +275,13 @@ const SummaryCard = ({ expenses, debtors, products, sales, usdRate }) => {
   // const { data: expenses = [] } = useGetExpensesQuery();
   const { data: partnersFromApi = [], isLoading: partnersLoading } =
     useGetActPartnersQuery();
-  console.log(expenses);
 
   const totalExpensesUZS = expenses.reduce(
-    (total, item) => total + (Number(item.amount) || 0),
+    (total, item) => total + (Number(item?.amount) || 0),
     0
   );
   const currentMonth = moment().month(); // 0-based: yanvar = 0, dekabr = 11
   const currentYear = moment().year();
-  console.log(currentMonth);
-  console.log(currentYear);
 
   const monthlyExpensesUZS = expenses
     .filter(
@@ -292,15 +289,14 @@ const SummaryCard = ({ expenses, debtors, products, sales, usdRate }) => {
         moment(item.date).month() === currentMonth &&
         moment(item.date).year() === currentYear
     )
-    .reduce((total, item) => total + (Number(item.amount) || 0), 0);
-  console.log(reports);
+    .reduce((total, item) => total + (Number(item?.amount) || 0), 0);
 
   const allAstatkaQarzUzs = reports
     ?.filter((item) => item.currency === "SUM" && item.type === "debt")
-    .reduce((acc, item) => acc + item.amount, 0);
+    .reduce((acc, item) => acc + item?.amount, 0);
   const allAstatkaQarzUsd = reports
     ?.filter((item) => item.currency === "USD" && item.type === "debt")
-    .reduce((acc, item) => acc + item.amount, 0);
+    .reduce((acc, item) => acc + item?.amount, 0);
 
   function calculateTotalNetProfitUSD() {
     if (!usdRateData?.rate || !usdRateData?.kyg) return 0;
@@ -352,7 +348,6 @@ const SummaryCard = ({ expenses, debtors, products, sales, usdRate }) => {
     return totalProfit.toFixed(2);
   }
 
-  console.log(calculateTotalNetProfitUSD());
 
   const totalExpensesUSD = totalExpensesUZS / usdRate;
 
@@ -517,6 +512,19 @@ const SummaryCard = ({ expenses, debtors, products, sales, usdRate }) => {
         />
         <div className="invest-stat-item">
           <p>
+            <strong>Hamkorlardan qarz(tovar):</strong>
+          </p>
+          <p>
+            <span className="invest-purchase">
+              {productReport?.amount.toFixed(3)} $
+            </span>
+          </p>
+        </div>
+        <Divider
+          style={{ margin: "10px 0", borderColor: "rgba(255, 255, 255, 0.2)" }}
+        />
+        <div className="invest-stat-item">
+          <p>
             <strong>
               <ShoppingCartOutlined /> Umumiy mahsulotlar:
             </strong>
@@ -564,7 +572,7 @@ const SummaryCard = ({ expenses, debtors, products, sales, usdRate }) => {
               {(
                 calculateTotalNetProfitUSD() -
                 expenses.reduce(
-                  (acc, item) => acc + item.amount / usdRateData.rate,
+                  (acc, item) => acc + item?.amount / usdRateData.rate,
                   0
                 )
               )?.toFixed()}{" "}

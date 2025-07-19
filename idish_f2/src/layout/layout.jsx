@@ -21,7 +21,7 @@ const Layout = memo(() => {
   const toggleSidebar = useCallback(() => setSidebarOpen((prev) => !prev), []);
 
   const logout = useCallback(() => {
-    localStorage.clear();
+    localStorage.removeItem('access_token')
     dispatch(apiSlice.util.resetApiState());
     window.location.reload();
   }, [dispatch, navigate]);

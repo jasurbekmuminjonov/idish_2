@@ -1,5 +1,6 @@
 const Sale = require("../models/Sale");
 const Product = require("../models/Product");
+const Rate = require("../models/usdModel");
 const Store = require("../models/Store");
 const Client = require("../models/Client");
 
@@ -21,6 +22,8 @@ const sellProduct = async (req, res) => {
 
   const { id } = req.user;
   let clientAddress = "";
+
+  const rateObj = await Rate.findOne();
 
   if (clientId) {
     const client = await Client.findById(clientId);
@@ -84,6 +87,22 @@ const sellProduct = async (req, res) => {
 
     await product.save();
 
+    let realQuantity = 0;
+
+    if (unit === "box_quantity") {
+      realQuantity =
+        quantity *
+        product.package_quantity_per_box *
+        (product.isPackage ? product.quantity_per_package : 1);
+    } else if (unit === "package_quantity") {
+      realQuantity =
+        quantity * (product.isPackage ? product.quantity_per_package : 0);
+    } else {
+      realQuantity = quantity;
+    }
+
+    const totalAmount = parseFloat((realQuantity * sellingPrice).toFixed(2));
+
     const newSale = new Sale({
       ...(clientId && { clientId }),
       ...(partnerId && { partnerId }),
@@ -91,6 +110,7 @@ const sellProduct = async (req, res) => {
       quantity,
       sellingPrice,
       clientAddress,
+      totalAmount,
       payment:
         currency === "USD"
           ? { usd: sellingPrice * quantity, sum: 0 }

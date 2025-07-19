@@ -124,7 +124,6 @@ const Brak = () => {
   useEffect(() => {
     handleSearch();
   }, [braks, searchText]);
-  console.log(searchCode);
 
   return (
     <div className="brak-page">

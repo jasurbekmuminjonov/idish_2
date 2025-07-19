@@ -4,7 +4,16 @@ import {
   useGetClientsQuery,
   useCreateClientMutation,
 } from "../../context/service/client.service";
-import { Button, Input, Table, Modal, Select, Form, message } from "antd";
+import {
+  Button,
+  Input,
+  Table,
+  Modal,
+  Select,
+  Form,
+  message,
+  Space,
+} from "antd";
 import { InputNumber } from "antd";
 
 import "./kassa.css";
@@ -157,40 +166,73 @@ const Kassa = () => {
     }
     return price;
   };
-  console.log(storelar);
 
   const formatNumber = (num) => {
     return Number(num?.toFixed(2)).toLocaleString();
   };
 
+  const convertToQuantity = (item) => {
+    if (item.unit === "quantity") {
+      return item.quantity;
+    }
+
+    if (item.isPackage) {
+      if (item.unit === "package_quantity") {
+        return item.quantity * item.quantity_per_package;
+      }
+      if (item.unit === "box_quantity") {
+        return (
+          item.quantity *
+          item.package_quantity_per_box *
+          item.quantity_per_package
+        );
+      }
+    } else {
+      if (item.unit === "box_quantity") {
+        return item.quantity * item.quantity_per_box;
+      }
+    }
+
+    return item.quantity;
+  };
+
   const generatePDF = () => {
+    const getDiscountedPrice = (item) => {
+      const quantity = convertToQuantity(item);
+      const basePrice = item.sellingPrice.value;
+
+      const itemPromo = promos.find((p) => p._id === item.promokodId) || 0;
+      const itemPromoPercent = itemPromo?.percent || 0;
+
+      const globalPromo = promos.find((p) => p._id === paymentDiscount);
+      const globalPromoPercent = globalPromo?.percent || 0;
+
+      const priceAfterItemPromo =
+        basePrice - (basePrice * itemPromoPercent) / 100;
+      const priceAfterGlobalPromo =
+        priceAfterItemPromo - (priceAfterItemPromo * globalPromoPercent) / 100;
+
+      const discountedPrice = priceAfterGlobalPromo;
+      const totalAmount = discountedPrice * quantity;
+
+      return {
+        discountedPrice,
+        totalDiscount: itemPromoPercent + globalPromoPercent,
+        totalAmount,
+      };
+    };
     const { totalUSD, totalSUM, totalKYG } = basket.reduce(
       (acc, item) => {
-        const promo = promos.find((p) => p._id === paymentDiscount);
-        const totalPrice =
-          item.sellingPrice.value *
-          (selectedUnit === "quantity"
-            ? item.quantity
-            : selectedUnit === "package_quantity"
-            ? item.quantity * item.quantity_per_package
-            : selectedUnit === "box_quantity"
-            ? item.quantity *
-              item.quantity_per_package *
-              item.package_quantity_per_box
-            : null);
-        const discountedPrice = promo
-          ? promo.type === "percent"
-            ? totalPrice - (totalPrice / 100) * promo.percent
-            : totalPrice - promo.percent
-          : totalPrice;
+        const { totalAmount } = getDiscountedPrice(item);
 
         if (item.currency === "USD") {
-          acc.totalUSD += discountedPrice;
+          acc.totalUSD += totalAmount;
         } else if (item.currency === "SUM") {
-          acc.totalSUM += discountedPrice;
+          acc.totalSUM += totalAmount;
         } else {
-          acc.totalKYG += discountedPrice;
+          acc.totalKYG += totalAmount;
         }
+
         return acc;
       },
       { totalUSD: 0, totalSUM: 0, totalKYG: 0 }
@@ -202,16 +244,8 @@ const Kassa = () => {
     let buyerAddress = "Noma'lum";
     let buyerPhone = storelar?.find((s) => s.login === userLogin)?.phone;
     let paymentType = sellForm.getFieldValue("paymentMethod");
-    const promo = promos.find((p) => p._id === paymentDiscount);
 
-    const getDiscountedPrice = (price, quantity) => {
-      if (!promo) return price;
-      return promo.type === "percent"
-        ? price - (price * promo.percent) / 100
-        : (price * quantity - promo.percent) / quantity;
-    };
-
-    const getBasketTotal = (basket, selectedUnit, getDiscountedPrice) => {
+    const getBasketTotal = (basket, selectedUnit) => {
       return basket.reduce((sum, item) => {
         const quantity =
           selectedUnit === "quantity"
@@ -224,16 +258,14 @@ const Kassa = () => {
               item.package_quantity_per_box
             : 0;
 
-        const unitPrice = getDiscountedPrice(item.sellingPrice.value, quantity);
-        const totalAmount = Math.max(unitPrice * quantity, 0);
+        const { discountedPrice } = getDiscountedPrice(item);
+        const totalAmount = Math.max(discountedPrice * quantity, 0);
 
         return sum + totalAmount;
       }, 0);
     };
-    let initialPayment = sellForm.getFieldValue("initialPayment");
 
-    let totalQarz =
-      getBasketTotal(basket, selectedUnit, getDiscountedPrice) - initialPayment;
+    let initialPayment = sellForm.getFieldValue("initialPayment");
 
     if (buyerType === "client" && selectedBuyer) {
       const client = clients.find((c) => c._id === selectedBuyer);
@@ -247,13 +279,10 @@ const Kassa = () => {
       buyerName = formValues.clientName || "Noma'lum";
       buyerAddress = formValues.clientAddress || "Noma'lum";
     }
-
     const tableRows = basket
       .map((item, index) => {
-        const promo = promos.find((p) => p._id === paymentDiscount);
-        const totalPrice =
-          item.sellingPrice.value *
-          (selectedUnit === "quantity"
+        const quantity =
+          selectedUnit === "quantity"
             ? item.quantity
             : selectedUnit === "package_quantity"
             ? item.quantity * item.quantity_per_package
@@ -261,48 +290,31 @@ const Kassa = () => {
             ? item.quantity *
               item.quantity_per_package *
               item.package_quantity_per_box
-            : null);
-        const discountedPrice = promo
-          ? promo.type === "percent"
-            ? totalPrice - (totalPrice / 100) * promo.percent
-            : totalPrice - promo.percent
-          : totalPrice;
+            : 0;
+
+        const { totalAmount, totalDiscount } = getDiscountedPrice(item);
 
         return `
-        <tr style="text-align: center;">
-          <td style="padding: 8px;">${index + 1}</td>
-          <td style="padding: 8px;">${item.name || "Noma'lum mahsulot"}</td>
-          <td style="padding: 8px;">${item.size || "-"}</td>
-          <td style="padding: 8px;">${item.code || "-"}</td>
-          <td style="padding: 8px;">${
-            selectedUnit === "quantity"
-              ? item.quantity
-              : selectedUnit === "package_quantity"
-              ? item.quantity * item.quantity_per_package
-              : selectedUnit === "box_quantity"
-              ? item.quantity *
-                item.quantity_per_package *
-                item.package_quantity_per_box
-              : null
-          }</td>
-          <td style="padding: 8px;">${formatNumber(
-            item.sellingPrice.value
-          )}</td>
-          <td style="padding: 8px;">${
-            item.currency === "USD"
-              ? "Доллар"
-              : item.currency === "SUM"
-              ? "Сум"
-              : "KYG"
-          }</td>
-          <td style="padding: 8px;">${
-            promo
-              ? `${promo.percent} ${promo.type === "percent" ? "%" : "сум"}`
-              : "—"
-          }</td>
-          <td style="padding: 8px;">${formatNumber(discountedPrice)}</td>
-        </tr>
-      `;
+      <tr style="text-align: center;">
+        <td style="padding: 8px;">${index + 1}</td>
+        <td style="padding: 8px;">${item.name || "Noma'lum mahsulot"}</td>
+        <td style="padding: 8px;">${item.size || "-"}</td>
+        <td style="padding: 8px;">${item.code || "-"}</td>
+        <td style="padding: 8px;">${quantity}</td>
+        <td style="padding: 8px;">${formatNumber(item.sellingPrice.value)}</td>
+        <td style="padding: 8px;">${
+          item.currency === "USD"
+            ? "Доллар"
+            : item.currency === "SUM"
+            ? "Сум"
+            : "KYG"
+        }</td>
+        <td style="padding: 8px;">${
+          totalDiscount > 0 ? `${totalDiscount} %` : "—"
+        }</td>
+        <td style="padding: 8px;">${formatNumber(totalAmount)}</td>
+      </tr>
+    `;
       })
       .join("");
 
@@ -360,18 +372,11 @@ const Kassa = () => {
               totalUSD
             )} доллар</b><br/>
             <b style="color: #333;">Сумовая часть общей суммы платежа составляет: ${formatNumber(
-              totalSUM
+              totalSUM - initialPayment
             )} сyм</b></b><br/>
             <b style="color: #333;">KYG часть общей суммы платежа составляет: ${formatNumber(
               totalKYG
             )} KYG</b></b><br/>
-            ${
-              paymentType === "credit"
-                ? `<b style="color: #333;">Оставшийся долг: ${formatNumber(
-                    totalQarz
-                  )}</b>`
-                : ""
-            }
           </div>
           <table style="border-collapse: collapse; width: 100%; margin-bottom: 20px; border: 1px solid #e0e0e0;">
             <thead>
@@ -529,6 +534,8 @@ const Kassa = () => {
                 {
                   ...record,
                   quantity: 1,
+                  promokodId: null,
+                  unit: "quantity",
                   currency: currency,
                   originalPrice: {
                     value: price,
@@ -700,8 +707,14 @@ const Kassa = () => {
         <Select
           style={{ width: "100px" }}
           required
-          onChange={(value) => setSelectedUnit(value)}
-          value={selectedUnit}
+          onChange={(value) => {
+            setBasket((prev) =>
+              prev.map((item) =>
+                item._id === record._id ? { ...item, unit: value } : item
+              )
+            );
+          }}
+          value={record.unit}
           placeholder="Tanlang"
         >
           <Select.Option value="quantity">Dona</Select.Option>
@@ -709,6 +722,33 @@ const Kassa = () => {
             Pachka
           </Select.Option>
           <Select.Option value="box_quantity">Karobka</Select.Option>
+        </Select>
+      ),
+    },
+    {
+      title: "Promokod",
+      render: (_, record) => (
+        <Select
+          style={{ width: "200px" }}
+          onChange={(value) => {
+            setBasket((prev) =>
+              prev.map((item) =>
+                item._id === record._id ? { ...item, promokodId: value } : item
+              )
+            );
+          }}
+          value={record.promokodId}
+          placeholder="Tanlang"
+        >
+          <Select.Option value={null}>Promokodsiz</Select.Option>
+          {promos.map((item) => (
+            <Select.Option
+              disabled={item.promo_type === "overall"}
+              value={item._id}
+            >
+              {item.code}
+            </Select.Option>
+          ))}
         </Select>
       ),
     },
@@ -778,44 +818,12 @@ const Kassa = () => {
 
   const handleSell = async () => {
     try {
-      for (let item of basket) {
-        const unit = selectedUnit;
-        let requiredQty = 0;
-
-        if (unit === "quantity") {
-          requiredQty = item.quantity;
-        } else if (unit === "package_quantity") {
-          requiredQty = item.quantity * item.quantity_per_package;
-        } else if (unit === "box_quantity") {
-          requiredQty =
-            item.quantity *
-            item.quantity_per_package *
-            item.package_quantity_per_box;
-        }
-
-        const availableProduct = allProducts.find(
-          (p) => p._id === item._id && p.warehouse?._id === item.warehouse?._id
-        );
-
-        if (!availableProduct || requiredQty > availableProduct.quantity) {
-          message.error(
-            `${
-              item.name
-            } mahsulotidan omborda yetarli miqdor mavjud emas. Maks: ${
-              availableProduct?.quantity || 0
-            }`
-          );
-          return;
-        }
-      }
-
       await sellForm.validateFields();
-
       const formValues = sellForm.getFieldsValue();
       const initialPayment = Number(formValues.initialPayment || 0);
 
       if (!paymentMethod || (paymentMethod === "credit" && !dueDate)) {
-        message.error("Barcha maydonlarni to'ldirishingiz kerak!");
+        message.error("Barcha maydonlarni to'ldiring!");
         return;
       }
 
@@ -835,101 +843,74 @@ const Kassa = () => {
         clientId = clientResponse._id;
       }
 
-      const promo = promos.find((p) => p._id === paymentDiscount);
-      const getDiscountedPrice = (price, quantity) => {
-        if (!promo) return price;
-        return promo.type === "percent"
-          ? price - (price * promo.percent) / 100
-          : (price * quantity - promo.percent) / quantity;
-      };
+      const overallPromo = paymentDiscount
+        ? promos.find((p) => p._id === paymentDiscount)
+        : null;
+
+      const products = basket.map((item) => {
+        const quantity =
+          item.unit === "quantity"
+            ? item.quantity
+            : item.unit === "package_quantity"
+            ? item.quantity * item.quantity_per_package
+            : item.quantity *
+              item.quantity_per_package *
+              item.package_quantity_per_box;
+
+        const productPromo = promos.find((p) => p._id === item.promokodId);
+        const itemDiscount =
+          (productPromo?.percent || 0) + (overallPromo?.percent || 0);
+
+        const basePrice = item.sellingPrice.value;
+        const discountedUnitPrice =
+          basePrice - (basePrice * itemDiscount) / 100;
+        const totalAmount = Math.max(discountedUnitPrice * quantity, 0);
+
+        return {
+          productId: item._id,
+          warehouseId: item.warehouse?._id,
+          quantity,
+          unit: item.unit,
+          currency: item.currency,
+          sellingPrice: discountedUnitPrice,
+          totalAmount,
+          promokodId: productPromo?._id || null,
+          discount: itemDiscount,
+        };
+      });
 
       if (paymentMethod === "credit") {
-        await Promise.all(
-          basket.map((item) => {
-            const quantity =
-              selectedUnit === "quantity"
-                ? item.quantity
-                : selectedUnit === "package_quantity"
-                ? item.quantity * item.quantity_per_package
-                : selectedUnit === "box_quantity"
-                ? item.quantity *
-                  item.quantity_per_package *
-                  item.package_quantity_per_box
-                : 0;
-
-            const unitPrice = getDiscountedPrice(
-              item.sellingPrice.value,
-              quantity
-            );
-            const totalAmount = Math.max(unitPrice * quantity, 0);
-
-            return createDebt({
-              ...(clientId && { clientId }),
-              ...(partnerId && { partnerId }),
-              productId: item._id,
-              quantity,
-              paymentHistory: [
-                ...(initialPayment > 0
-                  ? [
-                      {
-                        date: moment().format("YYYY-MM-DD"),
-                        amount: initialPayment,
-                        currency: item.currency,
-                        storeId: localStorage.getItem("_id"),
-                      },
-                    ]
-                  : []),
-              ],
-              unit: selectedUnit,
-              remainingAmount: totalAmount - initialPayment,
-              totalAmount,
-              initialPayment,
-              currency: item.currency,
-              sellingPrice: unitPrice,
-              paymentMethod,
-              warehouseId: item.warehouse?._id,
-              discount: paymentDiscount ? promo?.percent || 0 : 0,
-              dueDate,
-              selectedWarehouse: item.selectedWarehouse,
-              senderId: localStorage.getItem("_id"),
-            }).unwrap();
-          })
-        );
+        await createDebt({
+          clientId,
+          partnerId,
+          dueDate,
+          promokodId: overallPromo?._id || null,
+          paymentHistory:
+            initialPayment > 0
+              ? [
+                  {
+                    date: moment().format("YYYY-MM-DD"),
+                    amount: initialPayment,
+                    currency: "SUM",
+                    storeId: localStorage.getItem("_id"),
+                  },
+                ]
+              : [],
+          products,
+        }).unwrap();
       } else {
         await Promise.all(
-          basket.map((item) => {
-            const quantity =
-              selectedUnit === "quantity"
-                ? item.quantity
-                : selectedUnit === "package_quantity"
-                ? item.quantity * item.quantity_per_package
-                : selectedUnit === "box_quantity"
-                ? item.quantity *
-                  item.quantity_per_package *
-                  item.package_quantity_per_box
-                : 0;
-
-            const unitPrice = getDiscountedPrice(
-              item.sellingPrice.value,
-              quantity
-            );
-
-            return sellProduct({
-              ...(clientId && { clientId }),
-              ...(partnerId && { partnerId }),
-              productId: item._id,
-              unit: selectedUnit,
-              promokodId: paymentDiscount,
-              currency: item.currency,
-              discount: paymentDiscount ? promo.percent : 0,
-              quantity,
-              sellingPrice: unitPrice,
-              warehouseId: item.warehouse?._id,
+          products.map((item) =>
+            sellProduct({
+              ...item,
+              clientId,
+              partnerId,
               paymentMethod,
-              selectedWarehouse: item.selectedWarehouse,
+              selectedWarehouse: basket.find((b) => b._id === item.productId)
+                ?.selectedWarehouse,
               senderId: localStorage.getItem("_id"),
-            }).unwrap();
-          })
+            }).unwrap()
+          )
         );
       }
 
@@ -941,12 +922,37 @@ const Kassa = () => {
       setBuyerType(null);
       setDueDate(null);
       sellForm.resetFields();
-      message.success("Sotuv amalga oshirildi");
+      message.success("Sotuv muvaffaqiyatli yakunlandi");
     } catch (error) {
+      console.error("❌ Xatolik:", error);
       message.error("Xatolik yuz berdi");
-      console.error("Sell error:", error);
     }
   };
+
+  // const convertToQuantity = (item) => {
+  //   if (item.unit === "quantity") {
+  //     return item.quantity;
+  //   }
+
+  //   if (item.isPackage) {
+  //     if (item.unit === "package_quantity") {
+  //       return item.quantity * item.quantity_per_package;
+  //     }
+  //     if (item.unit === "box_quantity") {
+  //       return (
+  //         item.quantity *
+  //         item.package_quantity_per_box *
+  //         item.quantity_per_package
+  //       );
+  //     }
+  //   } else {
+  //     if (item.unit === "box_quantity") {
+  //       return item.quantity * item.quantity_per_box;
+  //     }
+  //   }
+
+  //   return item.quantity; // fallback
+  // };
 
   return (
     <div className="page" style={{ marginTop: "8px", paddingInline: "4px" }}>
@@ -1046,110 +1052,96 @@ const Kassa = () => {
             dataSource={basket}
             rowKey="_id"
           />
-          <p style={{ color: "white" }}>
-            Umumiy to'lov SUM:{" "}
-            {currency === "KYG"
-              ? "-"
-              : formatNumber(
-                  basket.reduce((acc, item) => {
-                    const totalPrice =
-                      item.sellingPrice.value *
-                      (selectedUnit === "quantity"
-                        ? item.quantity
-                        : selectedUnit === "package_quantity"
-                        ? item.quantity * item.quantity_per_package
-                        : selectedUnit === "box_quantity"
-                        ? item.quantity *
-                          item.quantity_per_package *
-                          item.package_quantity_per_box
-                        : null);
-                    const promo = promos.find((p) => p._id === paymentDiscount);
-                    const discountedPrice = promo
-                      ? promo.type === "percent"
-                        ? totalPrice - (totalPrice / 100) * promo.percent
-                        : totalPrice - promo.percent
-                      : totalPrice;
-                    return (
-                      acc +
-                      (item.currency === "SUM"
-                        ? discountedPrice
-                        : convertPrice(
-                            discountedPrice,
-                            "USD",
-                            "SUM",
-                            usdRate?.rate
-                          ))
+
+          <Space direction="vertical" style={{ color: "#fff" }}>
+            <p>
+              Umumiy to'lov USD qismi:{" "}
+              <strong>
+                {basket
+                  .filter((p) => p.currency === "USD")
+                  .reduce((acc, item) => {
+                    const quantity = convertToQuantity(item);
+                    const itemPromo = promos.find(
+                      (p) => p._id === item.promokodId
                     );
-                  }, 0)
-                )}{" "}
-            so'm
-          </p>
-          <p style={{ color: "white" }}>
-            Umumiy to'lov USD:{" "}
-            {formatNumber(
-              basket.reduce((acc, item) => {
-                const totalPrice =
-                  item.sellingPrice.value *
-                  (selectedUnit === "quantity"
-                    ? item.quantity
-                    : selectedUnit === "package_quantity"
-                    ? item.quantity * item.quantity_per_package
-                    : selectedUnit === "box_quantity"
-                    ? item.quantity *
-                      item.quantity_per_package *
-                      item.package_quantity_per_box
-                    : null);
-                const promo = promos.find((p) => p._id === paymentDiscount);
-                const discountedPrice = promo
-                  ? promo.type === "percent"
-                    ? totalPrice - (totalPrice / 100) * promo.percent
-                    : totalPrice - promo.percent
-                  : totalPrice;
-                return (
-                  acc +
-                  (item.currency === "USD"
-                    ? discountedPrice
-                    : item.currency === "SUM"
-                    ? convertPrice(discountedPrice, "SUM", "USD", usdRate?.rate)
-                    : convertPrice(discountedPrice, "KYG", "USD", usdRate?.kyg))
-                );
-              }, 0)
-            )}{" "}
-            $
-          </p>
-          <p style={{ color: "white" }}>
-            Umumiy to'lov KYG:{" "}
-            {formatNumber(
-              basket.reduce((acc, item) => {
-                const totalPrice =
-                  item.sellingPrice.value *
-                  (selectedUnit === "quantity"
-                    ? item.quantity
-                    : selectedUnit === "package_quantity"
-                    ? item.quantity * item.quantity_per_package
-                    : selectedUnit === "box_quantity"
-                    ? item.quantity *
-                      item.quantity_per_package *
-                      item.package_quantity_per_box
-                    : null);
-                const promo = promos.find((p) => p._id === paymentDiscount);
-                const discountedPrice = promo
-                  ? promo.type === "percent"
-                    ? totalPrice - (totalPrice / 100) * promo.percent
-                    : totalPrice - promo.percent
-                  : totalPrice;
-                return (
-                  acc +
-                  (item.currency === "KYG"
-                    ? discountedPrice
-                    : convertPrice(discountedPrice, "KYG", "USD", usdRate?.kyg))
-                );
-              }, 0)
-            )}{" "}
-            KYG
-          </p>
+                    const basePrice = item.sellingPrice.value;
+                    const discountedItemPrice = itemPromo
+                      ? basePrice - (basePrice * itemPromo.percent) / 100
+                      : basePrice;
+
+                    const subtotal = quantity * discountedItemPrice;
+
+                    const globalPromo = promos.find(
+                      (p) => p._id === paymentDiscount
+                    );
+                    const globalDiscount = globalPromo
+                      ? (subtotal * globalPromo.percent) / 100
+                      : 0;
+
+                    return acc + subtotal - globalDiscount;
+                  }, 0)}
+              </strong>
+            </p>
+            <p>
+              Umumiy to'lov UZS qismi:{" "}
+              <strong>
+                {basket
+                  .filter((p) => p.currency === "SUM")
+                  .reduce((acc, item) => {
+                    const quantity = convertToQuantity(item);
+                    const itemPromo = promos.find(
+                      (p) => p._id === item.promokodId
+                    );
+                    const basePrice = item.sellingPrice.value;
+                    const discountedItemPrice = itemPromo
+                      ? basePrice - (basePrice * itemPromo.percent) / 100
+                      : basePrice;
+
+                    const subtotal = quantity * discountedItemPrice;
+
+                    const globalPromo = promos.find(
+                      (p) => p._id === paymentDiscount
+                    );
+                    const globalDiscount = globalPromo
+                      ? (subtotal * globalPromo.percent) / 100
+                      : 0;
+
+                    return acc + subtotal - globalDiscount;
+                  }, 0)}
+              </strong>
+            </p>
+            <p>
+              Umumiy to'lov KYG qismi:{" "}
+              <strong>
+                {basket
+                  .filter((p) => p.currency === "KYG")
+                  .reduce((acc, item) => {
+                    const quantity = convertToQuantity(item);
+                    const itemPromo = promos.find(
+                      (p) => p._id === item.promokodId
+                    );
+                    const basePrice = item.sellingPrice.value;
+                    const discountedItemPrice = itemPromo
+                      ? basePrice - (basePrice * itemPromo.percent) / 100
+                      : basePrice;
+
+                    const subtotal = quantity * discountedItemPrice;
+
+                    const globalPromo = promos.find(
+                      (p) => p._id === paymentDiscount
+                    );
+                    const globalDiscount = globalPromo
+                      ? (subtotal * globalPromo.percent) / 100
+                      : 0;
+
+                    return acc + subtotal - globalDiscount;
+                  }, 0)}
+              </strong>
+            </p>
+          </Space>
         </div>
       )}
+
       <Modal
         title="Yangi kategoriya qo'shish"
         visible={isCategoryModalVisible}
@@ -1268,14 +1260,18 @@ const Kassa = () => {
               <Select.Option value="credit">Qarz</Select.Option>
             </Select>
           </Form.Item>
-          <Form.Item label="Promokod" name="paymentDiscount">
+          <Form.Item label="Promokod" name="promokodId">
             <Select
               value={paymentDiscount}
               onChange={(value) => setPaymentDiscount(value)}
             >
-              <Select.Option value={0}>Promokodsiz</Select.Option>
+              <Select.Option value={null}>Promokodsiz</Select.Option>
               {promos.map((item) => (
-                <Select.Option key={item._id} value={item._id}>
+                <Select.Option
+                  disabled={item.promo_type === "product"}
+                  key={item._id}
+                  value={item._id}
+                >
                   {item.code}
                 </Select.Option>
               ))}
@@ -1411,6 +1407,92 @@ const Kassa = () => {
             </>
           )}
         </Form>
+        <Space direction="vertical" style={{ color: "#000" }}>
+          <p>
+            Umumiy to'lov USD qismi:{" "}
+            <strong>
+              {basket
+                .filter((p) => p.currency === "USD")
+                .reduce((acc, item) => {
+                  const quantity = convertToQuantity(item);
+                  const itemPromo = promos.find(
+                    (p) => p._id === item.promokodId
+                  );
+                  const basePrice = item.sellingPrice.value;
+                  const discountedItemPrice = itemPromo
+                    ? basePrice - (basePrice * itemPromo.percent) / 100
+                    : basePrice;
+
+                  const subtotal = quantity * discountedItemPrice;
+
+                  const globalPromo = promos.find(
+                    (p) => p._id === paymentDiscount
+                  );
+                  const globalDiscount = globalPromo
+                    ? (subtotal * globalPromo.percent) / 100
+                    : 0;
+
+                  return acc + subtotal - globalDiscount;
+                }, 0)}
+            </strong>
+          </p>
+          <p>
+            Umumiy to'lov UZS qismi:{" "}
+            <strong>
+              {basket
+                .filter((p) => p.currency === "SUM")
+                .reduce((acc, item) => {
+                  const quantity = convertToQuantity(item);
+                  const itemPromo = promos.find(
+                    (p) => p._id === item.promokodId
+                  );
+                  const basePrice = item.sellingPrice.value;
+                  const discountedItemPrice = itemPromo
+                    ? basePrice - (basePrice * itemPromo.percent) / 100
+                    : basePrice;
+
+                  const subtotal = quantity * discountedItemPrice;
+
+                  const globalPromo = promos.find(
+                    (p) => p._id === paymentDiscount
+                  );
+                  const globalDiscount = globalPromo
+                    ? (subtotal * globalPromo.percent) / 100
+                    : 0;
+
+                  return acc + subtotal - globalDiscount;
+                }, 0)}
+            </strong>
+          </p>
+          <p>
+            Umumiy to'lov KYG qismi:{" "}
+            <strong>
+              {basket
+                .filter((p) => p.currency === "KYG")
+                .reduce((acc, item) => {
+                  const quantity = convertToQuantity(item);
+                  const itemPromo = promos.find(
+                    (p) => p._id === item.promokodId
+                  );
+                  const basePrice = item.sellingPrice.value;
+                  const discountedItemPrice = itemPromo
+                    ? basePrice - (basePrice * itemPromo.percent) / 100
+                    : basePrice;
+
+                  const subtotal = quantity * discountedItemPrice;
+
+                  const globalPromo = promos.find(
+                    (p) => p._id === paymentDiscount
+                  );
+                  const globalDiscount = globalPromo
+                    ? (subtotal * globalPromo.percent) / 100
+                    : 0;
+
+                  return acc + subtotal - globalDiscount;
+                }, 0)}
+            </strong>
+          </p>
+        </Space>
       </Modal>
     </div>
   );

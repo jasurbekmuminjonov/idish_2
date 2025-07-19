@@ -8,6 +8,7 @@ import { useGetProductsQuery } from "../../context/service/product.service";
 import { useGetProductsPartnerQuery } from "../../context/service/partner.service";
 import { FaPrint } from "react-icons/fa";
 import { useGetUsdRateQuery } from "../../context/service/usd.service";
+import { groupBy } from "lodash";
 
 const { Option } = Select;
 
@@ -279,6 +280,156 @@ const Sales = () => {
     },
   ];
 
+  const groupedColumns = [
+    {
+      title: "Haridor",
+      dataIndex: "buyer",
+      key: "buyer",
+    },
+    {
+      title: "Sotish sanasi",
+      dataIndex: "saleDate",
+      key: "saleDate",
+    },
+    {
+      title: "Jami summa",
+      dataIndex: "totalAmount",
+      key: "totalAmount",
+      render: (text) => `${Number(text)?.toLocaleString()}`,
+    },
+  ];
+  const groupedSales = Object.values(
+    filteredSales.reduce((acc, sale) => {
+      const buyerId = sale.clientId?._id || sale.partnerId || "unknown";
+      const saleDay = moment(sale.saleDate || sale.createdAt).format(
+        "DD.MM.YYYY"
+      );
+      const groupKey = `${buyerId}-${saleDay}`;
+
+      if (!acc[groupKey]) {
+        acc[groupKey] = {
+          _id: groupKey,
+          key: groupKey,
+          buyer:
+            sale.clientId?.name ||
+            unikalHamkorlar.find((h) => h.raqam === sale.partnerId)?.nom ||
+            "Noma'lum",
+          saleDate: saleDay,
+          totalAmount: 0,
+          children: [],
+        };
+      }
+
+      const total = (sale.sellingPrice || 0) * (sale.quantity || 0);
+      acc[groupKey].totalAmount += total;
+      acc[groupKey].children.push(sale);
+
+      return acc;
+    }, {})
+  );
+  const expandedRowRender = (record) => {
+    const columns = [
+      { title: "Mahsulot nomi", dataIndex: ["productId", "name"], key: "name" },
+      {
+        title: "Mahsulot kategoriyasi",
+        dataIndex: ["productId", "category"],
+        key: "category",
+      },
+      { title: "Mahsulot kodi", dataIndex: ["productId", "code"], key: "code" },
+      {
+        title: "Mahsulot o'lchami",
+        dataIndex: ["productId", "size"],
+        key: "size",
+      },
+      { title: "Ombor", dataIndex: ["warehouseId", "name"], key: "warehouse" },
+      { title: "Soni", dataIndex: "quantity", key: "quantity" },
+      {
+        title: "To'lov usuli",
+        dataIndex: "paymentMethod",
+        key: "paymentMethod",
+        render: (text) =>
+          text === "cash" ? "Naqd" : text === "card" ? "Karta" : "Qarz",
+      },
+      {
+        title: "Sotib olish narxi",
+        key: "purchasePrice",
+        render: (_, record) =>
+          `${record.productId?.purchasePrice?.value || 0} ${
+            record.productId?.currency || "N/A"
+          }`,
+      },
+      {
+        title: "Sotish narxi",
+        render: (_, record) =>
+          record.sellingPrice
+            ? `${Number(record.sellingPrice?.toFixed(2))?.toLocaleString()} ${
+                record.currency
+              }`
+            : "0.00",
+      },
+      {
+        title: "Sotish sanasi",
+        dataIndex: "createdAt",
+        render: (text) => moment(text).format("DD.MM.YYYY HH:mm"),
+      },
+    ];
+
+    return (
+      <Table
+        columns={columns}
+        dataSource={record.children}
+        pagination={false}
+        rowKey="key"
+      />
+    );
+  };
+
+  const newColumns = [
+    { title: "Mahsulot nomi", dataIndex: ["productId", "name"], key: "name" },
+    {
+      title: "Mahsulot kategoriyasi",
+      dataIndex: ["productId", "category"],
+      key: "category",
+    },
+    { title: "Mahsulot kodi", dataIndex: ["productId", "code"], key: "code" },
+    {
+      title: "Mahsulot o'lchami",
+      dataIndex: ["productId", "size"],
+      key: "size",
+    },
+    { title: "Ombor", dataIndex: ["warehouseId", "name"], key: "warehouse" },
+    { title: "Soni", dataIndex: "quantity", key: "quantity" },
+    {
+      title: "To'lov usuli",
+      dataIndex: "paymentMethod",
+      key: "paymentMethod",
+      render: (text) =>
+        text === "cash" ? "Naqd" : text === "card" ? "Karta" : "Qarz",
+    },
+    {
+      title: "Sotib olish narxi",
+      key: "purchasePrice",
+      render: (_, record) =>
+        `${record.productId?.purchasePrice?.value || 0} ${
+          record.productId?.currency || "N/A"
+        }`,
+    },
+    {
+      title: "Sotish narxi",
+      render: (_, record) =>
+        record.sellingPrice
+          ? `${Number(record.sellingPrice?.toFixed(2))?.toLocaleString()} ${
+              record.currency
+            }`
+          : "0.00",
+    },
+    {
+      title: "Sotish sanasi",
+      dataIndex: "createdAt",
+      render: (text) => moment(text).format("DD.MM.YYYY HH:mm"),
+    },
+  ];
+
   if (isLoading) {
     return <div>Yuklanmoqda...</div>;
   }
@@ -385,7 +536,8 @@ const Sales = () => {
                           item.productId.purchasePrice.value) *
                           item.quantity,
                       0
-                    )}
+                    )
+                    ?.toFixed(2)}
                 </td>
                 <td style={{ border: "1px solid #ccc", padding: "5px" }}>
                   {filteredSales
@@ -469,9 +621,10 @@ const Sales = () => {
 
       <Table
         scroll={{ x: "max-content" }}
-        columns={columns}
-        dataSource={filteredSales}
         rowKey="_id"
+        columns={groupedColumns}
+        dataSource={groupedSales}
+        expandable={{ expandedRowRender }}
       />
     </div>
   );

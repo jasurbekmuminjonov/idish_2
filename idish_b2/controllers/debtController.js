@@ -1,224 +1,10 @@
 const Debt = require("../models/Debt");
+const Promo = require("../models/Promo");
 const Rate = require("../models/usdModel");
 const Sale = require("../models/Sale");
 const Product = require("../models/Product");
 const Client = require("../models/Client");
 const moment = require("moment");
-
-// exports.createDebt = async (req, res) => {
-//   const {
-//     clientId,
-//     partnerId,
-//     productId,
-//     quantity,
-//     currency,
-//     totalAmount,
-//     paymentMethod,
-//     unit,
-//     sellingPrice,
-//     warehouseId,
-//     discount,
-//     dueDate,
-//     paymentHistory,
-//   } = req.body;
-
-//   if (!productId || !quantity || !totalAmount || !warehouseId) {
-//     return res.status(400).json({ message: "All fields are required." });
-//   }
-
-//   try {
-//     const rateObj = await Rate.findOne();
-//     const product = await Product.findById(productId);
-//     product.box_quantity -= (
-//       quantity /
-//       product.package_quantity_per_box /
-//       product.quantity_per_package
-//     ).toFixed(2);
-//     if (product.isPackage) {
-//       product.package_quantity -= quantity / product.quantity_per_package;
-//     }
-//     product.quantity -= quantity;
-//     product.total_kg -= parseFloat(
-//       (
-//         (unit === "box_quantity"
-//           ? quantity /
-//             product.package_quantity_per_box /
-//             (product.isPackage ? product.quantity_per_package : 1)
-//           : unit === "package_quantity"
-//           ? product.isPackage
-//             ? quantity / product.quantity_per_package
-//             : 0
-//           : unit === "quantity"
-//           ? quantity
-//           : 0) *
-//         (unit === "quantity"
-//           ? product.kg_per_quantity
-//           : unit === "package_quantity"
-//           ? product.isPackage
-//             ? product.kg_per_package
-//             : 0
-//           : product.kg_per_box)
-//       ).toFixed(2)
-//     );
-
-//     await product.save();
-//     const newDebt = new Debt({
-//       clientId,
-//       partnerId,
-//       productId,
-//       quantity,
-//       unit,
-//       sellingPrice,
-//       warehouseId,
-//       totalAmount,
-//       currency,
-//       discount,
-//       paymentMethod,
-//       dueDate,
-//       paymentHistory: paymentHistory || [],
-//       remainingAmount: req.body.initialPayment
-//         ? totalAmount - req.body.initialPayment
-//         : totalAmount,
-//     });
-//     await newDebt.save();
-//     res.status(201).json(newDebt);
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// };
-
-// exports.createDebt = async (req, res) => {
-//   try {
-//     const {
-//       clientId,
-//       partnerId,
-//       products,
-//       dueDate,
-//       paymentHistory = [],
-//     } = req.body;
-
-//     if (!products || !Array.isArray(products) || products.length === 0) {
-//       return res.status(400).json({ message: "Mahsulotlar majburiy" });
-//     }
-
-//     const rateObj = await Rate.findOne();
-//     if (!rateObj) {
-//       return res.status(400).json({ message: "Valyuta kurslari topilmadi" });
-//     }
-
-//     let totalAmountUSD = 0;
-
-//     for (const item of products) {
-//       const {
-//         productId,
-//         warehouseId,
-//         quantity,
-//         discount,
-//         sellingPrice,
-//         unit,
-//         currency,
-//       } = item;
-
-//       if (
-//         !productId ||
-//         !quantity ||
-//         !sellingPrice ||
-//         !warehouseId ||
-//         !currency ||
-//         !unit
-//       ) {
-//         return res
-//           .status(400)
-//           .json({ message: "Barcha maydonlar to'ldirilishi kerak" });
-//       }
-
-//       const product = await Product.findById(productId);
-//       if (!product) {
-//         return res
-//           .status(404)
-//           .json({ message: `Mahsulot topilmadi: ${productId}` });
-//       }
-
-//       product.box_quantity -= (
-//         quantity /
-//         product.package_quantity_per_box /
-//         product.quantity_per_package
-//       ).toFixed(2);
-
-//       if (product.isPackage) {
-//         product.package_quantity -= quantity / product.quantity_per_package;
-//       }
-
-//       product.quantity -= quantity;
-
-//       product.total_kg -= parseFloat(
-//         (
-//           (unit === "box_quantity"
-//             ? quantity /
-//               product.package_quantity_per_box /
-//               (product.isPackage ? product.quantity_per_package : 1)
-//             : unit === "package_quantity"
-//             ? product.isPackage
-//               ? quantity / product.quantity_per_package
-//               : 0
-//             : unit === "quantity"
-//             ? quantity
-//             : 0) *
-//           (unit === "quantity"
-//             ? product.kg_per_quantity
-//             : unit === "package_quantity"
-//             ? product.isPackage
-//               ? product.kg_per_package
-//               : 0
-//             : product.kg_per_box)
-//         ).toFixed(2)
-//       );
-
-//       await product.save();
-
-//       let convertedPrice = sellingPrice * quantity;
-//       if (currency === "SUM") {
-//         convertedPrice = convertedPrice / rateObj.rate;
-//       } else if (currency === "KYG") {
-//         convertedPrice = convertedPrice / rateObj.kyg;
-//       }
-//       totalAmountUSD += convertedPrice;
-//     }
-
-//     let remainingAmount = totalAmountUSD;
-
-//     if (paymentHistory.length > 0) {
-//       const { amount, currency } = paymentHistory[0];
-
-//       let paidUSD = amount;
-//       if (currency === "SUM") {
-//         paidUSD = amount / rateObj.rate;
-//       } else if (currency === "KYG") {
-//         paidUSD = amount / rateObj.kyg;
-//       }
-
-//       remainingAmount = parseFloat((totalAmountUSD - paidUSD).toFixed(2));
-//     }
-
-//     const newDebt = new Debt({
-//       clientId,
-//       partnerId,
-//       products,
-//       dueDate,
-//       totalAmount: parseFloat(totalAmountUSD.toFixed(2)),
-//       remainingAmount,
-//       paymentHistory,
-//       paymentMethod: "credit",
-//     });
-
-//     await newDebt.save();
-
-//     res.status(201).json(newDebt);
-//   } catch (error) {
-//     console.error("createDebt error:", error);
-//     res.status(500).json({ message: error.message });
-//   }
-// };
 
 exports.createDebt = async (req, res) => {
   try {
@@ -237,156 +23,84 @@ exports.createDebt = async (req, res) => {
 
     const rateObj = await Rate.findOne();
     if (!rateObj) {
-      return res.status(400).json({ message: "Kurslar topilmadi" });
+      return res.status(400).json({ message: "Valyuta kurslari topilmadi" });
     }
 
-    let totalAmount = 0;
-    let totalDiscount = 0;
-    const preparedProducts = [];
-
+    // Mahsulot zaxirasini kamaytirish
     for (const item of products) {
-      const {
-        productId,
-        warehouseId,
-        quantity,
-        discount,
-        sellingPrice,
-        unit,
-        currency,
-        promokodId: productPromoId,
-      } = item;
-
-      if (
-        !productId ||
-        !quantity ||
-        !sellingPrice ||
-        !warehouseId ||
-        !currency ||
-        !unit
-      ) {
-        return res
-          .status(400)
-          .json({ message: "Barcha maydonlar to‘ldirilishi kerak" });
-      }
-
-      const product = await Product.findById(productId);
-      if (!product)
+      const product = await Product.findById(item.productId);
+      if (!product) {
         return res
           .status(404)
-          .json({ message: `Mahsulot topilmadi: ${productId}` });
+          .json({ message: `Mahsulot topilmadi: ${item.productId}` });
+      }
 
-      product.box_quantity -= (
-        quantity /
-        product.package_quantity_per_box /
-        product.quantity_per_package
-      ).toFixed(2);
+      const quantity = item.quantity;
 
-      if (product.isPackage) {
+      // Box
+      if (product.package_quantity_per_box && product.quantity_per_package) {
+        product.box_quantity -= (
+          quantity /
+          product.package_quantity_per_box /
+          product.quantity_per_package
+        ).toFixed(2);
+      }
+
+      // Package
+      if (product.isPackage && product.quantity_per_package) {
         product.package_quantity -= quantity / product.quantity_per_package;
       }
 
+      // Quantity
       product.quantity -= quantity;
 
-      product.total_kg -= parseFloat(
-        (
-          (unit === "box_quantity"
-            ? quantity /
-              product.package_quantity_per_box /
-              (product.isPackage ? product.quantity_per_package : 1)
-            : unit === "package_quantity"
-            ? product.isPackage
-              ? quantity / product.quantity_per_package
-              : 0
-            : unit === "quantity"
-            ? quantity
-            : 0) *
-          (unit === "quantity"
-            ? product.kg_per_quantity
-            : unit === "package_quantity"
-            ? product.isPackage
-              ? product.kg_per_package
-              : 0
-            : product.kg_per_box)
-        ).toFixed(2)
-      );
-
       await product.save();
-
-      let productTotal = quantity * sellingPrice;
-      let productDiscount = 0;
-
-      let convertedPrice = productTotal;
-      if (currency === "SUM") convertedPrice /= rateObj.rate;
-      else if (currency === "KYG") convertedPrice /= rateObj.kyg;
-
-      if (productPromoId) {
-        const promo = await Promo.findById(productPromoId);
-        if (promo && promo.promo_type === "product") {
-          if (promo.type === "percent") {
-            productDiscount = (convertedPrice * promo.percent) / 100;
-            convertedPrice = convertedPrice - productDiscount;
-          } else if (promo.type === "amount") {
-            productDiscount = promo.amount;
-            convertedPrice = convertedPrice - productDiscount;
-          }
-        }
-      }
-
-      totalAmount += convertedPrice;
-      totalDiscount += productDiscount;
-
-      preparedProducts.push({
-        productId,
-        warehouseId,
-        quantity,
-        discount,
-        unit,
-        sellingPrice,
-        currency,
-        promokodId: productPromoId || null,
-        totalAmount: parseFloat(convertedPrice.toFixed(2)),
-        totalDiscount: parseFloat(productDiscount.toFixed(2)),
-      });
     }
 
-    if (promokodId) {
-      const overallPromo = await Promo.findById(promokodId);
-      if (overallPromo && overallPromo.promo_type === "overall") {
-        if (overallPromo.type === "percent") {
-          const promoDiscount = (totalAmount * overallPromo.percent) / 100;
-          totalAmount -= promoDiscount;
-          totalDiscount += promoDiscount;
-        } else if (overallPromo.type === "amount") {
-          const promoDiscount =
-            overallPromo.currency === "SUM"
-              ? overallPromo.amount / rateObj.rate
-              : overallPromo.currency === "KYG"
-              ? overallPromo.amount / rateObj.kyg
-              : overallPromo.amount;
-          totalAmount -= promoDiscount;
-          totalDiscount += promoDiscount;
-        }
-      }
+    // USD ga konvertatsiya qilingan umumiy narx va chegirma
+    let totalAmount = 0;
+    let totalDiscount = 0;
+
+    for (const item of products) {
+      const amountUSD =
+        item.currency === "SUM"
+          ? item.totalAmount / rateObj.rate
+          : item.currency === "KYG"
+          ? item.totalAmount / rateObj.kyg
+          : item.totalAmount;
+
+      const discountUSD =
+        item.currency === "SUM"
+          ? item.discount / rateObj.rate
+          : item.currency === "KYG"
+          ? item.discount / rateObj.kyg
+          : item.discount;
+
+      totalAmount += amountUSD;
+      totalDiscount += discountUSD;
     }
 
-    let remainingAmount = totalAmount;
+    // To'lovni USD ga aylantirish
+    let paid = 0;
     if (paymentHistory.length > 0) {
       const { amount, currency } = paymentHistory[0];
-      let paid = amount;
-      if (currency === "SUM") paid /= rateObj.rate;
-      else if (currency === "KYG") paid /= rateObj.kyg;
-      remainingAmount = totalAmount - paid;
+      if (currency === "SUM") paid = amount / rateObj.rate;
+      else if (currency === "KYG") paid = amount / rateObj.kyg;
+      else paid = amount;
     }
 
+    const remainingAmount = totalAmount - paid;
+
+    // Yangi qarzdorlik hujjati yaratish
     const newDebt = new Debt({
       clientId,
       partnerId,
-      products: preparedProducts,
+      products,
       dueDate,
       promokodId: promokodId || null,
-      totalAmount: parseFloat(totalAmount.toFixed(2)),
-      totalDiscount: parseFloat(totalDiscount.toFixed(2)),
-      remainingAmount: parseFloat(remainingAmount.toFixed(2)),
+      totalAmount: Number(totalAmount.toFixed(2)),
+      totalDiscount: Number(totalDiscount.toFixed(2)),
+      remainingAmount: Number(remainingAmount.toFixed(2)),
       paymentHistory,
       paymentMethod: "credit",
     });
@@ -395,7 +109,7 @@ exports.createDebt = async (req, res) => {
 
     res.status(201).json(newDebt);
   } catch (error) {
-    console.error("createDebt error:", error);
+    console.error("❌ createDebt error:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -405,7 +119,7 @@ exports.getDebtsByClient = async (req, res) => {
 
   try {
     const debts = await Debt.find({ clientId })
-      .populate("productId")
+      .populate("products.productId")
       .populate("paymentHistory.storeId");
     res.status(200).json(debts);
   } catch (error) {
@@ -420,72 +134,82 @@ exports.payDebt = async (req, res) => {
 
   try {
     const debt = await Debt.findById(id);
-    const rateObj = await Rate.findOne(); // Valyuta kursini to‘g‘ri olish
+    const rateObj = await Rate.findOne();
 
-    if (!debt) {
-      return res.status(404).json({ message: "Debt not found" });
-    }
-    if (!amount || isNaN(amount)) {
+    if (!debt) return res.status(404).json({ message: "Debt not found" });
+    if (!amount || isNaN(amount))
       return res.status(400).json({ message: "Invalid amount" });
-    }
-    if (!rateObj || isNaN(rateObj.rate)) {
+    if (!rateObj || isNaN(rateObj.rate))
       return res.status(400).json({ message: "Invalid exchange rate" });
-    }
 
-    const rate = rateObj.rate; // Endi `rate` son bo‘ladi
+    const { rate, kyg } = rateObj;
 
-    debt.paymentHistory.push({ amount, currency, storeId, type });
+    debt.paymentHistory.push({
+      amount,
+      currency,
+      storeId,
+      type,
+      date: new Date(),
+    });
 
-    if (debt.currency === currency) {
-      debt.remainingAmount -= amount;
-    } else if (debt.currency === "USD" && currency === "SUM") {
-      debt.remainingAmount -= amount / rate;
-    } else if (debt.currency === "SUM" && currency === "USD") {
-      debt.remainingAmount -= amount * rate;
-    } else {
-      debt.remainingAmount -= amount;
-    }
+    // Valyutaga qarab convert
+    let paidInUSD = 0;
+    if (currency === "USD") paidInUSD = amount;
+    else if (currency === "SUM") paidInUSD = amount / rate;
+    else if (currency === "KYG") paidInUSD = amount / kyg;
+    else return res.status(400).json({ message: "Unsupported currency" });
+
+    debt.remainingAmount = Number(
+      (debt.remainingAmount - paidInUSD).toFixed(2)
+    );
+
     const client = debt.clientId ? await Client.findById(debt.clientId) : null;
+
+    // Faqat to‘liq to‘langan bo‘lsa sotuv qilinsin
     if (debt.remainingAmount <= 0) {
       debt.status = "paid";
       debt.remainingAmount = 0;
 
-      await Sale.create({
-        clientId: debt.clientId,
-        productId: debt.productId,
-        quantity: debt.quantity,
-        clientAddress: client?.address || "Unknown",
-        unit: debt.unit,
-        storeId,
-        sellingPrice: debt.sellingPrice,
-        warehouseId: debt.warehouseId,
-        totalAmount: debt.totalAmount,
-        currency: debt.currency,
-        discount: debt.discount,
-        paymentMethod: debt.paymentMethod,
-        payment: {
-          usd: debt?.paymentHistory
-            ?.filter((p) => p.currency === "USD")
-            ?.reduce((a, b) => a + b?.amount, 0),
-          sum: debt?.paymentHistory
-            ?.filter((p) => p.currency === "SUM")
-            ?.reduce((a, b) => a + b?.amount, 0),
-        },
-      });
+      for (const item of debt.products) {
+        await Sale.create({
+          clientId: debt.clientId,
+          partnerId: debt.partnerId,
+          productId: item.productId,
+          quantity: item.quantity,
+          unit: item.unit,
+          storeId,
+          warehouseId: item.warehouseId,
+          sellingPrice: item.sellingPrice,
+          totalAmount: item.totalAmount,
+          discount: item.totalDiscount,
+          promokodId: item.promokodId || null,
+          currency: item.currency,
+          clientAddress: client?.address || "Unknown",
+          paymentMethod: debt.paymentMethod,
+          payment: {
+            usd: debt.paymentHistory
+              .filter((p) => p.currency === "USD")
+              .reduce((sum, p) => sum + p.amount, 0),
+            sum: debt.paymentHistory
+              .filter((p) => p.currency === "SUM")
+              .reduce((sum, p) => sum + p.amount, 0),
+          },
+        });
+      }
     }
 
     await debt.save();
-
     res.status(200).json(debt);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
 exports.getAllDebtors = async (req, res) => {
   try {
     const debtors = await Debt.find({ status: "pending" })
       .populate("clientId")
-      .populate("productId")
+      .populate("products.productId")
       .populate("paymentHistory.storeId");
     res.status(200).json(debtors);
   } catch (error) {

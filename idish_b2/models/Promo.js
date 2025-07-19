@@ -4,10 +4,6 @@ const PromoSchema = new mongoose.Schema(
   {
     code: String,
     percent: Number,
-    type: {
-      type: String,
-      enum: ["percent", "amount"],
-    },
     promo_type: {
       type: String,
       enum: ["overall", "product"],

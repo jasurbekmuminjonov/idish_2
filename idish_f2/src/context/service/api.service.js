@@ -20,7 +20,7 @@ export const baseQueryWithReauth = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions);
   if (result?.error && result?.error?.status === 401) {
     // Очистка хранилища при истёкшем или недействительном токене
-    localStorage.clear();
+    localStorage.removeItem("access_token");
     sessionStorage.clear();
     // Перезагрузка страницы для перенаправления на страницу логина
     window.location.reload();

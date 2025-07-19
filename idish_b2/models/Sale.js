@@ -17,7 +17,7 @@ const saleSchema = new mongoose.Schema(
     },
     currency: {
       type: String,
-      enum: ["USD", "SUM", "KYG"],
+      enum: ["USD", "SUM", "KGS"],
       required: true,
     },
     productId: {
@@ -25,15 +25,19 @@ const saleSchema = new mongoose.Schema(
       ref: "Product",
       required: true,
     },
+    discount: {
+      type: Number,
+      default: "-",
+    },
+    totalAmount: {
+      type: Number,
+      required: true,
+    },
     promokodId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Promo",
       required: false,
       default: null,
-    },
-    discount: {
-      type: Number,
-      required: true,
     },
     unit: {
       type: String,

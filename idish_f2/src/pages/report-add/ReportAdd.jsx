@@ -116,9 +116,6 @@ export default function ReportAdd() {
     return report.filter(Boolean);
   }, [selectedPartner, partnerProducts]);
 
-  console.log(partnerProducts);
-  console.log(selectedPartner);
-  console.log(reportsData);
 
   const [createReport] = useCreateReportMutation();
   const [updateReport] = useUpdateReportMutation();
