@@ -203,14 +203,14 @@ const ReconciliationAct = () => {
     <tr>
       <th>USD</th>
       <th>SUM</th>
-      <th>KYG</th>
+      <th>KGS</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td>${calcBalance("USD")} USD</td>
       <td>${calcBalance("SUM")} SUM</td>
-      <td>${calcBalance("KYG")} KYG</td>
+      <td>${calcBalance("KGS")} KGS</td>
     </tr>
   </tbody>
 </table>
@@ -226,24 +226,26 @@ const ReconciliationAct = () => {
 
       // SALES
       content += `<h2>Продажи</h2><table><thead><tr>
-    <th>Продукт</th><th>Количество</th><th>Единство</th><th>Цена</th><th>Валюта</th><th>Общий</th>
+    <th>Продукт</th><th>Количество</th><th>размер</th><th>koд</th><th>Единство</th><th>Цена</th><th>Валюта</th><th>Общий</th>
   </tr></thead><tbody>`;
 
       let salesUSD = 0,
         salesSUM = 0,
-        salesKYG = 0;
+        salesKGS = 0;
 
       filteredSales.forEach((item) => {
         const total = item.quantity * item.sellingPrice;
         if (item.currency === "USD") salesUSD += total;
         else if (item.currency === "SUM") salesSUM += total;
-        else if (item.currency === "KYG") salesKYG += total;
+        else if (item.currency === "KGS") salesKGS += total;
 
         content += `<tr>
       <td>${item.productId?.name}</td>
       <td>${item.quantity}</td>
+      <td>${item.productId?.size}</td>
+      <td>${item.productId?.code}</td>
       <td>${quantityText[item.unit] || item.unit}</td>
-      <td>${item.sellingPrice}</td>
+      <td>${item.sellingPrice?.toFixed(2)}</td>
       <td>${item.currency}</td>
       <td>${total.toFixed(2)}</td>
     </tr>`;
@@ -252,7 +254,7 @@ const ReconciliationAct = () => {
       content += `<tr>
       <td colspan="2"><strong>${salesUSD.toFixed(2)} USD</strong></td>
       <td colspan="2"><strong>${salesSUM.toFixed(2)} SUM</strong></td>
-      <td colspan="2"><strong>${salesKYG.toFixed(2)} KYG</strong></td>
+      <td colspan="2"><strong>${salesKGS.toFixed(2)} KGS</strong></td>
     </tr>`;
 
       content += `</tbody></table>`;
@@ -264,28 +266,28 @@ const ReconciliationAct = () => {
 
       let debtUSD = 0,
         debtSUM = 0,
-        debtKYG = 0;
+        debtKGS = 0;
 
       filteredDebts.concat(filteredAstatkaDebts).forEach((item) => {
         if (item.currency === "USD") debtUSD += item.remainingAmount;
         else if (item.currency === "SUM") debtSUM += item.remainingAmount;
-        else if (item.currency === "KYG") debtKYG += item.remainingAmount;
+        else if (item.currency === "KGS") debtKGS += item.remainingAmount;
 
         content += `<tr>
       <td>${item.productId?.name}</td>
       <td>${item.quantity}</td>
       <td>${quantityText[item.unit] || item.unit}</td>
-      <td>${item.sellingPrice}</td>
+      <td>${item.sellingPrice?.toFixed(2)}</td>
       <td>${item.currency}</td>
-      <td>${item.totalAmount}</td>
-      <td>${item.remainingAmount}</td>
+      <td>${item.totalAmount?.toFixed(2)}</td>
+      <td>${item.remainingAmount?.toFixed(2)}</td>
     </tr>`;
       });
 
       content += `<tr>
       <td colspan="2"><strong>${debtUSD.toFixed(2)} USD</strong></td>
       <td colspan="2"><strong>${debtSUM.toFixed(2)} SUM</strong></td>
-      <td colspan="3"><strong>${debtKYG.toFixed(2)} KYG</strong></td>
+      <td colspan="3"><strong>${debtKGS.toFixed(2)} KGS</strong></td>
     </tr>`;
 
       content += `</tbody></table>`;
@@ -300,22 +302,24 @@ const ReconciliationAct = () => {
 
       // SALES
       content += `<h2>Продажи</h2><table><thead><tr>
-    <th>Продукт</th><th>Количество</th><th>Единство</th><th>Цена</th><th>Валюта</th><th>Общий</th>
+    <th>Продукт</th><th>Количество</th><th>размер</th><th>koд</th><th>Единство</th><th>Цена</th><th>Валюта</th><th>Общий</th>
   </tr></thead><tbody>`;
 
       let salesUSD = 0,
         salesSUM = 0,
-        salesKYG = 0;
+        salesKGS = 0;
 
       filteredSales.forEach((item) => {
         const total = item.quantity * item.sellingPrice;
         if (item.currency === "USD") salesUSD += total;
         else if (item.currency === "SUM") salesSUM += total;
-        else if (item.currency === "KYG") salesKYG += total;
+        else if (item.currency === "KGS") salesKGS += total;
 
         content += `<tr>
       <td>${item.productId?.name}</td>
       <td>${item.quantity}</td>
+      <td>${item.productId?.size}</td>
+      <td>${item.productId?.code}</td>
       <td>${quantityText[item.unit] || item.unit}</td>
       <td>${item.sellingPrice}</td>
       <td>${item.currency}</td>
@@ -326,7 +330,7 @@ const ReconciliationAct = () => {
       content += `<tr>
       <td colspan="2"><strong>${salesUSD.toFixed(2)} USD</strong></td>
       <td colspan="2"><strong>${salesSUM.toFixed(2)} SUM</strong></td>
-      <td colspan="2"><strong>${salesKYG.toFixed(2)} KYG</strong></td>
+      <td colspan="2"><strong>${salesKGS.toFixed(2)} KGS</strong></td>
     </tr>`;
 
       content += `</tbody></table>`;
@@ -338,12 +342,12 @@ const ReconciliationAct = () => {
 
       let debtUSD = 0,
         debtSUM = 0,
-        debtKYG = 0;
+        debtKGS = 0;
 
       filteredDebts.concat(filteredAstatkaDebts).forEach((item) => {
         if (item.currency === "USD") debtUSD += item.remainingAmount;
         else if (item.currency === "SUM") debtSUM += item.remainingAmount;
-        else if (item.currency === "KYG") debtKYG += item.remainingAmount;
+        else if (item.currency === "KGS") debtKGS += item.remainingAmount;
 
         content += `<tr>
       <td>${item.productId?.name}</td>
@@ -359,7 +363,7 @@ const ReconciliationAct = () => {
       content += `<tr>
       <td colspan="2"><strong>${debtUSD.toFixed(2)} USD</strong></td>
       <td colspan="2"><strong>${debtSUM.toFixed(2)} SUM</strong></td>
-      <td colspan="3"><strong>${debtKYG.toFixed(2)} KYG</strong></td>
+      <td colspan="3"><strong>${debtKGS.toFixed(2)} KGS</strong></td>
     </tr>`;
 
       content += `</tbody></table>`;
@@ -371,13 +375,13 @@ const ReconciliationAct = () => {
 
       let prodUSD = 0,
         prodSUM = 0,
-        prodKYG = 0;
+        prodKGS = 0;
 
       filteredPartnerProducts.forEach((item) => {
         const total = item.quantity * item.purchasePrice?.value;
         if (item.currency === "USD") prodUSD += total;
         else if (item.currency === "SUM") prodSUM += total;
-        else if (item.currency === "KYG") prodKYG += total;
+        else if (item.currency === "KGS") prodKGS += total;
 
         content += `<tr>
       <td>${item.name}</td>
@@ -395,7 +399,7 @@ const ReconciliationAct = () => {
       content += `<tr>
       <td colspan="3"><strong>${prodUSD.toFixed(2)} USD</strong></td>
       <td colspan="3"><strong>${prodSUM.toFixed(2)} SUM</strong></td>
-      <td colspan="3"><strong>${prodKYG.toFixed(2)} KYG</strong></td>
+      <td colspan="3"><strong>${prodKGS.toFixed(2)} KGS</strong></td>
     </tr>`;
 
       content += `</tbody></table>`;
@@ -456,7 +460,7 @@ const ReconciliationAct = () => {
     const result = {
       USD: { sales: 0, balance: 0, debt: 0, products: 0 },
       SUM: { sales: 0, balance: 0, debt: 0, products: 0 },
-      KYG: { sales: 0, balance: 0, debt: 0, products: 0 },
+      KGS: { sales: 0, balance: 0, debt: 0, products: 0 },
     };
 
     const allDebts = filteredDebts.concat(filteredAstatkaDebts);
@@ -508,6 +512,9 @@ const ReconciliationAct = () => {
 
     return result;
   }, [filteredSales, filteredDebts, filteredPartnerProducts]);
+
+  console.log(filteredSales);
+
   return (
     <div className="act" style={{ padding: 20, background: "#fff" }}>
       <div style={{ display: "flex", gap: 20, marginBottom: 20 }}>
@@ -525,22 +532,24 @@ const ReconciliationAct = () => {
         </Space>
 
         <Space direction="vertical">
-          <Select
-            showSearch
-            placeholder="Hamkorni tanlang"
-            style={{ width: 200 }}
-            onFocus={() => setFocused("partner")}
-            // disabled={focused === "client"}
-            value={selectedPartner || undefined}
-            onChange={(val) => {
-              setSelectedPartner(val);
-              setSelectedClient("");
-            }}
-            filterOption={(input, option) =>
-              option.label.toLowerCase().includes(input.toLowerCase())
-            }
-            options={optiondata}
-          />
+          {localStorage.getItem("role") !== "store" && (
+            <Select
+              showSearch
+              placeholder="Hamkorni tanlang"
+              style={{ width: 200 }}
+              onFocus={() => setFocused("partner")}
+              // disabled={focused === "client"}
+              value={selectedPartner || undefined}
+              onChange={(val) => {
+                setSelectedPartner(val);
+                setSelectedClient("");
+              }}
+              filterOption={(input, option) =>
+                option.label.toLowerCase().includes(input.toLowerCase())
+              }
+              options={optiondata}
+            />
+          )}
 
           <Select
             showSearch
@@ -598,10 +607,13 @@ const ReconciliationAct = () => {
             <th style={{ border: "1px solid #ccc", padding: 8 }}>
               Umumiy tovar (olish narxi)
             </th>
+            <th style={{ border: "1px solid #ccc", padding: 8 }}>
+              Umumiy sotilgan karobka
+            </th>
           </tr>
         </thead>
         <tbody>
-          {["USD", "SUM", "KYG"].map((currency) => (
+          {["USD", "SUM", "KGS"].map((currency, item) => (
             <tr key={currency}>
               <td style={{ border: "1px solid #ccc", padding: 8 }}>
                 {currency}
@@ -618,6 +630,19 @@ const ReconciliationAct = () => {
               <td style={{ border: "1px solid #ccc", padding: 8 }}>
                 {summaryByCurrency[currency].products.toLocaleString()}
               </td>
+              <td style={{ border: "1px solid #ccc", padding: 8 }}>
+                {item === 0
+                  ? filteredSales
+                      ?.filter((a) => a.unit === "quantity")
+                      .reduce((acc, sale) => acc + sale.quantity, 0)
+                  : item === 1
+                  ? filteredSales
+                      ?.filter((a) => a.unit === "package_quantity")
+                      .reduce((acc, sale) => acc + sale.quantity, 0)
+                  : filteredSales
+                      ?.filter((a) => a.unit === "box_quantity")
+                      .reduce((acc, sale) => acc + sale.quantity, 0)}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -633,17 +658,23 @@ const ReconciliationAct = () => {
             pagination={false}
             columns={[
               { title: "Mahsulot", dataIndex: ["productId", "name"] },
+              { title: "Kodi", dataIndex: ["productId", "code"] },
+              { title: "Razmeri", dataIndex: ["productId", "size"] },
               { title: "Miqdor", dataIndex: "quantity" },
               {
                 title: "Birlik",
                 dataIndex: "unit",
                 render: (unit) => quantityText[unit] || unit,
               },
-              { title: "Narx", dataIndex: "sellingPrice" },
+              {
+                title: "Narx",
+                dataIndex: "sellingPrice",
+                render: (n) => n?.toLocaleString(),
+              },
               {
                 title: "Jami",
-                render: (_, row) =>
-                  (row.quantity * row.sellingPrice).toLocaleString(),
+                // render: (_, row) =>(row.quantity * row.sellingPrice).toLocaleString(),
+                render: (_, row) => row.totalAmount?.toLocaleString(),
               },
             ]}
           />
@@ -655,6 +686,8 @@ const ReconciliationAct = () => {
             pagination={false}
             columns={[
               { title: "Mahsulot", dataIndex: ["productId", "name"] },
+              { title: "Kodi", dataIndex: ["productId", "code"] },
+              { title: "Razmeri", dataIndex: ["productId", "size"] },
               { title: "Miqdor", dataIndex: "quantity" },
               {
                 title: "Birlik",
@@ -718,6 +751,8 @@ const ReconciliationAct = () => {
             pagination={false}
             columns={[
               { title: "Mahsulot", dataIndex: ["productId", "name"] },
+              { title: "Kodi", dataIndex: ["productId", "code"] },
+              { title: "Razmeri", dataIndex: ["productId", "size"] },
               { title: "Miqdor", dataIndex: "quantity" },
               {
                 title: "Birlik",
@@ -740,6 +775,8 @@ const ReconciliationAct = () => {
             pagination={false}
             columns={[
               { title: "Mahsulot", dataIndex: ["productId", "name"] },
+              { title: "Kodi", dataIndex: ["productId", "code"] },
+              { title: "Razmeri", dataIndex: ["productId", "size"] },
               { title: "Miqdor", dataIndex: "quantity" },
               {
                 title: "Birlik",
@@ -799,6 +836,7 @@ const ReconciliationAct = () => {
             pagination={false}
             columns={[
               { title: "Mahsulot", dataIndex: "name" },
+              { title: "Kodi", dataIndex: "code" },
               { title: "Hajmi", dataIndex: "size" },
               { title: "Miqdor", dataIndex: "quantity" },
               { title: "Paket", dataIndex: "package_quantity" },

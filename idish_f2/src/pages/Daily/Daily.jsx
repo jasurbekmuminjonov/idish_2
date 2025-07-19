@@ -1,7 +1,10 @@
 import { Card, Statistic, Row, Col, Select, Divider } from "antd";
 import moment from "moment";
 import { useGetStoresQuery } from "../../context/service/ombor.service";
-import { useLazyGetDailyPaymentsByStoreIdQuery } from "../../context/service/debt.service";
+import {
+  useGetAllDebtorsQuery,
+  useLazyGetDailyPaymentsByStoreIdQuery,
+} from "../../context/service/debt.service";
 import { useEffect, useState } from "react";
 import { useGetSalesHistoryQuery } from "../../context/service/sales.service";
 
@@ -11,6 +14,8 @@ const Daily = () => {
   const { data: stores = [] } = useGetStoresQuery();
   const [getDailyPayment] = useLazyGetDailyPaymentsByStoreIdQuery();
   const { data: sales = [] } = useGetSalesHistoryQuery();
+  const { data: debts = [] } = useGetAllDebtorsQuery();
+  console.log(debts);
 
   const today = moment().format("YYYY-MM-DD");
   const [fromDate, setFromDate] = useState(today);
@@ -19,6 +24,7 @@ const Daily = () => {
   const [paymentData, setPaymentData] = useState([]);
   const [totalSalesByCurrency, setTotalSalesByCurrency] = useState({});
   const [totalDebtByCurrency, setTotalDebtByCurrency] = useState({});
+  const [allDebtByCurrency, setAllDebtByCurrency] = useState({});
 
   useEffect(() => {
     const fetchPayments = async () => {
@@ -80,7 +86,6 @@ const Daily = () => {
       ...Object.keys(totalDebtByCurrency),
     ])
   );
-
 
   return (
     <div style={{ padding: "20px" }}>

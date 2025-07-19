@@ -7,7 +7,7 @@ const UsdSchema = new mongoose.Schema(
       required: true,
       default: 1,
     },
-    kyg: {
+    kgs: {
       type: Number,
       default: 1,
     },

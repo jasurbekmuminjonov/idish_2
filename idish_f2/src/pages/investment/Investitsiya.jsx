@@ -127,10 +127,10 @@ const WarehouseCard = ({ ombor, usdRate, sales, index }) => {
   };
 
   function calculateNetProfitByWarehouseId(warehouseId) {
-    if (!usdRateData?.rate || !usdRateData?.kyg) return 0;
+    if (!usdRateData?.rate || !usdRateData?.kgs) return 0;
 
     const usdRate = usdRateData.rate;
-    const kygRate = usdRateData.kyg;
+    const kgsRate = usdRateData.kgs;
 
     let totalProfit = 0;
 
@@ -169,8 +169,8 @@ const WarehouseCard = ({ ombor, usdRate, sales, index }) => {
 
       if (sale.currency === "SUM") {
         sellingPriceInUSD = sale.sellingPrice / usdRate;
-      } else if (sale.currency === "KYG") {
-        sellingPriceInUSD = sale.sellingPrice / kygRate;
+      } else if (sale.currency === "KGS") {
+        sellingPriceInUSD = sale.sellingPrice / kgsRate;
       }
 
       const profitPerUnit = sellingPriceInUSD - tanNarx;
@@ -299,9 +299,9 @@ const SummaryCard = ({ expenses, debtors, products, sales, usdRate }) => {
     .reduce((acc, item) => acc + item?.amount, 0);
 
   function calculateTotalNetProfitUSD() {
-    if (!usdRateData?.rate || !usdRateData?.kyg) return 0;
+    if (!usdRateData?.rate || !usdRateData?.kgs) return 0;
 
-    const kygRate = usdRateData.kyg;
+    const kgsRate = usdRateData.kgs;
     const usdRate = usdRateData.rate;
 
     let totalProfit = 0;
@@ -334,8 +334,8 @@ const SummaryCard = ({ expenses, debtors, products, sales, usdRate }) => {
       let sellingPriceUSD = sale.sellingPrice;
       if (sale.currency === "SUM") {
         sellingPriceUSD = sale.sellingPrice / usdRate;
-      } else if (sale.currency === "KYG") {
-        sellingPriceUSD = sale.sellingPrice / kygRate;
+      } else if (sale.currency === "KGS") {
+        sellingPriceUSD = sale.sellingPrice / kgsRate;
       }
 
       const profitPerUnit =

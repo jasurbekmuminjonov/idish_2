@@ -535,7 +535,10 @@ const Product = () => {
       >
         <Space
           direction="vertical"
-          style={{ alignItems: "start", justifyContent: "start" }}
+          style={{
+            alignItems: "start",
+            justifyContent: "start",
+          }}
         >
           {localStorage.getItem("role") === "admin" && (
             <>
@@ -618,13 +621,24 @@ const Product = () => {
               </Button>
             </>
           )}
-          <Input
-            placeholder="Tovar nomi"
-            value={searchName}
-            onChange={(e) => setSearchName(e.target.value)}
-            size="small"
-            style={{ width: 150 }}
-          />
+          <div style={{ display: "flex", gap: "10px" }}>
+            <Input
+              placeholder="Tovar nomi"
+              value={searchName}
+              onChange={(e) => setSearchName(e.target.value)}
+              size="small"
+              style={{ width: 150 }}
+            />
+            <Select
+              style={{ width: 150 }}
+              size="small"
+              value={productState}
+              onChange={(value) => setProductsState(value)}
+            >
+              <Option value="all">Hammasi</Option>
+              <Option value="not_active">Tugagan</Option>
+            </Select>
+          </div>
         </Space>
 
         {localStorage.getItem("role") === "admin" && (

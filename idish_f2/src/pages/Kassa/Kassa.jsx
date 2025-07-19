@@ -158,11 +158,11 @@ const Kassa = () => {
     if (fromCurrency === "SUM" && toCurrency === "USD") {
       return price / rate;
     }
-    if (fromCurrency === "USD" && toCurrency === "KYG") {
-      return price * usdRate?.kyg;
+    if (fromCurrency === "USD" && toCurrency === "KGS") {
+      return price * usdRate?.kgs;
     }
-    if (fromCurrency === "KYG" && toCurrency === "USD") {
-      return price / usdRate?.kyg;
+    if (fromCurrency === "KGS" && toCurrency === "USD") {
+      return price / usdRate?.kgs;
     }
     return price;
   };
@@ -235,8 +235,14 @@ const Kassa = () => {
 
         return acc;
       },
-      { totalUSD: 0, totalSUM: 0, totalKYG: 0 }
+      { totalUSD: 0, totalSUM: 0, totalKGS: 0 }
     );
+
+    const statusTexts = {
+      quantity: "штук",
+      box_quantity: "каробка",
+      package_quantity: "пачка",
+    };
 
     const formValues = sellForm.getFieldsValue();
 
@@ -325,7 +331,9 @@ const Kassa = () => {
             <h2 style="margin: 0; font-size: 18px; color: #1a73e8;">${moment().format(
               "DD.MM.YYYY, HH:mm:ss"
             )} счет-фактура</h2>
-            <span style="font-size: 16px; color: #555;">Счет-фактура</span>
+            <span style="font-size: 16px; color: #555;">${
+              paymentType === "credit" ? "Долг" : "Продажa"
+            }</span>
           </div>
           <div style="display: flex; width: 100%; margin-bottom: 20px;">
             <div style="display: flex; flex-direction: column; gap: 10px; width: 50%;">
@@ -374,9 +382,18 @@ const Kassa = () => {
             <b style="color: #333;">Сумовая часть общей суммы платежа составляет: ${formatNumber(
               totalSUM - initialPayment
             )} сyм</b></b><br/>
-            <b style="color: #333;">KYG часть общей суммы платежа составляет: ${formatNumber(
+            <b style="color: #333;">KGS часть общей суммы платежа составляет: ${formatNumber(
               totalKYG
-            )} KYG</b></b><br/>
+            )} KGS</b></b><br/>
+            ${
+              paymentType === "credit"
+                ? `<b style="color: #333;">Оставшийся долг: ${formatNumber(
+                    totalQarz
+                  )}</b> <br/>
+                  <b style="color: #333;">Срок погашения задолженности: ${dueDate}</b>
+                  `
+                : ""
+            }
           </div>
           <table style="border-collapse: collapse; width: 100%; margin-bottom: 20px; border: 1px solid #e0e0e0;">
             <thead>
@@ -402,7 +419,9 @@ const Kassa = () => {
           <td style="padding: 8px;">${item.productId.name}</td>
           <td style="padding: 8px;">${item.productId.size}</td>
           <td style="padding: 8px;">${item.productId.code}</td>
-          <td style="padding: 8px;">${item.quantity}</td>
+          <td style="padding: 8px;">${
+            item.quantity + " " + statusTexts[item.unit]
+          }</td>
           <td style="padding: 8px;">${item.sellingPrice?.toLocaleString()}</td>
           <td style="padding: 8px;">${item.currency}</td>
           <td style="padding: 8px;">${item.totalAmount?.toLocaleString()}</td>
@@ -416,11 +435,11 @@ const Kassa = () => {
           </table>
           <div style="display: flex; justify-content: space-around; margin-top: 20px; border-top: 1px solid #e0e0e0; padding-top: 20px;">
             <div style="text-align: center;">
-              <img src="${yodgor_abdullaev}" style="width: 100px; height: 100px; border-radius: 10px; background: white; padding: 10px;" />
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://t.me/YODGOR_ABDULLAEV" style="width: 100px; height: 100px; border-radius: 10px; background: white; padding: 10px;" />
               <p style="margin: 5px 0; font-size: 12px; color: #000;">@YODGOR_ABDULLAEV</p>
             </div>
             <div style="text-align: center;">
-              <img src="${zolotayaroza77}" style="width: 100px; height: 100px; border-radius: 10px; background: white; padding: 10px;" />
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://t.me/ZOLOTAYAROZA77" style="width: 100px; height: 100px; border-radius: 10px; background: white; padding: 10px;" />
               <p style="margin: 5px 0; font-size: 12px; color: #000;">@ZOLOTAYAROZA77</p>
             </div>
           </div>
@@ -517,7 +536,7 @@ const Kassa = () => {
           usdRate?.rate
         );
         return `${formatNumber(convertedPrice)} ${
-          currency === "SUM" ? "сум" : currency === "USD" ? "$" : "KYG"
+          currency === "SUM" ? "сум" : currency === "USD" ? "$" : "KGS"
         }`;
       },
     },
@@ -693,7 +712,7 @@ const Kassa = () => {
         >
           <Option value="USD">USD</Option>
           <Option value="SUM">SUM</Option>
-          <Option value="KYG">KYG</Option>
+          <Option value="KGS">KGS</Option>
         </Select>
       ),
     },
@@ -996,7 +1015,7 @@ const Kassa = () => {
           >
             <Option value="SUM">SUM</Option>
             <Option value="USD">USD</Option>
-            <Option value="KYG">KYG</Option>
+            <Option value="KGS">KGS</Option>
           </Select>
           <Button
             style={{ justifySelf: "end", display: "flex" }}

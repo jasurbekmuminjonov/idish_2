@@ -588,17 +588,17 @@ const Sales = () => {
                 }}
               >
                 <td style={{ border: "1px solid #ccc", padding: "5px" }}>
-                  KYG
+                  KGS
                 </td>
                 <td style={{ border: "1px solid #ccc", padding: "5px" }}>
                   {filteredSales
-                    .filter((s) => s.currency === "KYG")
+                    .filter((s) => s.currency === "KGS")
                     .reduce(
                       (acc, item) =>
                         acc +
                         (item.sellingPrice -
                           item.productId.purchasePrice.value *
-                            usdRateData.kyg) *
+                            usdRateData.kgs) *
                           item.quantity,
                       0
                     )
@@ -606,7 +606,7 @@ const Sales = () => {
                 </td>
                 <td style={{ border: "1px solid #ccc", padding: "5px" }}>
                   {filteredSales
-                    .filter((s) => s.currency === "KYG")
+                    .filter((s) => s.currency === "KGS")
                     .reduce(
                       (acc, item) => acc + item.sellingPrice * item.quantity,
                       0
