@@ -81,6 +81,7 @@ const Product = () => {
   const [isNewPartner, setIsNewPartner] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [groupModalVisible, setGroupModalVisible] = useState(false);
+  const [productState, setProductsState] = useState("all");
 
   const allProducts = [
     ...products.map((product) => ({
@@ -521,6 +522,7 @@ const Product = () => {
 
   const globalProductList = Array.from(globalMap.values());
 
+  console.log(globalProductList);
 
   return (
     <div className="product-container">
@@ -752,7 +754,11 @@ const Product = () => {
             ),
           },
         ]}
-        dataSource={globalProductList}
+        dataSource={globalProductList.filter((item) =>
+          productState !== "all"
+            ? item.total_quantity <= 0
+            : item.total_quantity > 0
+        )}
         rowKey={(record) =>
           `${record.name}-${record.category}-${record.code}-${record.size}`
         }
