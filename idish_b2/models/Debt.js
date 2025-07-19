@@ -108,6 +108,12 @@ const debtSchema = new mongoose.Schema(
       required: false,
       default: null,
     },
+    storeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Store",
+      required: true,
+      default: null,
+    }
   },
   {
     timestamps: true,

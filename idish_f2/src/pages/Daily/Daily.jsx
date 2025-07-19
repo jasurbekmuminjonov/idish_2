@@ -23,6 +23,7 @@ const Daily = () => {
   const [selectedStore, setSelectedStore] = useState(null);
   const [paymentData, setPaymentData] = useState([]);
   const [totalSalesByCurrency, setTotalSalesByCurrency] = useState({});
+  const [totalDebtsByCurrency, setTotalDebtsByCurrency] = useState({});
   const [totalDebtByCurrency, setTotalDebtByCurrency] = useState({});
   const [allDebtByCurrency, setAllDebtByCurrency] = useState({});
 
@@ -39,6 +40,12 @@ const Daily = () => {
 
         // Sotuvlarni filterlash va guruhlash
         const filteredSales = sales.filter(
+          (sale) =>
+            sale.storeId === selectedStore &&
+            datesInRange.includes(moment(sale.createdAt).format("YYYY-MM-DD"))
+        );
+
+        const filteredDebts = debts.filter(
           (sale) =>
             sale.storeId === selectedStore &&
             datesInRange.includes(moment(sale.createdAt).format("YYYY-MM-DD"))
@@ -71,9 +78,18 @@ const Daily = () => {
             (debtCurrencyMap[currency] || 0) + payment.amount;
         }
 
+        // const debtsCurrencyMap = {};
+        // for (const sale of filteredDebts) {
+        //   const currency = "USD";
+        //   const amount = sale.totalAmount;
+        //   salesCurrencyMap[currency] =
+        //     (salesCurrencyMap[currency] || 0) + amount;
+        // }
+
         setPaymentData(allPayments);
         setTotalSalesByCurrency(salesCurrencyMap);
         setTotalDebtByCurrency(debtCurrencyMap);
+        // setTotalDebtsByCurrency(debtsCurrencyMap);
       }
     };
 
@@ -86,6 +102,18 @@ const Daily = () => {
       ...Object.keys(totalDebtByCurrency),
     ])
   );
+
+  const filteredDebts = debts.filter((debt) => {
+    const createdDate = moment(debt.createdAt).startOf("day");
+    const from = moment(fromDate).startOf("day");
+    const to = moment(toDate).endOf("day");
+
+    return (
+      debt.storeId === selectedStore &&
+      createdDate.isSameOrAfter(from) &&
+      createdDate.isSameOrBefore(to)
+    );
+  });
 
   return (
     <div style={{ padding: "20px" }}>
@@ -136,8 +164,9 @@ const Daily = () => {
         <Row gutter={16} style={{ marginBottom: 20 }}>
           {currencies.map((currency) => {
             const salesVal = totalSalesByCurrency[currency] || 0;
+            const debtsVal = totalDebtsByCurrency[currency] || 0;
             const debtVal = totalDebtByCurrency[currency] || 0;
-            const totalVal = salesVal + debtVal;
+            const totalVal = salesVal + debtVal + debtsVal;
             return (
               <Col span={8} key={currency}>
                 <Card>
@@ -150,6 +179,19 @@ const Daily = () => {
                   <Statistic
                     title={`Umumiy qarz to'lovi (${currency})`}
                     value={debtVal.toFixed(2)}
+                    suffix={currency}
+                    valueStyle={{ color: "#3f8600" }}
+                  />
+                  <Statistic
+                    title={`Umumiy qarz berish (${currency})`}
+                    value={
+                      currency !== "USD"
+                        ? 0
+                        : filteredDebts.reduce(
+                            (acc, item) => acc + item.totalAmount,
+                            0
+                          )
+                    }
                     suffix={currency}
                     valueStyle={{ color: "#3f8600" }}
                   />

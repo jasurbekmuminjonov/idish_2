@@ -27,6 +27,12 @@ const employeeSchema = new mongoose.Schema(
       enum: ["oylik", "haftalik"], // Bular bazada saqlanadigan qiymatlar
       required: [true, "Oylik turi tanlanishi kerak"],
     },
+    currency: {
+      type: String,
+      enum: ["UZS", "USD", "KGS"],
+      required: [true, "Valyuta tanlanishi kerak"],
+      default: "UZS",
+    },
   },
   {
     timestamps: true,

@@ -17,6 +17,8 @@ exports.createDebt = async (req, res) => {
       promokodId,
     } = req.body;
 
+     const storeId = req.user.id;
+
     if (!products || !Array.isArray(products) || products.length === 0) {
       return res.status(400).json({ message: "Mahsulotlar kerak" });
     }
@@ -103,6 +105,7 @@ exports.createDebt = async (req, res) => {
       remainingAmount: Number(remainingAmount.toFixed(2)),
       paymentHistory,
       paymentMethod: "credit",
+      storeId,
     });
 
     await newDebt.save();

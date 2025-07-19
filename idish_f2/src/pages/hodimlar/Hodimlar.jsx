@@ -82,7 +82,7 @@ export default function Hodimlar() {
       dataIndex: "position",
     },
     {
-      title: "Oylik (so'm)",
+      title: "Oylik",
       dataIndex: "salary_amount",
     },
     {
@@ -90,6 +90,10 @@ export default function Hodimlar() {
       dataIndex: "salary_type",
       render: (text) =>
         text === "oylik" ? "Oylik oladigan" : "Haftalik oladigan",
+    },
+    {
+      title:"Valyuta",
+      dataIndex: "currency",
     },
     {
       title: "Amallar",
@@ -169,7 +173,7 @@ export default function Hodimlar() {
 
           <Form.Item
             name="salary_amount"
-            label="Oylik summasi (so'm)"
+            label="Oylik summasi"
             rules={[{ required: true, message: "Oylik majburiy" }]}
           >
             <InputNumber
@@ -177,6 +181,19 @@ export default function Hodimlar() {
               style={{ width: "100%" }}
               min={0}
             />
+          </Form.Item>
+
+          {/* currency  */}
+          <Form.Item
+            name="currency"
+            label="Valyuta"
+            rules={[{ required: true, message: "Valyuta majburiy" }]}
+          >
+            <Select placeholder="Valyuta tanlang">
+              <Option value="UZS">UZS</Option>
+              <Option value="USD">USD</Option>
+              <Option value="KGS">KGS</Option>
+            </Select>
           </Form.Item>
 
           <Form.Item

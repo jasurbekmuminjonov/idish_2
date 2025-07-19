@@ -9,6 +9,7 @@ import {
   message,
   Popconfirm,
   Space,
+  Select,
 } from "antd";
 import { DollarCircleOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useGetEmployeesQuery } from "../../context/service/employee.service";
@@ -91,7 +92,6 @@ export default function Oylik() {
     });
   }, [employees, allPayments]);
 
-
   const filteredEmployees = enrichedEmployees.filter((e) =>
     `${e.name} ${e.lastname}`.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -108,19 +108,19 @@ export default function Oylik() {
     {
       title: "Umumiy oylik",
       dataIndex: "salary_amount",
-      render: (val) => `${val?.toLocaleString()} so'm`,
+      render: (val, record) => `${val?.toLocaleString()} ` + record.currency,
     },
     {
       title: "Berilgan",
       dataIndex: "totalPaid",
-      render: (val) => `${val?.toLocaleString()} so'm`,
+      render: (val, record) => `${val?.toLocaleString()} ` + record.currency,
     },
     {
       title: "Qolgan",
       dataIndex: "remaining",
-      render: (val) => (
+      render: (val, record) => (
         <span style={{ color: val > 0 ? "#faad14" : "#52c41a" }}>
-          {val?.toLocaleString()} so'm
+          {val?.toLocaleString() + " " + record.currency}
         </span>
       ),
     },
@@ -212,7 +212,7 @@ export default function Oylik() {
         <Form autoComplete="off" form={form} layout="vertical">
           <Form.Item
             name="amount"
-            label="To‘lov miqdori (so'm)"
+            label="To‘lov miqdori"
             rules={[{ required: true, message: "Miqdor majburiy" }]}
           >
             <InputNumber
@@ -220,6 +220,18 @@ export default function Oylik() {
               min={0}
               placeholder="Masalan: 2000000"
             />
+          </Form.Item>
+          {/* currency */}
+          <Form.Item label="Valyuta" rules={[{ required: true }]}>
+            <Select
+              disabled={selectedEmployee?.currency}
+              placeholder="Valyutani tanlang"
+              value={selectedEmployee?.currency}
+            >
+              <Select.Option value="UZS">UZS</Select.Option>
+              <Select.Option value="USD">USD</Select.Option>
+              <Select.Option value="KGS">KGS</Select.Option>
+            </Select>
           </Form.Item>
           <Form.Item name="description" label="Izoh (ixtiyoriy)">
             <Input placeholder="Masalan: May oylik" />

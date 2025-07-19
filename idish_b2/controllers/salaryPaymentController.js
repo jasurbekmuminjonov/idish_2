@@ -1,12 +1,10 @@
 const SalaryPayment = require("../models/SalaryPaymentModel");
 const Employee = require("../models/EmployeeModel");
 
-// 🔵 Oylik to‘lovi qo‘shish
 exports.createSalaryPayment = async (req, res) => {
   try {
     const { employee, amount, description } = req.body;
 
-    // Hodim mavjudligini tekshirish
     const emp = await Employee.findById(employee);
     if (!emp) {
       return res.status(404).json({ message: "Hodim topilmadi" });

@@ -384,16 +384,8 @@ const Kassa = () => {
             )} сyм</b></b><br/>
             <b style="color: #333;">KGS часть общей суммы платежа составляет: ${formatNumber(
               totalKYG
-            )} KGS</b></b><br/>
-            ${
-              paymentType === "credit"
-                ? `<b style="color: #333;">Оставшийся долг: ${formatNumber(
-                    totalQarz
-                  )}</b> <br/>
-                  <b style="color: #333;">Срок погашения задолженности: ${dueDate}</b>
-                  `
-                : ""
-            }
+            )} KGS</b></b><br/>           
+            <b style="color: #333;">Срок погашения задолженности: ${dueDate}</b>
           </div>
           <table style="border-collapse: collapse; width: 100%; margin-bottom: 20px; border: 1px solid #e0e0e0;">
             <thead>
