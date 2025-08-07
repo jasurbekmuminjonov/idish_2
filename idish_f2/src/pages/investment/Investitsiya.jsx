@@ -297,6 +297,12 @@ const SummaryCard = ({ expenses, debtors, products, sales, usdRate }) => {
   const allAstatkaQarzUsd = reports
     ?.filter((item) => item.currency === "USD" && item.type === "debt")
     .reduce((acc, item) => acc + item?.amount, 0);
+  const allAstatkaHaqUzs = reports
+    ?.filter((item) => item.currency === "SUM" && item.type === "payment")
+    .reduce((acc, item) => acc + item?.amount, 0);
+  const allAstatkaHaqUsd = reports
+    ?.filter((item) => item.currency === "USD" && item.type === "payment")
+    .reduce((acc, item) => acc + item?.amount, 0);
 
   function calculateTotalNetProfitUSD() {
     if (!usdRateData?.rate || !usdRateData?.kgs) return 0;
@@ -347,7 +353,6 @@ const SummaryCard = ({ expenses, debtors, products, sales, usdRate }) => {
 
     return totalProfit.toFixed(2);
   }
-
 
   const totalExpensesUSD = totalExpensesUZS / usdRate;
 
@@ -506,6 +511,27 @@ const SummaryCard = ({ expenses, debtors, products, sales, usdRate }) => {
               </p>
             </Space>
           </div>
+        </div>
+        <Divider
+          style={{ margin: "10px 0", borderColor: "rgba(255, 255, 255, 0.2)" }}
+        />
+        <div className="invest-stat-item">
+          <p>
+            <strong>Umumiy astatka haq(UZS):</strong>
+            <p>
+              <span>
+                {Number(allAstatkaHaqUzs?.toFixed(2))?.toLocaleString()}
+              </span>
+            </p>
+          </p>
+          <p>
+            <strong>Umumiy astatka haq(USD):</strong>
+            <p>
+              <span>
+                {Number(allAstatkaHaqUsd?.toFixed(2))?.toLocaleString()}
+              </span>
+            </p>
+          </p>
         </div>
         <Divider
           style={{ margin: "10px 0", borderColor: "rgba(255, 255, 255, 0.2)" }}

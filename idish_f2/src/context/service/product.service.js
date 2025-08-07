@@ -15,7 +15,7 @@ export const productApi = apiSlice.injectEndpoints({
       query: () => ({
         url: "/products",
         method: "GET",
-      }), 
+      }),
       providesTags: ["Product"],
     }),
     getProductsByWarehouse: builder.query({
@@ -33,6 +33,22 @@ export const productApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Product"],
     }),
+    setDiscountForProduct: builder.mutation({
+      query: (body) => ({
+        url: `/product/discount/set`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["Product"],
+    }),
+    removeDiscountForProduct: builder.mutation({
+      query: (body) => ({
+        url: `/product/discount/remove`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["Product"],
+    }),
     deleteProduct: builder.mutation({
       query: (id) => ({
         url: `/products/${id}`,
@@ -45,9 +61,11 @@ export const productApi = apiSlice.injectEndpoints({
 });
 
 export const {
-  useAddProductMutation: useAddProductMutation, // Добавляем префикс Product
-  useGetProductsQuery: useGetProductsQuery,
-  useGetProductsByWarehouseQuery: useGetProductsByWarehouseQuery,
-  useUpdateProductMutation: useUpdateProductMutation,
-  useDeleteProductMutation: useDeleteProductMutation,
+  useAddProductMutation,
+  useGetProductsQuery,
+  useGetProductsByWarehouseQuery,
+  useUpdateProductMutation,
+  useDeleteProductMutation,
+  useRemoveDiscountForProductMutation,
+  useSetDiscountForProductMutation,
 } = productApi;

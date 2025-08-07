@@ -307,7 +307,9 @@ const Kassa = () => {
         <td style="padding: 8px;">${item.size || "-"}</td>
         <td style="padding: 8px;">${item.code || "-"}</td>
         <td style="padding: 8px;">${quantity}</td>
-        <td style="padding: 8px;">${formatNumber(item.sellingPrice.value)}</td>
+<td style="padding: 8px;">
+  ${formatNumber(item.sellingPrice.value / (1 - item.discount / 100))}
+</td>
         <td style="padding: 8px;">${
           item.currency === "USD"
             ? "Доллар"
@@ -315,9 +317,7 @@ const Kassa = () => {
             ? "Сум"
             : "KYG"
         }</td>
-        <td style="padding: 8px;">${
-          totalDiscount > 0 ? `${totalDiscount} %` : "—"
-        }</td>
+        <td style="padding: 8px;">${`${item.discount} %`}</td>
         <td style="padding: 8px;">${formatNumber(totalAmount)}</td>
       </tr>
     `;
@@ -376,6 +376,9 @@ const Kassa = () => {
             </tbody>
           </table>
           <div style="margin-bottom: 20px;">
+                <b style="color: #333;">Общая скидка: ${
+                  promos.find((p) => p._id === paymentDiscount).percent || "-"
+                } %</b><br/>
             <b style="color: #333;">Долларовая часть общей суммы платежа составляет: ${formatNumber(
               totalUSD
             )} доллар</b><br/>
@@ -635,44 +638,23 @@ const Kassa = () => {
             gap: "8px",
           }}
         >
-          <Button
-            onClick={() => {
-              const newBasket = basket
-                .map((item) => {
-                  if (item._id === record._id) {
-                    const newQuantity = item.quantity - 1;
-                    if (newQuantity === 0) {
-                      return null;
-                    }
-                    return { ...item, quantity: newQuantity };
-                  }
-                  return item;
-                })
-                .filter((item) => item !== null);
-              setBasket(newBasket);
-            }}
-          >
-            -
-          </Button>
-          <span style={{ width: "20px", textAlign: "center" }}>
-            {record.quantity}
-          </span>
-          <Button
-            onClick={() => {
+          <InputNumber
+            min={1}
+            value={record.quantity}
+            onChange={(value) => {
               const newBasket = basket.map((item) => {
                 if (item._id === record._id) {
-                  return { ...item, quantity: item.quantity + 1 };
+                  return { ...item, quantity: value };
                 }
                 return item;
               });
               setBasket(newBasket);
             }}
-          >
-            +
-          </Button>
+          />
         </div>
       ),
     },
+
     {
       title: "Sotish valyutasi",
       render: (_, record) => (
@@ -710,8 +692,29 @@ const Kassa = () => {
     },
     {
       title: "Sotish narxi",
-      render: (_, record) => <p>{formatNumber(record?.sellingPrice?.value)}</p>,
+      render: (_, record) => (
+        <InputNumber
+          min={0}
+          value={record.sellingPrice?.value}
+          onChange={(value) => {
+            const newBasket = basket.map((item) => {
+              if (item._id === record._id) {
+                return {
+                  ...item,
+                  sellingPrice: {
+                    ...item.sellingPrice,
+                    value: value,
+                  },
+                };
+              }
+              return item;
+            });
+            setBasket(newBasket);
+          }}
+        />
+      ),
     },
+
     {
       title: "O'lchov birlik",
       render: (_, record) => (
@@ -736,33 +739,33 @@ const Kassa = () => {
         </Select>
       ),
     },
-    {
-      title: "Promokod",
-      render: (_, record) => (
-        <Select
-          style={{ width: "200px" }}
-          onChange={(value) => {
-            setBasket((prev) =>
-              prev.map((item) =>
-                item._id === record._id ? { ...item, promokodId: value } : item
-              )
-            );
-          }}
-          value={record.promokodId}
-          placeholder="Tanlang"
-        >
-          <Select.Option value={null}>Promokodsiz</Select.Option>
-          {promos.map((item) => (
-            <Select.Option
-              disabled={item.promo_type === "overall"}
-              value={item._id}
-            >
-              {item.code}
-            </Select.Option>
-          ))}
-        </Select>
-      ),
-    },
+    // {
+    //   title: "Promokod",
+    //   render: (_, record) => (
+    //     <Select
+    //       style={{ width: "200px" }}
+    //       onChange={(value) => {
+    //         setBasket((prev) =>
+    //           prev.map((item) =>
+    //             item._id === record._id ? { ...item, promokodId: value } : item
+    //           )
+    //         );
+    //       }}
+    //       value={record.promokodId}
+    //       placeholder="Tanlang"
+    //     >
+    //       <Select.Option value={null}>Promokodsiz</Select.Option>
+    //       {promos.map((item) => (
+    //         <Select.Option
+    //           disabled={item.promo_type === "overall"}
+    //           value={item._id}
+    //         >
+    //           {item.code}
+    //         </Select.Option>
+    //       ))}
+    //     </Select>
+    //   ),
+    // },
     {
       title: "Amallar",
       render: (_, record) => (
@@ -1089,7 +1092,7 @@ const Kassa = () => {
                       ? (subtotal * globalPromo.percent) / 100
                       : 0;
 
-                    return acc + subtotal - globalDiscount;
+                    return acc + Number((subtotal - globalDiscount).toFixed(2));
                   }, 0)}
               </strong>
             </p>
@@ -1117,7 +1120,7 @@ const Kassa = () => {
                       ? (subtotal * globalPromo.percent) / 100
                       : 0;
 
-                    return acc + subtotal - globalDiscount;
+                    return acc + Number((subtotal - globalDiscount).toFixed(2));
                   }, 0)}
               </strong>
             </p>
@@ -1145,7 +1148,7 @@ const Kassa = () => {
                       ? (subtotal * globalPromo.percent) / 100
                       : 0;
 
-                    return acc + subtotal - globalDiscount;
+                    return acc + Number((subtotal - globalDiscount).toFixed(2));
                   }, 0)}
               </strong>
             </p>
@@ -1443,7 +1446,7 @@ const Kassa = () => {
                     ? (subtotal * globalPromo.percent) / 100
                     : 0;
 
-                  return acc + subtotal - globalDiscount;
+                  return acc + Number((subtotal - globalDiscount).toFixed(2));
                 }, 0)}
             </strong>
           </p>
@@ -1471,7 +1474,7 @@ const Kassa = () => {
                     ? (subtotal * globalPromo.percent) / 100
                     : 0;
 
-                  return acc + subtotal - globalDiscount;
+                  return acc + Number((subtotal - globalDiscount).toFixed(2));
                 }, 0)}
             </strong>
           </p>
@@ -1499,7 +1502,7 @@ const Kassa = () => {
                     ? (subtotal * globalPromo.percent) / 100
                     : 0;
 
-                  return acc + subtotal - globalDiscount;
+                  return acc + Number((subtotal - globalDiscount).toFixed(2));
                 }, 0)}
             </strong>
           </p>

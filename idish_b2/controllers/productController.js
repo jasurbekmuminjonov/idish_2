@@ -44,7 +44,7 @@ exports.createProduct = async (req, res) => {
       total_kg = 0,
     } = req.body;
 
-    // Mos product bor-yo‘qligini tekshiramiz
+    // Mos product bor-yo'qligini tekshiramiz
     const existingProduct = await Product.findOne({
       name,
       name_partner,
@@ -135,7 +135,6 @@ exports.getProducts = async (req, res) => {
   }
 };
 
-// Get a single product by ID
 exports.getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id).populate("warehouse");
@@ -191,5 +190,133 @@ exports.deleteProduct = async (req, res) => {
     res.status(200).json({ message: "Product deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+exports.setDiscountForProducts = async (req, res) => {
+  try {
+    const { name, category, code, size, discount } = req.body;
+
+    if (!name || !category || !code || !size || discount == null) {
+      return res
+        .status(400)
+        .json({ message: "Barcha maydonlar to'ldirilishi kerak" });
+    }
+
+    const products = await Product.find({ name, category, code, size });
+
+    if (products.length === 0) {
+      return res.status(404).json({ message: "Mahsulotlar topilmadi" });
+    }
+
+    const updatePromises = products.map(async (product) => {
+      product.discount = discount;
+
+      if (
+        product.sellingPrice &&
+        typeof product.sellingPrice.value === "number"
+      ) {
+        product.sellingPrice.value -=
+          (product.sellingPrice.value / 100) * discount;
+      }
+
+      return product.save();
+    });
+
+    await Promise.all(updatePromises);
+
+    res.status(200).json({
+      message: "Chegirma muvaffaqiyatli qo'llandi",
+      updatedCount: products.length,
+    });
+  } catch (err) {
+    console.log(err.message);
+    return res.status(500).json({ message: "Serverda xatolik", err });
+  }
+};
+
+exports.setDiscountForProducts = async (req, res) => {
+  try {
+    const { name, category, code, size, discount } = req.body;
+
+    if (!name || !category || !code || !size || discount == null) {
+      return res
+        .status(400)
+        .json({ message: "Barcha maydonlar to'ldirilishi kerak" });
+    }
+
+    const products = await Product.find({ name, category, code, size });
+
+    if (products.length === 0) {
+      return res.status(404).json({ message: "Mahsulotlar topilmadi" });
+    }
+
+    const updatePromises = products.map(async (product) => {
+      product.discount = discount;
+
+      if (
+        product.sellingPrice &&
+        typeof product.sellingPrice.value === "number"
+      ) {
+        product.sellingPrice.value -=
+          (product.sellingPrice.value / 100) * discount;
+      }
+
+      return product.save();
+    });
+
+    await Promise.all(updatePromises);
+
+    res.status(200).json({
+      message: "Chegirma muvaffaqiyatli qo'llandi",
+      updatedCount: products.length,
+    });
+  } catch (err) {
+    console.log(err.message);
+    return res.status(500).json({ message: "Serverda xatolik", err });
+  }
+};
+
+exports.removeDiscountForProducts = async (req, res) => {
+  try {
+    const { name, category, code, size } = req.body;
+
+    if (!name || !category || !code || !size) {
+      return res
+        .status(400)
+        .json({ message: "Barcha maydonlar to'ldirilishi kerak" });
+    }
+
+    const products = await Product.find({ name, category, code, size });
+
+    if (products.length === 0) {
+      return res.status(404).json({ message: "Mahsulotlar topilmadi" });
+    }
+
+    const updatePromises = products.map(async (product) => {
+      const discount = product.discount || 0;
+
+      if (
+        product.sellingPrice &&
+        typeof product.sellingPrice.value === "number"
+      ) {
+        product.sellingPrice.value =
+          product.sellingPrice.value / (1 - discount / 100);
+      }
+
+      product.discount = 0;
+
+      return product.save();
+    });
+
+    await Promise.all(updatePromises);
+
+    res.status(200).json({
+      message: "Chegirma olib tashlandi",
+      updatedCount: products.length,
+    });
+  } catch (err) {
+    console.log(err.message);
+    return res.status(500).json({ message: "Serverda xatolik", err });
   }
 };

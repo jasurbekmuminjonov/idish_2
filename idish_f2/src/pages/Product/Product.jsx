@@ -12,6 +12,9 @@ import {
   Switch,
   Space,
   AutoComplete,
+  Popover,
+  InputNumber,
+  notification,
 } from "antd";
 import { useReactToPrint } from "react-to-print";
 import Barcode from "react-barcode";
@@ -19,6 +22,8 @@ import {
   useAddProductMutation,
   useDeleteProductMutation,
   useGetProductsQuery,
+  useRemoveDiscountForProductMutation,
+  useSetDiscountForProductMutation,
   useUpdateProductMutation,
 } from "../../context/service/product.service";
 import {
@@ -29,13 +34,14 @@ import {
 import { useGetWarehousesQuery } from "../../context/service/ombor.service";
 import { MdEdit, MdDeleteForever, MdPrint } from "react-icons/md";
 import axios from "axios";
-import { FaUpload, FaList } from "react-icons/fa";
+import { FaUpload, FaList, FaPercent } from "react-icons/fa";
 import "./product.css";
 import {
   useCreateActPartnerMutation,
   useGetActPartnersQuery,
   useUpdateActPartnerMutation,
 } from "../../context/service/act-partner.service";
+import { TbRosetteDiscountOff, TbRosetteDiscount } from "react-icons/tb";
 
 const { Option } = Select;
 
@@ -82,6 +88,8 @@ const Product = () => {
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [groupModalVisible, setGroupModalVisible] = useState(false);
   const [productState, setProductsState] = useState("all");
+  const [setDiscountForProducts] = useSetDiscountForProductMutation();
+  const [removeDiscountForProducts] = useRemoveDiscountForProductMutation();
 
   const allProducts = [
     ...products.map((product) => ({
@@ -505,6 +513,7 @@ const Product = () => {
         category: p.category,
         code: p.code,
         size: p.size,
+        discount: p.discount,
         total_quantity: 0,
         total_package: 0,
         total_box: 0,
@@ -521,8 +530,6 @@ const Product = () => {
   }, new Map());
 
   const globalProductList = Array.from(globalMap.values());
-
-  console.log(globalProductList);
 
   return (
     <div className="product-container">
@@ -742,15 +749,90 @@ const Product = () => {
             render: (t) => t?.toFixed(2),
           },
           {
+            title: "Chegirma",
+            dataIndex: "discount",
+          },
+          {
             title: "Amallar",
             render: (_, record) => (
-              <Button
-                icon={<FaList />}
-                onClick={() => {
-                  setSelectedGroup(record);
-                  setGroupModalVisible(true);
-                }}
-              />
+              <Space>
+                <Button
+                  icon={<FaList />}
+                  onClick={() => {
+                    setSelectedGroup(record);
+                    setGroupModalVisible(true);
+                  }}
+                />
+                <Popover
+                  trigger="click"
+                  content={() => (
+                    <Form
+                      layout="vertical"
+                      onFinish={async (values) => {
+                        try {
+                          await setDiscountForProducts({
+                            name: record.name,
+                            category: record.category,
+                            code: record.code,
+                            size: record.size,
+                            discount: Number(values.discount),
+                          });
+                          notification.success({
+                            message: "Chegirma o'rnatildi",
+                            description: "",
+                          });
+                        } catch (err) {
+                          console.log(err);
+                          notification.error({
+                            message: "Xatolik",
+                            description: "",
+                          });
+                        }
+                      }}
+                    >
+                      <Form.Item
+                        name="discount"
+                        label="Chegirma(%)"
+                        rules={[{ required: true, message: "Majburiy" }]}
+                      >
+                        <InputNumber />
+                      </Form.Item>
+                      <Form.Item>
+                        <Button htmlType="submit">Saqlash</Button>
+                      </Form.Item>
+                    </Form>
+                  )}
+                >
+                  <Button
+                    disabled={record.discount !== 0}
+                    icon={<TbRosetteDiscount size={20} />}
+                  />
+                </Popover>
+                <Button
+                  onClick={async () => {
+                    try {
+                      await removeDiscountForProducts({
+                        name: record.name,
+                        category: record.category,
+                        code: record.code,
+                        size: record.size,
+                      });
+                      notification.success({
+                        message: "Chegirma olib tashlandi",
+                        description: "",
+                      });
+                    } catch (err) {
+                      console.log(err);
+                      notification.error({
+                        message: "Xatolik",
+                        description: "",
+                      });
+                    }
+                  }}
+                  disabled={record.discount === 0}
+                  icon={<TbRosetteDiscountOff size={20} />}
+                />
+              </Space>
             ),
           },
         ]}
@@ -1078,8 +1160,19 @@ const Product = () => {
             },
             {
               title: "Sotish narx",
-              render: (_, r) => r.sellingPrice?.value || "-",
+              render: (_, r) => {
+                const price = r.sellingPrice?.value;
+                const discount = r.discount || 0;
+
+                if (typeof price !== "number") return "-";
+
+                // Original narxni hisoblash
+                const originalPrice = price / (1 - discount / 100);
+
+                return originalPrice.toFixed(2); // yoki .toLocaleString() kerak bo‘lsa
+              },
             },
+
             { title: "Valyuta", dataIndex: "currency" },
             {
               title: "Dona",

@@ -11,10 +11,10 @@ const saleSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
-    clientAddress: {
-      type: String,
-      required: true,
-    },
+    // clientAddress: {
+    //   type: String,
+    //   required: true,
+    // },
     currency: {
       type: String,
       enum: ["USD", "SUM", "KGS"],

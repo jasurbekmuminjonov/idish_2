@@ -18,6 +18,8 @@ const {
   getProductsByWarehouse,
   updateProduct,
   deleteProduct,
+  setDiscountForProducts,
+  removeDiscountForProducts,
 } = require("../controllers/productController");
 const {
   createProductPartner,
@@ -135,6 +137,8 @@ router.get("/products", auth, getProducts);
 router.get("/products/warehouse/:id", auth, getProductsByWarehouse);
 router.put("/products/:id", auth, updateProduct);
 router.delete("/products/:id", auth, deleteProduct);
+router.put("/product/discount/set", auth, setDiscountForProducts)
+router.put("/product/discount/remove", auth, removeDiscountForProducts)
 
 // Partner routes
 router.post("/partner/add", auth, createProductPartner);
@@ -203,10 +207,10 @@ router.put("/employees/:id", auth, updateEmployee); // Hodim yangilash
 router.delete("/employees/:id", auth, deleteEmployee); // Hodim o‘chirish
 
 // 🔐 Oylik to‘lovlar marshrutlari
-router.post("/salary-payments", auth, createSalaryPayment); // ➕ Oylik to‘lovi qo‘shish
-router.get("/salary-payments", auth, getAllSalaryPayments); // 📋 Barcha to‘lovlar
-router.get("/salary-payments/employee/:id", auth, getPaymentsByEmployee); // 👤 Hodim bo‘yicha to‘lovlar
-router.delete("/salary-payments/:id", auth, deleteSalaryPayment); // ❌ To‘lovni o‘chirish
+router.post("/salary-payments", auth, createSalaryPayment); 
+router.get("/salary-payments", auth, getAllSalaryPayments);
+router.get("/salary-payments/employee/:id", auth, getPaymentsByEmployee); 
+router.delete("/salary-payments/:id", auth, deleteSalaryPayment); 
 
 router.post("/transportion/create", auth, createTransportion);
 router.get("/transportion/sent", auth, getSentTransportions);

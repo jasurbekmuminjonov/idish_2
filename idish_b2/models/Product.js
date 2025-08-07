@@ -58,7 +58,7 @@ const productSchema = new mongoose.Schema(
     package_quantity_per_box: {
       type: Number,
       default: 1,
-    },   
+    },
     isPackage: {
       type: Boolean,
       default: true,
@@ -101,6 +101,10 @@ const productSchema = new mongoose.Schema(
     barcode: {
       type: String,
       required: true,
+    },
+    discount: {
+      type: Number,
+      default: 0,
     },
     part: {
       type: String,
