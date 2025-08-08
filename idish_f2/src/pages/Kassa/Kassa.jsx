@@ -377,7 +377,7 @@ const Kassa = () => {
           </table>
           <div style="margin-bottom: 20px;">
                 <b style="color: #333;">Общая скидка: ${
-                  promos.find((p) => p._id === paymentDiscount).percent || "-"
+                  promos.find((p) => p._id === paymentDiscount)?.percent || "-"
                 } %</b><br/>
             <b style="color: #333;">Долларовая часть общей суммы платежа составляет: ${formatNumber(
               totalUSD
@@ -1080,7 +1080,7 @@ const Kassa = () => {
                     );
                     const basePrice = item.sellingPrice.value;
                     const discountedItemPrice = itemPromo
-                      ? basePrice - (basePrice * itemPromo.percent) / 100
+                      ? basePrice - (basePrice * itemPromo?.percent) / 100
                       : basePrice;
 
                     const subtotal = quantity * discountedItemPrice;
@@ -1089,7 +1089,7 @@ const Kassa = () => {
                       (p) => p._id === paymentDiscount
                     );
                     const globalDiscount = globalPromo
-                      ? (subtotal * globalPromo.percent) / 100
+                      ? (subtotal * globalPromo?.percent) / 100
                       : 0;
 
                     return acc + Number((subtotal - globalDiscount).toFixed(2));
@@ -1108,7 +1108,7 @@ const Kassa = () => {
                     );
                     const basePrice = item.sellingPrice.value;
                     const discountedItemPrice = itemPromo
-                      ? basePrice - (basePrice * itemPromo.percent) / 100
+                      ? basePrice - (basePrice * itemPromo?.percent) / 100
                       : basePrice;
 
                     const subtotal = quantity * discountedItemPrice;
@@ -1117,7 +1117,7 @@ const Kassa = () => {
                       (p) => p._id === paymentDiscount
                     );
                     const globalDiscount = globalPromo
-                      ? (subtotal * globalPromo.percent) / 100
+                      ? (subtotal * globalPromo?.percent) / 100
                       : 0;
 
                     return acc + Number((subtotal - globalDiscount).toFixed(2));
@@ -1136,7 +1136,7 @@ const Kassa = () => {
                     );
                     const basePrice = item.sellingPrice.value;
                     const discountedItemPrice = itemPromo
-                      ? basePrice - (basePrice * itemPromo.percent) / 100
+                      ? basePrice - (basePrice * itemPromo?.percent) / 100
                       : basePrice;
 
                     const subtotal = quantity * discountedItemPrice;
@@ -1145,7 +1145,7 @@ const Kassa = () => {
                       (p) => p._id === paymentDiscount
                     );
                     const globalDiscount = globalPromo
-                      ? (subtotal * globalPromo.percent) / 100
+                      ? (subtotal * globalPromo?.percent) / 100
                       : 0;
 
                     return acc + Number((subtotal - globalDiscount).toFixed(2));
@@ -1434,7 +1434,7 @@ const Kassa = () => {
                   );
                   const basePrice = item.sellingPrice.value;
                   const discountedItemPrice = itemPromo
-                    ? basePrice - (basePrice * itemPromo.percent) / 100
+                    ? basePrice - (basePrice * itemPromo?.percent) / 100
                     : basePrice;
 
                   const subtotal = quantity * discountedItemPrice;
@@ -1443,7 +1443,7 @@ const Kassa = () => {
                     (p) => p._id === paymentDiscount
                   );
                   const globalDiscount = globalPromo
-                    ? (subtotal * globalPromo.percent) / 100
+                    ? (subtotal * globalPromo?.percent) / 100
                     : 0;
 
                   return acc + Number((subtotal - globalDiscount).toFixed(2));
@@ -1462,7 +1462,7 @@ const Kassa = () => {
                   );
                   const basePrice = item.sellingPrice.value;
                   const discountedItemPrice = itemPromo
-                    ? basePrice - (basePrice * itemPromo.percent) / 100
+                    ? basePrice - (basePrice * itemPromo?.percent) / 100
                     : basePrice;
 
                   const subtotal = quantity * discountedItemPrice;
@@ -1471,7 +1471,7 @@ const Kassa = () => {
                     (p) => p._id === paymentDiscount
                   );
                   const globalDiscount = globalPromo
-                    ? (subtotal * globalPromo.percent) / 100
+                    ? (subtotal * globalPromo?.percent) / 100
                     : 0;
 
                   return acc + Number((subtotal - globalDiscount).toFixed(2));
@@ -1490,7 +1490,7 @@ const Kassa = () => {
                   );
                   const basePrice = item.sellingPrice.value;
                   const discountedItemPrice = itemPromo
-                    ? basePrice - (basePrice * itemPromo.percent) / 100
+                    ? basePrice - (basePrice * itemPromo?.percent) / 100
                     : basePrice;
 
                   const subtotal = quantity * discountedItemPrice;
@@ -1499,7 +1499,7 @@ const Kassa = () => {
                     (p) => p._id === paymentDiscount
                   );
                   const globalDiscount = globalPromo
-                    ? (subtotal * globalPromo.percent) / 100
+                    ? (subtotal * globalPromo?.percent) / 100
                     : 0;
 
                   return acc + Number((subtotal - globalDiscount).toFixed(2));
