@@ -195,7 +195,7 @@ const Kassa = () => {
 
     return item.quantity;
   };
-
+//
   const generatePDF = () => {
     const getDiscountedPrice = (item) => {
       const quantity = convertToQuantity(item);
