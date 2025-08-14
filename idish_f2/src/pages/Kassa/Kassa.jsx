@@ -41,6 +41,8 @@ const { Option } = Select;
 const Kassa = () => {
   const { data: products = [] } = useGetProductsQuery();
   const { data: debtors = [] } = useGetAllDebtorsQuery();
+  console.log(debtors);
+
   const { data: promos = [] } = useGetPromosQuery();
   const { data: usdRate = {} } = useGetUsdRateQuery();
   const { data: clients = [] } = useGetClientsQuery();
@@ -115,11 +117,11 @@ const Kassa = () => {
       });
     } else if (searchLower) {
       result = allProducts.filter((product) => {
-        const name = (product.name || "").toLowerCase();
-        const code = (product.code || "").toLowerCase();
-        const size = (product.size || "").toLowerCase();
-        const category = (product.category || "").toLowerCase();
-        const barcode = (product.barcode || "").toLowerCase();
+        const name = (product?.name || "").toLowerCase();
+        const code = (product?.code || "").toLowerCase();
+        const size = (product?.size || "").toLowerCase();
+        const category = (product?.category || "").toLowerCase();
+        const barcode = (product?.barcode || "").toLowerCase();
         return (
           name.includes(searchLower) ||
           barcode.includes(searchLower) ||
@@ -195,7 +197,7 @@ const Kassa = () => {
 
     return item.quantity;
   };
-//
+  //
   const generatePDF = () => {
     const getDiscountedPrice = (item) => {
       const quantity = convertToQuantity(item);
@@ -271,7 +273,7 @@ const Kassa = () => {
       }, 0);
     };
 
-    let initialPayment = sellForm.getFieldValue("initialPayment");
+    let initialPayment = sellForm.getFieldValue("initialPayment") || 0;
 
     if (buyerType === "client" && selectedBuyer) {
       const client = clients.find((c) => c._id === selectedBuyer);
@@ -303,12 +305,12 @@ const Kassa = () => {
         return `
       <tr style="text-align: center;">
         <td style="padding: 8px;">${index + 1}</td>
-        <td style="padding: 8px;">${item.name || "Noma'lum mahsulot"}</td>
-        <td style="padding: 8px;">${item.size || "-"}</td>
-        <td style="padding: 8px;">${item.code || "-"}</td>
+        <td style="padding: 8px;">${item?.name || "Noma'lum mahsulot"}</td>
+        <td style="padding: 8px;">${item?.size || "-"}</td>
+        <td style="padding: 8px;">${item?.code || "-"}</td>
         <td style="padding: 8px;">${quantity}</td>
 <td style="padding: 8px;">
-  ${formatNumber(item.sellingPrice.value / (1 - item.discount / 100))}
+  ${formatNumber(item?.sellingPrice?.value / (1 - item?.discount / 100))}
 </td>
         <td style="padding: 8px;">${
           item.currency === "USD"
@@ -388,46 +390,16 @@ const Kassa = () => {
             <b style="color: #333;">KGS часть общей суммы платежа составляет: ${formatNumber(
               totalKYG
             )} KGS</b></b><br/>           
-            <b style="color: #333;">Срок погашения задолженности: ${dueDate}</b>
+            <b style="color: #333;">Срок погашения задолженности: ${dueDate}</b><br />
+            <b style="color: #333;">Старые долги ${debtors
+              .filter(
+                (d) =>
+                  d.partnerId === selectedBuyer ||
+                  d.clientId?._id === selectedBuyer
+              )
+              .reduce((acc, item) => acc + item.remainingAmount, 0)} USD</b>
           </div>
-          <table style="border-collapse: collapse; width: 100%; margin-bottom: 20px; border: 1px solid #e0e0e0;">
-            <thead>
-              <tr style="background-color: #f1f3f4; text-align: center;">
-                <th style="padding: 10px; border: 1px solid #e0e0e0;">Название продукта</th>
-                <th style="padding: 10px; border: 1px solid #e0e0e0;">Размер</th>
-                <th style="padding: 10px; border: 1px solid #e0e0e0;">Код</th>
-                <th style="padding: 10px; border: 1px solid #e0e0e0;">Количество</th>
-                <th style="padding: 10px; border: 1px solid #e0e0e0;">Цена</th>
-                <th style="padding: 10px; border: 1px solid #e0e0e0;">Валюта</th>
-                <th style="padding: 10px; border: 1px solid #e0e0e0;">Общая сумма</th>
-                <th style="padding: 10px; border: 1px solid #e0e0e0;">Оставшаяся сумма</th>
-              </tr>
-            </thead>
-           <tbody>
-  ${debtors
-    .filter(
-      (d) => d.partnerId === selectedBuyer || d.clientId?._id === selectedBuyer
-    )
-    .map(
-      (item, index) => `
-        <tr style="text-align: center;">
-          <td style="padding: 8px;">${item.productId.name}</td>
-          <td style="padding: 8px;">${item.productId.size}</td>
-          <td style="padding: 8px;">${item.productId.code}</td>
-          <td style="padding: 8px;">${
-            item.quantity + " " + statusTexts[item.unit]
-          }</td>
-          <td style="padding: 8px;">${item.sellingPrice?.toLocaleString()}</td>
-          <td style="padding: 8px;">${item.currency}</td>
-          <td style="padding: 8px;">${item.totalAmount?.toLocaleString()}</td>
-          <td style="padding: 8px;">${item.remainingAmount?.toLocaleString()}</td>
-        </tr>
-      `
-    )
-    .join("")}
-</tbody>
-
-          </table>
+       
           <div style="display: flex; justify-content: space-around; margin-top: 20px; border-top: 1px solid #e0e0e0; padding-top: 20px;">
             <div style="text-align: center;">
               <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://t.me/YODGOR_ABDULLAEV" style="width: 100px; height: 100px; border-radius: 10px; background: white; padding: 10px;" />

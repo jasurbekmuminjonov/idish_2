@@ -204,11 +204,14 @@ export default function Ombor() {
       title: "Karobka soni",
       dataIndex: "box_quantity",
       key: "box_quantity",
+      render: (text) => text?.toFixed(2),
     },
     {
       title: "Umumiy kg",
       dataIndex: "total_kg",
       key: "total_kg",
+      render: (text) => text?.toFixed(2),
+
     },
     {
       title: "Tan Narxi",
@@ -239,20 +242,20 @@ export default function Ombor() {
   // Фильтрация продуктов по названию и штрих-коду
   const filteredProducts = products.filter((product) => {
     const matchesName = product.name
-      .toLowerCase()
-      .includes(searchName.toLowerCase());
+      ?.toLowerCase()
+      .includes(searchName?.toLowerCase());
     const matchesCategory = product.category
-      .toLowerCase()
-      .includes(searchName.toLowerCase());
+      ?.toLowerCase()
+      .includes(searchName?.toLowerCase());
     const matchesCode = product.code
-      .toLowerCase()
-      .includes(searchName.toLowerCase());
+      ?.toLowerCase()
+      .includes(searchName?.toLowerCase());
     const matchesSize = product.size
-      .toLowerCase()
-      .includes(searchName.toLowerCase());
+      ?.toLowerCase()
+      .includes(searchName?.toLowerCase());
     const matchesBarcode = product.barcode
       ?.toLowerCase()
-      .includes(searchBarcode.toLowerCase());
+      .includes(searchBarcode?.toLowerCase());
     return (
       (searchName
         ? matchesName || matchesCategory || matchesCode || matchesSize
